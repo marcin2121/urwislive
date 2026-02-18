@@ -1,125 +1,148 @@
-"use client";
+'use client'
 
-import React from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
-
-const DARK_ROUTES = ["/profil", "/system", "/ustawienia", "/salazabaw"];
+import { motion } from 'framer-motion'
+import { 
+  MapPin, Phone, Mail, Facebook, 
+  Instagram, ArrowRight, Store, Gamepad2, Globe 
+} from 'lucide-react'
+import Link from 'next/link'
 
 export default function Footer() {
-  const pathname = usePathname();
-  const isDarkPage = DARK_ROUTES.some(route => pathname.startsWith(route));
-
-  // Dynamiczne klasy kolorystyczne
-  const bgColor = isDarkPage ? "bg-zinc-950" : "bg-white";
-  const textColor = isDarkPage ? "text-zinc-400" : "text-zinc-600";
-  const headingColor = isDarkPage ? "text-white" : "text-zinc-900";
-  const borderColor = isDarkPage ? "border-white/5" : "border-zinc-100";
-  const iconBg = isDarkPage ? "bg-white/5 text-white hover:bg-white/10" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200";
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className={`${bgColor} border-t ${borderColor} pt-20 pb-10 transition-colors duration-500`}>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+    <footer className="relative mt-20 pb-10 px-4 bg-transparent overflow-hidden">
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="bg-white/20 backdrop-blur-2xl border border-white/40 rounded-[3rem] p-10 md:p-16 shadow-2xl overflow-hidden">
           
-          {/* LOGO I OPIS */}
-          <div className="md:col-span-1 space-y-6">
-            <Link href="/" className="inline-block">
-              <Image 
-                src="/logo.png" 
-                alt="Urwis Logo" 
-                width={50} 
-                height={50} 
-                className={isDarkPage ? "brightness-110" : ""}
-              />
-            </Link>
-            <p className={`text-sm font-medium leading-relaxed ${textColor}`}>
-              Najlepsze zabawki i niezapomniana przygoda w Białobrzegach. 
-              Dołącz do Klubu Urwisa i zbieraj nagrody!
-            </p>
-            <div className="flex gap-3">
-              <SocialIcon icon={<Facebook size={18}/>} href="#" className={iconBg} />
-              <SocialIcon icon={<Instagram size={18}/>} href="#" className={iconBg} />
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#0055ff]/10 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+            
+            {/* 1. BRAND & MOTTO */}
+            <div className="space-y-6">
+              <div className="text-3xl font-black tracking-tighter italic">
+                <span className="text-[#BF2024]">SKLEP</span>
+                <span className="text-[#0055ff]"> URWIS</span>
+              </div>
+              <p className="text-zinc-700 font-bold text-sm leading-relaxed uppercase italic">
+                Twoje lokalne centrum zabawy i kreatywności. Od najlepszych zabawek po pełną wyprawkę szkolną i biurową. Działamy z pasją od 2007 roku.
+              </p>
+              <div className="flex gap-4">
+                <SocialIcon href="https://facebook.com/sklepurwis.bialobrzegi" icon={<Facebook size={20} />} />
+                <SocialIcon href="https://instagram.com/sklepurwis.bialobrzegi" icon={<Instagram size={20} />} />
+              </div>
+            </div>
+
+            {/* 2. SKLEP URWIS (Reymonta) */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-[#BF2024] font-black uppercase tracking-widest text-xs italic">
+                <Store size={16} /> SKLEP URWIS
+              </div>
+              <ul className="flex flex-col gap-5">
+                <FooterLink icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="26-800 Białobrzegi" />
+                <FooterLink icon={<Phone size={18} />} label="+48 604 208 193" />
+                <FooterLink icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" />
+              </ul>
+            </div>
+
+            {/* 3. SALA ZABAW (Targowicka) */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-[#0055ff] font-black uppercase tracking-widest text-xs italic">
+                <Gamepad2 size={16} /> Lecę w Kulki
+              </div>
+              {/* ✅ ZMIANA: flex-col i gap-5 dla lepszych odstępów */}
+              <ul className="flex flex-col gap-5">
+                {/* LINK DO MAPY */}
+                <a href="https://maps.app.goo.gl/xyeqFtwUAvd2VN898" target="_blank" rel="noopener noreferrer" className="block">
+                  <FooterLink 
+                    icon={<MapPin size={18} className="text-[#0055ff]" />} 
+                    label="ul. Targowicka 4" 
+                    sublabel="Białobrzegi" 
+                    isLink 
+                  />
+                </a>
+
+                <FooterLink icon={<Phone size={18} className="text-[#0055ff]" />} label="+48 666 504 555" />
+                
+                {/* LINK DO STRONY WWW */}
+                <a href="https://lecewkulki.eu/" target="_blank" rel="noopener noreferrer" className="block">
+                  <FooterLink 
+                    icon={<Globe size={18} className="text-[#0055ff]" />} 
+                    label="lecewkulki.eu" 
+                    sublabel="Strona Sali Zabaw" 
+                    isLink
+                  />
+                </a>
+              </ul>
+            </div>
+
+            {/* 4. NAWIGACJA */}
+            <div className="space-y-6">
+              <div className="text-zinc-900 font-black uppercase tracking-widest text-xs italic">
+                Szybkie Linki
+              </div>
+              <ul className="flex flex-col gap-3">
+                <QuickLink href="/oferta">Nasza Oferta</QuickLink>
+                <QuickLink href="/o-nas">O nas</QuickLink>
+                <QuickLink href="/kontakt">Kontakt</QuickLink>
+                <QuickLink href="/regulamin">Regulamin</QuickLink>
+              </ul>
+            </div>
+
+          </div>
+
+          {/* DOLNY PASEK */}
+          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic">
+            <div>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
+            <div className="flex items-center gap-2">
+              <span> MADE WITH ❤️ IN BIAŁOBRZEGI </span>             
             </div>
           </div>
-
-          {/* SZYBKIE LINKI */}
-          <div className="space-y-6">
-            <h4 className={`text-sm font-black uppercase tracking-widest ${headingColor}`}>Sklep</h4>
-            <ul className="space-y-4">
-              <FooterLink href="/oferta" label="Pełna Oferta" isDark={isDarkPage} />
-              <FooterLink href="/oferta/promocje" label="Promocje" isDark={isDarkPage} />
-              <FooterLink href="/o-nas" label="O nas" isDark={isDarkPage} />
-            </ul>
-          </div>
-
-          <div className="space-y-6">
-            <h4 className={`text-sm font-black uppercase tracking-widest ${headingColor}`}>Klub Urwisa</h4>
-            <ul className="space-y-4">
-              <FooterLink href="/misje" label="Misje i Wyzwania" isDark={isDarkPage} />
-              <FooterLink href="/nagrody" label="Katalog Nagród" isDark={isDarkPage} />
-              <FooterLink href="/system" label="System Profitów" isDark={isDarkPage} />
-            </ul>
-          </div>
-
-          {/* KONTAKT */}
-          <div className="space-y-6">
-            <h4 className={`text-sm font-black uppercase tracking-widest ${headingColor}`}>Kontakt</h4>
-            <ul className="space-y-4">
-              <ContactItem icon={<MapPin size={16}/>} text="ul. Targowicka 4, Białobrzegi" isDark={isDarkPage} />
-              <ContactItem icon={<Phone size={16}/>} text="+48 123 456 789" isDark={isDarkPage} />
-              <ContactItem icon={<Mail size={16}/>} text="kontakt@urwis.pl" isDark={isDarkPage} />
-            </ul>
-          </div>
-        </div>
-
-        {/* COPYRIGHT */}
-        <div className={`pt-10 border-t ${borderColor} flex flex-col md:flex-row justify-between items-center gap-4`}>
-        <p className={`text-[10px] font-bold uppercase tracking-widest ${textColor}`}>
-  © {new Date().getFullYear()} URWIS. WSZYSTKIE PRAWA ZASTRZEŻONE.
-</p>
-          <div className="flex gap-6 text-[10px] font-bold uppercase tracking-widest">
-            <Link href="/regulamin" className={`${textColor} hover:text-blue-500 transition-colors`}>Regulamin</Link>
-            <Link href="/polityka" className={`${textColor} hover:text-blue-500 transition-colors`}>Prywatność</Link>
-          </div>
+          
+       <a href="#"><span className='text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic'> MARCIN MOLENDA</span></a>
         </div>
       </div>
     </footer>
-  );
+  )
 }
 
-// POMOCNICZE KOMPONENTY
-function FooterLink({ href, label, isDark }: { href: string, label: string, isDark: boolean }) {
-  return (
-    <li>
-      <Link 
-        href={href} 
-        className={`text-sm font-bold transition-colors ${isDark ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}
-      >
-        {label}
-      </Link>
-    </li>
-  );
-}
+// --- POMOCNICZE KOMPONENTY ---
 
-function ContactItem({ icon, text, isDark }: { icon: any, text: string, isDark: boolean }) {
+function SocialIcon({ href, icon }: { href: string, icon: React.ReactNode }) {
   return (
-    <li className={`flex items-center gap-3 text-sm font-bold ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>
-      <span className={isDark ? "text-blue-400" : "text-blue-600"}>{icon}</span>
-      {text}
-    </li>
-  );
-}
-
-function SocialIcon({ icon, href, className }: { icon: any, href: string, className: string }) {
-  return (
-    <a 
+    <Link 
       href={href} 
-      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${className}`}
+      target="_blank"
+      className="w-10 h-10 rounded-xl bg-white/40 flex items-center justify-center text-zinc-900 hover:bg-[#0055ff] hover:text-white transition-all shadow-sm border border-white/50"
     >
       {icon}
-    </a>
-  );
+    </Link>
+  )
+}
+
+function FooterLink({ icon, label, sublabel, isLink }: { icon: React.ReactNode, label: string, sublabel?: string, isLink?: boolean }) {
+  return (
+    <li className={`flex gap-4 group cursor-pointer transition-all ${isLink ? 'hover:translate-x-1' : ''}`}>
+      <div className={`${isLink ? 'text-[#0055ff]' : 'text-[#BF2024]'} group-hover:scale-110 transition-transform`}>
+        {icon}
+      </div>
+      <div className="flex flex-col leading-none">
+        <span className={`text-zinc-900 font-bold text-sm tracking-tight ${isLink ? 'group-hover:text-[#0055ff]' : ''}`}>{label}</span>
+        {sublabel && <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">{sublabel}</span>}
+      </div>
+    </li>
+  )
+}
+
+function QuickLink({ href, children }: { href: string, children: React.ReactNode }) {
+  return (
+    <Link 
+      href={href} 
+      className="text-zinc-600 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase"
+    >
+      <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 group-hover:bg-[#BF2024] transition-colors" />
+      {children}
+    </Link>
+  )
 }

@@ -1,11 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* Zachowujemy fonty */
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   
-  /* --- PALETA SUPERBOHATERA --- */
   --color-urwis-red: #dc2626;
   --color-urwis-red-light: #fee2e2;
   --color-urwis-blue: #2563eb;
@@ -20,20 +18,30 @@ h1, h2, h3, h4, h5, h6 {
 
 body {
   font-family: var(--font-body);
-  /* Usunięto stąd tło, aby nie prześwitywało na ciemnych stronach */
-  color: #0f172a; 
+  color: #0f172a;
+  
+  /* KLUCZOWA ZMIANA: Tło musi być przezroczyste, żeby odsłonić RibbonsBg pod spodem */
+  background-color: transparent; 
 }
 
-/* Klasa dla jasnych stron - nałóż ją na <main> w app/page.tsx */
+/* Klasa .light-superhero-bg teraz służy tylko do ewentualnych akcentów,
+   ale nie może mieć pełnego koloru tła, jeśli chcemy widzieć wstążki.
+   Możemy ją zostawić pustą lub usunąć background-color. */
 .light-superhero-bg {
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(at 0% 0%, var(--color-urwis-blue-light) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, var(--color-urwis-red-light) 0px, transparent 50%);
-  background-attachment: fixed;
+  background-color: transparent; 
+  /* Jeśli chcesz gradient, musi być bardzo delikatny (rgba z niskim alpha), 
+     inaczej zasłoni wstążki. Na razie wyłączamy go dla testu: */
+  /* background-image: ... (wyłączone) */
 }
 
-/* Klasa dla ciemnych stron - nałóż ją na <main> w app/profil/page.tsx */
+/* Ciemny tryb może mieć tło, bo tam wstążki mogą wyglądać gorzej lub inaczej */
 .dark-base-bg {
-  background-color: #09090b; /* zinc-950 */
+  background-color: #09090b; 
+}
+
+.grainient-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }

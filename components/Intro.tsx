@@ -99,11 +99,11 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
             <motion.button
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 2, duration: 1 }}
+              transition={{ delay: 1, duration: 1 }}
               onClick={skipIntro}
-              className="absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-white/20 transition-all z-10000 cursor-pointer"
+              className="absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase tracking-widest text-[12px] hover:bg-white/20 transition-all z-10000 cursor-pointer"
             >
-              Przejdź do sklepu
+              Pomiń animację
             </motion.button>
           </motion.div>
         )}

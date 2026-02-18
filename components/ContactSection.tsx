@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { useForm, ValidationError } from '@formspree/react';
+import { useForm } from '@formspree/react';
 import { 
   Phone, 
   Mail, 
@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 import Particles from "@/components/Particles";
-import { RibbonsBg } from "@/components/Ribbons";
 
 export default function ContactSection() {
   const [state, handleSubmit] = useForm("mdalgzln");
@@ -76,10 +75,6 @@ export default function ContactSection() {
     <main className="relative min-h-screen w-full bg-transparent overflow-x-hidden">
       
       {/* --- TŁO --- */}
-      <div className="fixed inset-0 bg-white -z-30" />
-      <div className="fixed inset-0 pointer-events-none -z-20">
-        <RibbonsBg colors={["#bf2024", "#0055ff"]} />
-      </div>
       <div className="fixed inset-0 pointer-events-none -z-10">
         <Particles
           particleCount={60}
@@ -124,9 +119,10 @@ export default function ContactSection() {
                 transition={{ delay: index * 0.1 }}
                 className={info.gridClass}
               >
+                {/* ✅ ZMIANA: Wyraźniejsza ramka i cień na stałe */}
                 <MagicBento
                   glowColor={info.glowColor}
-                  className="h-full rounded-[2.5rem] bg-white/60 backdrop-blur-md border border-white/50 hover:shadow-2xl transition-all overflow-hidden"
+                  className="h-full rounded-[2.5rem] bg-white/70 backdrop-blur-xl border-2 border-white/80 shadow-lg hover:shadow-2xl transition-all overflow-hidden"
                 >
                   <a 
                     href={info.link} 
@@ -161,7 +157,7 @@ export default function ContactSection() {
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="bg-white/70 backdrop-blur-xl rounded-[3.5rem] p-8 md:p-12 border border-white shadow-2xl"
+              className="bg-white/70 backdrop-blur-xl rounded-[3.5rem] p-8 md:p-12 border-2 border-white shadow-2xl"
             >
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-12 h-12 bg-[#BF2024] rounded-2xl flex items-center justify-center text-white shadow-lg">
@@ -209,7 +205,7 @@ export default function ContactSection() {
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="bg-white/40 backdrop-blur-md rounded-[3.5rem] border border-white shadow-xl overflow-hidden min-h-[500px]"
+              className="bg-white/40 backdrop-blur-md rounded-[3.5rem] border-2 border-white shadow-xl overflow-hidden min-h-[500px]"
             >
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d8413.861345556805!2d20.950292!3d51.645135!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sSklep%20Urwis!5e1!3m2!1spl!2spl!4v1771091119479!5m2!1spl!2spl"
@@ -230,7 +226,6 @@ export default function ContactSection() {
   );
 }
 
-// Pomocniczy komponent pola formularza
 function InputField({ label, name, type, placeholder, required }: any) {
   return (
     <div>

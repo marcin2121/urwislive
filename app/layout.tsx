@@ -1,46 +1,49 @@
-'use client'
-
-import { usePathname } from 'next/navigation'
-import "./globals.css"
-import AppProviders from "@/components/providers/AppProviders"
-import Navbar from "@/components/ui/Navbar"
-import Footer from "@/components/ui/Footer"
-import SocialSidebar from "@/components/ui/SocialSidebar"
-import { Toaster } from 'sonner'
-import GamificationListener from "@/components/systems/GamificationListener"
-import { Inter, Fredoka } from "next/font/google"
+import type { Metadata } from "next";
+import { Inter, Fredoka } from "next/font/google";
+import "./globals.css";
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
+import { Toaster } from 'sonner';
+import { RibbonsBg } from '@/components/Ribbons';
+import OrphansFixer from "@/components/utils/OrphansFixer"; // Import automatu
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const fredoka = Fredoka({ subsets: ["latin"], variable: "--font-fredoka" });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  
-  // Sprawdzamy czy jesteśmy na mapie
-  const isMap = pathname === '/mapa'
+export const metadata: Metadata = {
+  title: "Sklep Urwis | Zabawki, Balony i Artykuły Szkolne Białobrzegi",
+  description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Prawdziwy sklep stacjonarny dla dzieci!",
+};
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
-      <body className="antialiased selection:bg-blue-500 selection:text-white overflow-x-hidden">
-        <AppProviders>
-          <div className="relative flex flex-col min-h-screen">
-            {/* Ukrywamy Navbar i Footer na mapie, aby odzyskać pełne 100vh */}
-            {!isMap && <Navbar />}
-            
-            <main className="flex-grow">
-              {children}
-            </main>
+      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
+        
+        {/* AUTOMATYCZNA NAPRAWA SPÓJNIKÓW */}
+        <OrphansFixer />
 
-            {!isMap && <Footer />}
-            
-            {/* Sidebar jest widoczny wszędzie poza stroną główną (opcjonalnie) */}
-            <SocialSidebar />
-          </div>
-          
-          <GamificationListener />
-          <Toaster position="bottom-right" richColors />
-        </AppProviders>
+       
+
+        {/* WARSTWA 1: SZKŁO (Musi być pod treścią, ale nad tłem) */}
+        <div 
+          className="fixed inset-0 z-[10] bg-white/40 backdrop-blur-[100px] pointer-events-none" 
+          aria-hidden="true" 
+        />
+
+        {/* WARSTWA 2: TREŚĆ (Góra kanapki) */}
+        <div className="relative z-[20] flex flex-col min-h-screen bg-transparent">
+          <Navbar />
+          <RibbonsBg />
+          <main className="flex-grow bg-transparent">
+            {children}
+          </main>
+
+          <Footer />
+        </div>
+
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
-  )
+  );
 }

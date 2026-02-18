@@ -1,68 +1,50 @@
-'use client'
+"use client";
 
-import { useRef } from 'react';
-import { useInView } from 'framer-motion';
-import UrwisIntro from '@/components/Intro';
-import Particles from "@/components/Particles";
-import { RibbonsBg } from "@/components/Ribbons";
-import HeroSection from '@/components/Hero';
-import PoznajUrwisa from '@/components/PoznajUrwisa';
-import AboutSection from '@/components/AboutSection';
-import PromoSection from '@/components/PromoSection';
-import OfertaGrid from '@/components/OfertaGrid';
-import KlubUrwisaSection from '@/components/KlubUrwisaSection';
-import LeceWKulkiSection from '@/components/LeceWKulkiSection';
-import CurrencyGuide from '@/components/CurrencyGuide';
-import PortalButton from '@/components/ui/PortalButton';
+import React from "react";
+import Hero from "@/components/Hero";
+import { AcademyPromo } from "@/components/AcademyPromo";
+import AboutSection from "@/components/AboutSection";
+import Particles from "@/components/Particles"; // Importujemy komponent
+import PoznajUrwisa from "@/components/PoznajUrwisa";
+import UrwisIntro from "@/components/Intro";
+import LoyaltySection from "@/components/LoyaltySection";
 
-export default function Home() {
-  const kulkiSectionRef = useRef(null);
-  const isKulkiInView = useInView(kulkiSectionRef, { margin: "-20% 0px -20% 0px" });
-
-  const urwisColors = ["#bf2024", "#0055ff"];
-  const leceWKulkiColors = ["#5eb1ff", "#ff8ca8"];
-  const currentColors = isKulkiInView ? leceWKulkiColors : urwisColors;
-
+export default function StoreFrontPage() {
   return (
-    <UrwisIntro>
-      <main className="relative min-h-screen w-full bg-transparent">
-        
-        {/* WARSTWA -30: Biała baza */}
-        <div className="fixed inset-0 bg-white -z-30" />
+   <UrwisIntro>
+    <div className="min-h-screen bg-transparent text-zinc-900">
+      {/* 🟢 TŁO: Particles (Globalne dla strony głównej) */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Particles
+          particleCount={200}
+          particleColors={["#BF2024", "#0055ff"]}
+          alphaParticles
+          particleBaseSize={150}
+          speed={0.05}
+          sizeRandomness={0.7}
+        />
+  
+      </div>
+      {/* Sekcja powitalna */}
+      <Hero />
+      <LoyaltySection/>
+    <PoznajUrwisa />
+      <div className="container mx-auto px-4 py-12">
+        {/* Banner kierujący do nowej domeny akademiaurwisa.pl */}
+        <AcademyPromo />
 
-        {/* WARSTWA -20: Ribbons (Tło wstążek) */}
-        <div className="fixed inset-0 pointer-events-none -z-20">
-          <RibbonsBg 
-            key={isKulkiInView ? 'ribbons-kulki' : 'ribbons-urwis'}
-            colors={currentColors}
-            // ✅ Dodaj te klasy, jeśli komponent je przyjmuje:
-          />
-        </div>
-
-        {/* WARSTWA -10: Particles (Latające kulki) */}
-        <div className="fixed inset-0 pointer-events-none -z-10">
-          <Particles
-            key={isKulkiInView ? 'particles-kulki' : 'particles-urwis'}
-            particleCount={80}
-            particleColors={currentColors}
-            alphaParticles
-            particleBaseSize={150}
-            speed={0.1}
-          />
-        </div>
-
-        {/* WARSTWA 0: Treść */}
-        <div className="relative z-0 w-full">
-
-          <HeroSection />
-          <PoznajUrwisa />
-          <PromoSection />
-          <OfertaGrid />
-          <KlubUrwisaSection />
-          <AboutSection />
-</div>
-
-      </main>
+        {/* Sekcja informacyjna o sali zabaw i sklepie */}
+        <section id="oferta" className="my-20">
+          <h2 className="text-4xl font-black text-center mb-4 tracking-tighter italic">
+            ŚWIAT PEŁEN PRZYGÓD
+          </h2>
+          <p className="text-center text-zinc-500 mb-12 max-w-2xl mx-auto">
+            Zapraszamy do naszej sali zabaw w Białobrzegach. Sprawdź co przygotowaliśmy dla Twojego Urwisa!
+          </p>
+        </section>
+        <AboutSection />
+      </div>
+    </div>
     </UrwisIntro>
   );
 }

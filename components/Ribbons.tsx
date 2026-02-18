@@ -1,7 +1,8 @@
- 'use client'
+'use client'
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { Renderer, Transform, Vec3, Color, Polyline } from 'ogl';
+import { usePathname } from 'next/navigation';
 
 interface RibbonsProps {
   colors?: string[];
@@ -19,7 +20,7 @@ interface RibbonsProps {
 }
 
 const Ribbons: React.FC<RibbonsProps> = ({
-  colors = ['#ff9346', '#7cff67', '#ffee51', '#5227FF'],
+  colors = ['#BF2024', '#0055ff'],
   baseSpring = 0.03,
   baseFriction = 0.9,
   baseThickness = 30,
@@ -38,13 +39,9 @@ const Ribbons: React.FC<RibbonsProps> = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer({ dpr: window.devicePixelRatio || 2, alpha: true });
+    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio, 2), alpha: true });
     const gl = renderer.gl;
-    if (Array.isArray(backgroundColor) && backgroundColor.length === 4) {
-      gl.clearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
-    } else {
-      gl.clearColor(0, 0, 0, 0);
-    }
+    gl.clearColor(0, 0, 0, 0);
 
     gl.canvas.style.position = 'absolute';
     gl.canvas.style.top = '0';
@@ -54,33 +51,22 @@ const Ribbons: React.FC<RibbonsProps> = ({
     container.appendChild(gl.canvas);
 
     const scene = new Transform();
-    const lines: {
-      spring: number;
-      friction: number;
-      mouseVelocity: Vec3;
-      mouseOffset: Vec3;
-      points: Vec3[];
-      polyline: Polyline;
-    }[] = [];
+    const lines: any[] = [];
 
     const vertex = `
       precision highp float;
-      
       attribute vec3 position;
       attribute vec3 next;
       attribute vec3 prev;
       attribute vec2 uv;
       attribute float side;
-      
       uniform vec2 uResolution;
       uniform float uDPR;
       uniform float uThickness;
       uniform float uTime;
       uniform float uEnableShaderEffect;
       uniform float uEffectAmplitude;
-      
       varying vec2 vUV;
-      
       vec4 getPosition() {
           vec4 current = vec4(position, 1.0);
           vec2 aspect = vec2(uResolution.x / uResolution.y, 1.0);
@@ -101,7 +87,6 @@ const Ribbons: React.FC<RibbonsProps> = ({
           }
           return current;
       }
-      
       void main() {
           vUV = uv;
           gl_Position = getPosition();
@@ -125,9 +110,7 @@ const Ribbons: React.FC<RibbonsProps> = ({
 
     function resize() {
       if (!container) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      renderer.setSize(width, height);
+      renderer.setSize(window.innerWidth, window.innerHeight);
       lines.forEach(line => line.polyline.resize());
     }
     window.addEventListener('resize', resize);
@@ -136,30 +119,13 @@ const Ribbons: React.FC<RibbonsProps> = ({
     colors.forEach((color, index) => {
       const spring = baseSpring + (Math.random() - 0.5) * 0.05;
       const friction = baseFriction + (Math.random() - 0.5) * 0.05;
-      const thickness = baseThickness + (Math.random() - 0.5) * 3;
-      const mouseOffset = new Vec3(
-        (index - center) * offsetFactor + (Math.random() - 0.5) * 0.01,
-        (Math.random() - 0.5) * 0.1,
-        0
-      );
+      const thickness = baseThickness + (Math.random() - 0.5) * 5;
+      const mouseOffset = new Vec3((index - center) * offsetFactor, (Math.random() - 0.5) * 0.1, 0);
 
-      const line = {
-        spring,
-        friction,
-        mouseVelocity: new Vec3(),
-        mouseOffset,
-        points: [] as Vec3[],
-        polyline: {} as Polyline
-      };
-
-      const count = pointCount;
       const points: Vec3[] = [];
-      for (let i = 0; i < count; i++) {
-        points.push(new Vec3());
-      }
-      line.points = points;
+      for (let i = 0; i < pointCount; i++) points.push(new Vec3());
 
-      line.polyline = new Polyline(gl, {
+      const polyline = new Polyline(gl, {
         points,
         vertex,
         fragment,
@@ -173,37 +139,32 @@ const Ribbons: React.FC<RibbonsProps> = ({
           uEnableFade: { value: enableFade ? 1.0 : 0.0 }
         }
       });
-      line.polyline.mesh.setParent(scene);
-      lines.push(line);
+      polyline.mesh.setParent(scene);
+      lines.push({ spring, friction, mouseVelocity: new Vec3(), mouseOffset, points, polyline });
     });
 
     resize();
 
+    // --- FIX: ŚLEDZENIE MYSZY WZGLĘDEM OKNA (VIEWPORT) ---
     const mouse = new Vec3();
     function updateMouse(e: MouseEvent | TouchEvent) {
       let x: number, y: number;
-      if (!container) return;
-      const rect = container.getBoundingClientRect();
       if ('changedTouches' in e && e.changedTouches.length) {
-        x = e.changedTouches[0].clientX - rect.left;
-        y = e.changedTouches[0].clientY - rect.top;
+        x = e.changedTouches[0].clientX;
+        y = e.changedTouches[0].clientY;
       } else if (e instanceof MouseEvent) {
-        x = e.clientX - rect.left;
-        y = e.clientY - rect.top;
-      } else {
-        x = 0;
-        y = 0;
-      }
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      mouse.set((x / width) * 2 - 1, (y / height) * -2 + 1, 0);
-    }
-    window.addEventListener('mousemove', updateMouse);
-    window.addEventListener('touchstart', updateMouse);
-    window.addEventListener('touchmove', updateMouse);
-    
+        x = e.clientX;
+        y = e.clientY;
+      } else return;
 
-    const tmp = new Vec3();
+      // Obliczamy pozycję względem całego okna, co ignoruje scroll strony
+      mouse.set((x / window.innerWidth) * 2 - 1, (y / window.innerHeight) * -2 + 1, 0);
+    }
+    
+    window.addEventListener('mousemove', updateMouse);
+    window.addEventListener('touchstart', updateMouse, { passive: true });
+    window.addEventListener('touchmove', updateMouse, { passive: true });
+
     let frameId: number;
     let lastTime = performance.now();
     function update() {
@@ -213,18 +174,12 @@ const Ribbons: React.FC<RibbonsProps> = ({
       lastTime = currentTime;
 
       lines.forEach(line => {
-        tmp.copy(mouse).add(line.mouseOffset).sub(line.points[0]).multiply(line.spring);
+        const tmp = new Vec3().copy(mouse).add(line.mouseOffset).sub(line.points[0]).multiply(line.spring);
         line.mouseVelocity.add(tmp).multiply(line.friction);
         line.points[0].add(line.mouseVelocity);
 
         for (let i = 1; i < line.points.length; i++) {
-          if (isFinite(maxAge) && maxAge > 0) {
-            const segmentDelay = maxAge / (line.points.length - 1);
-            const alpha = Math.min(1, (dt * speedMultiplier) / segmentDelay);
-            line.points[i].lerp(line.points[i - 1], alpha);
-          } else {
-            line.points[i].lerp(line.points[i - 1], 0.9);
-          }
+          line.points[i].lerp(line.points[i - 1], 0.9);
         }
         if (line.polyline.mesh.program.uniforms.uTime) {
           line.polyline.mesh.program.uniforms.uTime.value = currentTime * 0.001;
@@ -246,44 +201,29 @@ const Ribbons: React.FC<RibbonsProps> = ({
         container.removeChild(gl.canvas);
       }
     };
-  }, [
-    colors,
-    baseSpring,
-    baseFriction,
-    baseThickness,
-    offsetFactor,
-    maxAge,
-    pointCount,
-    speedMultiplier,
-    enableFade,
-    enableShaderEffect,
-    effectAmplitude,
-    backgroundColor
-  ]);
+  }, [colors, baseSpring, baseFriction, baseThickness, offsetFactor, maxAge, pointCount, speedMultiplier, enableFade, enableShaderEffect, effectAmplitude]);
 
-  return <div ref={containerRef} className="relative w-full h-full" />;
+  return <div ref={containerRef} className="fixed inset-0 w-full h-full pointer-events-none" />;
 };
 
-export default Ribbons;
+// --- WRAPPER Z DYNAMICZNYMI KOLORAMI ---
+export function RibbonsBg({ colors }: RibbonsProps) {
+  const pathname = usePathname();
 
-interface RibbonsBgProps {
-  colors?: string[];
-}
+  const activeColors = useMemo(() => {
+    // Pastelowe dla Sali Zabaw
+    if (pathname?.includes('salazabaw')) {
+      return ['#ffc2d1', '#a2d2ff']; 
+    }
+    // Standardowe dla Urwisa
+    return ['#BF2024', '#0055ff'];
+  }, [pathname]);
 
-export function RibbonsBg({ colors = ['#bf2024', '#0055ff'] }: RibbonsBgProps) {
   return (
-    <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        position: 'relative',
-        minHeight: '1080px',
-        zIndex: 1000,
-        pointerEvents: 'none',
-      }}
-    >
+    <div className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-white">
       <Ribbons
-        colors={colors}
+        key={pathname} // Resetuje WebGL przy zmianie strony (ważne!)
+        colors={activeColors}
         baseSpring={0.05}
         baseFriction={0.9}
         baseThickness={30}
@@ -294,7 +234,10 @@ export function RibbonsBg({ colors = ['#bf2024', '#0055ff'] }: RibbonsBgProps) {
         enableFade={false}
         enableShaderEffect={false}
         effectAmplitude={5.5}
+
       />
     </div>
   );
 }
+
+export default Ribbons;
