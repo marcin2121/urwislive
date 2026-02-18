@@ -16,7 +16,6 @@ import {
 import MagicBento from '@/components/ui/MagicBento';
 import Particles from "@/components/Particles";
 import { RibbonsBg } from "@/components/Ribbons";
-import Footer from '@/components/ui/Footer';
 
 export default function ContactSection() {
   const [state, handleSubmit] = useForm("mdalgzln");
@@ -226,8 +225,6 @@ export default function ContactSection() {
 
           </div>
         </section>
-
-        <Footer />
       </div>
     </main>
   );

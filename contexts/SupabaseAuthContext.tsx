@@ -9,12 +9,15 @@ export interface Profile {
   id: string;
   username: string;
   avatar_url?: string;
-  role?: 'user' | 'admin'; // Ścisła definicja ról
+  role?: 'user' | 'admin';
   points?: number; 
   exp?: number;     
   level?: number;   
   urwiski?: number; 
   kuleczki?: number;
+  theme_color?: string;
+  bio?: string;
+  status_tag?: string;
 }
 
 interface AuthContextType {
@@ -30,12 +33,9 @@ interface AuthContextType {
 const SupabaseAuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // --- KONFIGURACJA HARDCORE (WPISANA NA SZTYWNO) ---
   const [supabase] = useState(() => {
     const URL = "https://cfvxyqcsmskmnnoeykuo.supabase.co"
     const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmdnh5cWNzbXNrbW5ub2V5a3VvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMDUwMTEsImV4cCI6MjA4NjY4MTAxMX0.Er8aRxeUgDcGPum1Ee_RZs1C04qkD5BFBBdc5za-mqA"
-    
-    console.log("🚀 SUPABASE INIT: Łączę z", URL)
     return createBrowserClient(URL, KEY)
   })
 
@@ -49,35 +49,35 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
     let mounted = true
 
     const initializeAuth = async () => {
-      console.log("⏳ Inicjalizacja Auth...")
       try {
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession()
 
-        if (sessionError) console.error("❌ Błąd sesji:", sessionError)
+        if (sessionError) throw sessionError
 
         if (mounted) {
           setSession(initialSession)
           setUser(initialSession?.user ?? null)
-          console.log("👤 Sesja:", initialSession ? "Zalogowany" : "Brak sesji")
 
-          if (initialSession) {
-            const { data, error: profileError } = await supabase
+          if (initialSession?.user) {
+            // maybeSingle() nie rzuca błędu, gdy profilu jeszcze nie ma (np. w trakcie rejestracji)
+            const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', initialSession.user.id)
-              .single()
+              .maybeSingle()
             
-            if (profileError) console.error("❌ Błąd profilu:", profileError)
-            if (data && !profileError) {
-              console.log("✅ Profil pobrany:", data.username)
-              setProfile(data as Profile)
+            if (!profileError && profileData && mounted) {
+              setProfile(profileData as Profile)
             }
           }
         }
-      } catch (error) {
-        console.error('❌ Krytyczny błąd initializeAuth:', error)
+      } catch (error: any) {
+        // WYCISZENIE BŁĘDU PRZERWANIA: Next.js 15 / React 18+ w Strict Mode przerywa pierwsze żądanie
+        if (error.name === 'AbortError' || error.message?.includes('signal is aborted')) {
+          return; 
+        }
+        console.error('❌ Błąd inicjalizacji Auth:', error)
       } finally {
-        console.log("🏁 Koniec ładowania (loading = false)")
         if (mounted) setLoading(false)
       }
     }
@@ -85,19 +85,24 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
     initializeAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("🔄 Zmiana stanu Auth:", event)
       if (!mounted) return
 
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
 
       if (currentSession) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', currentSession.user.id).single()
-        setProfile(data as Profile)
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .maybeSingle()
+        
+        if (mounted) setProfile(data as Profile)
       } else {
-        setProfile(null)
+        if (mounted) setProfile(null)
       }
-      setLoading(false)
+      
+      if (mounted) setLoading(false)
     })
 
     return () => {
@@ -107,19 +112,31 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
   }, [supabase])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setProfile(null)
-    setSession(null)
-    setUser(null)
-    router.refresh()
-    router.push('/')
+    try {
+      setLoading(true)
+      await supabase.auth.signOut()
+      setProfile(null)
+      setSession(null)
+      setUser(null)
+      router.refresh()
+      router.push('/')
+    } catch (error) {
+      console.error('Błąd wylogowania:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!session?.user) return
     try {
-      const { error } = await supabase.from('profiles').update(updates).eq('id', session.user.id)
+      const { error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', session.user.id)
+      
       if (error) throw error
+      
       setProfile((prev) => (prev ? { ...prev, ...updates } : null))
       router.refresh()
     } catch (error) {

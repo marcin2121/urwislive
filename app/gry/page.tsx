@@ -8,7 +8,6 @@ import {
 import Link from 'next/link'
 import Particles from "@/components/Particles"
 import { RibbonsBg } from "@/components/Ribbons"
-import Footer from '@/components/ui/Footer'
 
 export default function GameCenterPage() {
   const categories = [
@@ -163,9 +162,6 @@ export default function GameCenterPage() {
             ))}
           </div>
         </section>
-
-        {/* ✅ Stopka w wersji ciemnej */}
-        <Footer variant="dark" />
       </div>
     </main>
   );

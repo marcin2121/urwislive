@@ -9,20 +9,19 @@ export default function GamificationListener() {
   const { profile } = useSupabaseAuth()
 
   // Refy do śledzenia poprzedniego stanu
-  // PrevLevel może być null (przed inicjalizacją) lub number
-  const prevLevelRef = useRef<number | null>(null)
+  const prevLevelRef = useRef<number>(0) // Inicjalizujemy zerem
   const initializedRef = useRef(false)
 
   // 1. Wykrywanie Level Up
   useEffect(() => {
-    // SECURITY CHECK: Jeśli profil nie istnieje lub level jest undefined, przerywamy
-    if (!profile || typeof profile.level !== 'number') return
+    // SECURITY CHECK: Jeśli profil nie istnieje, przerywamy
+    if (!profile) return
 
-    // Przypisujemy do zmiennej, aby TS wiedział, że to na pewno number
-    const currentLevel = profile.level
+    // FIX TS: Wymuszamy typ number. Jeśli level jest undefined/null, traktujemy jako 0.
+    const currentLevel = (profile.level ?? 0)
 
     // Jeśli to pierwsze załadowanie, tylko zapisz poziom
-    if (prevLevelRef.current === null) {
+    if (!initializedRef.current) {
       prevLevelRef.current = currentLevel
       initializedRef.current = true
 
@@ -31,14 +30,14 @@ export default function GamificationListener() {
       return
     }
 
-    // Sprawdź czy poziom wzrósł (porównujemy number do number)
+    // Sprawdź czy poziom wzrósł (teraz porównujemy zawsze number do number)
     if (currentLevel > prevLevelRef.current) {
       // LEVEL UP!
       triggerLevelUpEffect(currentLevel)
       prevLevelRef.current = currentLevel
     }
 
-  }, [profile]) 
+  }, [profile])
 
   // --- LOGIKA POMOCNICZA ---
 
@@ -46,10 +45,12 @@ export default function GamificationListener() {
     // 1. Toast
     urwisToast.levelUp(level)
 
-    // 2. Dźwięk (opcjonalnie)
-    const audio = new Audio('/sounds/win.mp3')
-    audio.volume = 0.5
-    audio.play().catch(() => { })
+    // 2. Dźwięk
+    if (typeof window !== 'undefined') {
+        const audio = new Audio('/sounds/win.mp3')
+        audio.volume = 0.5
+        audio.play().catch(() => { })
+    }
 
     // 3. Wielkie confetti
     const duration = 3000
@@ -61,7 +62,7 @@ export default function GamificationListener() {
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: ['#FFD700', '#FFA500'] 
+        colors: ['#FFD700', '#FFA500']
       })
       confetti({
         particleCount: 5,
@@ -78,7 +79,7 @@ export default function GamificationListener() {
   }
 
   const checkDailyRewards = (userProfile: any) => {
-    if (!userProfile.last_daily_reward) {
+    if (!userProfile?.last_daily_reward) { // Optional chaining dla bezpieczeństwa
       urwisToast.dailyReward()
       return
     }
@@ -96,5 +97,5 @@ export default function GamificationListener() {
     }
   }
 
-  return null 
+  return null;
 }

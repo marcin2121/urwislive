@@ -5,17 +5,12 @@
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   
-  /* --- NOWA PALETA SUPERBOHATERA --- */
-  /* Czerwony - główny kolor akcji */
-  --color-urwis-red: #dc2626;       /* tailwind red-600 */
-  --color-urwis-red-light: #fee2e2; /* tailwind red-100 (tła) */
-  
-  /* Niebieski - kolor uzupełniający/tła */
-  --color-urwis-blue: #2563eb;      /* tailwind blue-600 */
-  --color-urwis-blue-light: #dbeafe;/* tailwind blue-100 (tła) */
-  
-  /* Żółty/Złoty - akcenty, nagrody, moc */
-  --color-urwis-yellow: #fbbf24;    /* tailwind amber-400 */
+  /* --- PALETA SUPERBOHATERA --- */
+  --color-urwis-red: #dc2626;
+  --color-urwis-red-light: #fee2e2;
+  --color-urwis-blue: #2563eb;
+  --color-urwis-blue-light: #dbeafe;
+  --color-urwis-yellow: #fbbf24;
 }
 
 /* Domyślne style */
@@ -25,12 +20,20 @@ h1, h2, h3, h4, h5, h6 {
 
 body {
   font-family: var(--font-body);
-  background-color: #f8fafc; /* Slate-50 - czysta baza */
-  
-  /* Nowe tło: Subtelny gradient czerwono-niebieski */
+  /* Usunięto stąd tło, aby nie prześwitywało na ciemnych stronach */
+  color: #0f172a; 
+}
+
+/* Klasa dla jasnych stron - nałóż ją na <main> w app/page.tsx */
+.light-superhero-bg {
+  background-color: #f8fafc;
   background-image: 
     radial-gradient(at 0% 0%, var(--color-urwis-blue-light) 0px, transparent 50%),
     radial-gradient(at 100% 100%, var(--color-urwis-red-light) 0px, transparent 50%);
   background-attachment: fixed;
-  color: #0f172a; /* Slate-900 */
+}
+
+/* Klasa dla ciemnych stron - nałóż ją na <main> w app/profil/page.tsx */
+.dark-base-bg {
+  background-color: #09090b; /* zinc-950 */
 }

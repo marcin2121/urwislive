@@ -16,7 +16,6 @@ import {
 import MagicBento from '@/components/ui/MagicBento'
 import Particles from "@/components/Particles"
 import { RibbonsBg } from "@/components/Ribbons"
-import Footer from '@/components/ui/Footer'
 
 // --- PRZYKŁADOWE NAGRODY (Możesz je przenieść do tabeli 'rewards' w Supabase) ---
 const REWARDS = [
@@ -180,7 +179,6 @@ export default function RewardsPage() {
 
         </div>
       </div>
-      <Footer variant="dark" />
     </main>
   )
 }

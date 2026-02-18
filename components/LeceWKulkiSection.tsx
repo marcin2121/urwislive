@@ -117,7 +117,7 @@ export default function LeceWKulkiSection() {
                   <span className="text-xs font-black uppercase tracking-[0.4em] text-[#bf2024]/60">Urwis Quest</span>
                   <h3 className="text-3xl md:text-4xl font-black text-gray-900 italic tracking-tight uppercase">ZNAJDŹ TAJNY KOD</h3>
                   <p className="text-zinc-700 text-lg font-bold leading-snug">
-                    Na stronie <a href="https://lecewkulki.eu/" target="_blank" className="text-[#bf2024] font-black underline decoration-[#bf2024]/20 hover:decoration-[#bf2024] transition-all">Lecę w Kulki</a> ukryliśmy hasło. Zgarnij <span className="text-red-600 font-black">+100 KULECZEK</span>.
+                    Na stronie <a href="https://lecewkulki.eu/" target="_blank" className="text-[#0055ff] font-black underline decoration-[#bf2024]/20 hover:decoration-[#bf2024] transition-all">Lecę w Kulki</a> ukryliśmy hasło. Znajdź je i wpisz na swoim <a href="https://sklep-urwis/profil/zrealizuj" target="_blank" className="text-[#0055ff] font-black underline decoration-[#bf2024]/20 hover:decoration-[#bf2024] transition-all">profilu </a>aby zgarnąć<span className= "font-black">+100 KULECZEK</span>.
                   </p>
                 </div>
 
@@ -151,7 +151,7 @@ export default function LeceWKulkiSection() {
             <FeatureItem 
               icon={<Cake className="text-[#ff8ca8]" />} 
               title="Epickie Urodziny" 
-              desc="Tematyczne salki i animatorzy, którzy sprawią, że ten dzień będzie misją życia." 
+              desc="Tematyczny wysstrój i animatorzy, którzy sprawią, że ten dzień będzie misją życia." 
             />
             <FeatureItem 
               icon={<ShieldCheck className="text-green-500" />} 

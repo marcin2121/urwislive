@@ -18,7 +18,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Particles from "@/components/Particles"
 import { RibbonsBg } from "@/components/Ribbons"
-import Footer from '@/components/ui/Footer'
 
 export default function AboutPage() {
   const yearsOfExperience = new Date().getFullYear() - 2007;
@@ -188,8 +187,6 @@ export default function AboutPage() {
             </div>
           </motion.div>
         </section>
-
-        <Footer />
       </div>
     </main>
   )

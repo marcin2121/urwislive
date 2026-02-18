@@ -12,8 +12,8 @@ import PromoSection from '@/components/PromoSection';
 import OfertaGrid from '@/components/OfertaGrid';
 import KlubUrwisaSection from '@/components/KlubUrwisaSection';
 import LeceWKulkiSection from '@/components/LeceWKulkiSection';
-import Footer from '@/components/ui/Footer';
 import CurrencyGuide from '@/components/CurrencyGuide';
+import PortalButton from '@/components/ui/PortalButton';
 
 export default function Home() {
   const kulkiSectionRef = useRef(null);
@@ -53,15 +53,13 @@ export default function Home() {
 
         {/* WARSTWA 0: Treść */}
         <div className="relative z-0 w-full">
+
           <HeroSection />
           <PoznajUrwisa />
           <PromoSection />
           <OfertaGrid />
           <KlubUrwisaSection />
           <AboutSection />
-
-  {/* Stopka teraz styka się idealnie z LeceWKulkiSection */}
-  <Footer />
 </div>
 
       </main>
