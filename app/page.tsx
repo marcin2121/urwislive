@@ -28,21 +28,12 @@ export default function StoreFrontPage() {
       {/* Sekcja powitalna */}
       <Hero />
       <LoyaltySection/>
-    <PoznajUrwisa />
       <div className="container mx-auto px-4 py-12">
         {/* Banner kierujący do nowej domeny akademiaurwisa.pl */}
         <AcademyPromo />
-
-        {/* Sekcja informacyjna o sali zabaw i sklepie */}
-        <section id="oferta" className="my-20">
-          <h2 className="text-4xl font-black text-center mb-4 tracking-tighter italic">
-            ŚWIAT PEŁEN PRZYGÓD
-          </h2>
-          <p className="text-center text-zinc-500 mb-12 max-w-2xl mx-auto">
-            Zapraszamy do naszej sali zabaw w Białobrzegach. Sprawdź co przygotowaliśmy dla Twojego Urwisa!
-          </p>
-        </section>
+  <PoznajUrwisa />
         <AboutSection />
+        
       </div>
     </div>
     </UrwisIntro>

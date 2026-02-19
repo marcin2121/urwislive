@@ -23,8 +23,8 @@ export default function ContactSection() {
     {
       icon: <Phone className="text-blue-500" size={32} />,
       title: 'Zadzwoń do nas',
-      value: '604 208 193',
-      link: 'tel:+48604208193',
+      value: '604 208 183',
+      link: 'tel:+48604208183',
       glowColor: '59, 130, 246',
       gridClass: 'md:col-span-1 md:row-span-1'
     },

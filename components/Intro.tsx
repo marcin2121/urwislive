@@ -6,11 +6,29 @@ import LoadingScreen from '@/components/LoadingScreen';
 export default function UrwisIntro({ children }: { children: React.ReactNode }) {
   const [shouldShowIntro, setShouldShowIntro] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
-  // Zredukowane stany: tylko loading -> video -> done
   const [step, setStep] = useState<'loading' | 'video' | 'done'>('loading');
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Obsługa blokowania scrolla podczas intro
+  // 1. SILNIEJSZA OBSŁUGA AUTOPLAY NA MOBILE
+  useEffect(() => {
+    if (step === 'video' && videoRef.current) {
+      const playVideo = async () => {
+        try {
+          // Force'ujemy wyciszenie (warunek konieczny dla autoplay na mobile)
+          videoRef.current!.muted = true;
+          // Próbujemy odpalić wideo
+          await videoRef.current!.play();
+        } catch (error) {
+          console.error("Autoplay failed, user interaction might be needed or power save mode is on:", error);
+          // Opcjonalnie: jeśli wideo nie ruszy w ciągu 2 sekund, skipujemy intro
+          // żeby użytkownik nie patrzył na czarny ekran
+          // setTimeout(finishIntro, 2000); 
+        }
+      };
+      playVideo();
+    }
+  }, [step]);
+
   useEffect(() => {
     if (shouldShowIntro && step !== 'done') {
       document.body.style.overflow = 'hidden';
@@ -19,14 +37,12 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
       document.body.style.overflow = 'unset';
       document.body.style.height = 'unset';
     }
-    // Cleanup przy odmontowaniu
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.height = 'unset';
     };
   }, [shouldShowIntro, step]);
 
-  // Sprawdzenie sesji (czy intro już było grane)
   useEffect(() => {
     const introShown = sessionStorage.getItem('urwis_intro_shown');
     if (!introShown) {
@@ -37,7 +53,6 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  // Funkcja kończąca intro i zapisująca stan
   const finishIntro = () => {
     setStep('done');
     sessionStorage.setItem('urwis_intro_shown', 'true');
@@ -53,13 +68,11 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     finishIntro();
   };
 
-  // Jeśli intro nie ma być grane, zwracamy od razu dzieci (stronę)
   if (!shouldShowIntro) return <>{children}</>;
 
   return (
     <>
       <AnimatePresence mode="wait">
-        {/* KROK 1: Ładowanie zasobów */}
         {step === 'loading' && (
           <LoadingScreen key="loading" onComplete={() => {
             setLoadingComplete(true);
@@ -67,13 +80,11 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
           }} />
         )}
 
-        {/* KROK 2: Wideo na pełen ekran */}
         {step === 'video' && (
           <motion.div
             key="video-step"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            // EFEKT WYJŚCIA: Wideo powiększa się i rozmywa, odsłaniając stronę
             exit={{ 
               opacity: 0, 
               scale: 1.1, 
@@ -87,6 +98,8 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
               autoPlay
               muted
               playsInline
+              // Dodajemy dodatkowe atrybuty dla iOS
+              webkit-playsinline="true"
               preload="auto"
               onEnded={handleVideoEnd}
               className="absolute inset-0 w-full h-full object-cover"
@@ -95,13 +108,12 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
               <source src="/urwisintro.mp4" type="video/mp4" />
             </video>
             
-            {/* Przycisk Pomiń */}
             <motion.button
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1, duration: 1 }}
               onClick={skipIntro}
-              className="absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase tracking-widest text-[12px] hover:bg-white/20 transition-all z-10000 cursor-pointer"
+              className="absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase tracking-widest text-[12px] hover:bg-white/20 transition-all z-[10000] cursor-pointer"
             >
               Pomiń animację
             </motion.button>
@@ -109,17 +121,13 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
         )}
       </AnimatePresence>
 
-      {/* KROK 3: Główna zawartość (Hero.tsx i reszta) */}
       <motion.main
         animate={{ 
-          // Strona jest widoczna, ale gdy wideo gra, jest schowana pod spodem
           opacity: step === 'done' ? 1 : 0,
-          // Efekt delikatnego wjazdu strony (zoom out)
           scale: step === 'done' ? 1 : 0.95,
         }}
         transition={{ duration: 1, ease: "circOut" }}
         style={{
-            // Zapobiega interakcji ze stroną, gdy wideo gra
             pointerEvents: step === 'done' ? 'auto' : 'none' 
         }}
       >

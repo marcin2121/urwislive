@@ -1,14 +1,23 @@
 'use client'
+
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import ModelViewer from '@/components/ModelViewer';
-import { HeartHandshake, Zap, Palette, ChevronRight, Star, Sparkles } from 'lucide-react';
+import { HeartHandshake, Zap, Palette, ChevronRight, Sparkles } from 'lucide-react';
+
+// DYNAMICZNY IMPORT - ModelViewer (i cały silnik 3D) NIE ładuje się na starcie strony!
+const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { 
+  ssr: false 
+});
 
 export default function PoznajUrwisa() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // NOWY STAN: Kontroluje, czy przeglądarka ma zacząć pobierać pliki 3D
+  const [startLoadingModel, setStartLoadingModel] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -51,18 +60,6 @@ export default function PoznajUrwisa() {
       ref={containerRef}
       className="relative min-h-screen py-24 lg:py-32 overflow-hidden bg-transparent"
     >
-      {/* --- DEKORACYJNE POŚWIATY --- *
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
-        <motion.div 
-          style={{ y }} 
-          className="absolute -top-[10%] -left-[10%] w-[600px] h-[600px] bg-[#BF2024] rounded-full blur-[150px]"
-        />
-        <motion.div 
-          style={{ y: useTransform(scrollYProgress, [0, 1], [-150, 150]) }} 
-          className="absolute bottom-[10%] -right-[10%] w-[700px] h-[700px] bg-[#0055ff] rounded-full blur-[180px]"
-        />
-      </div> */}
-
       <div className="container mx-auto px-6 relative z-10">
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           
@@ -72,6 +69,7 @@ export default function PoznajUrwisa() {
               <motion.span 
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
                 className="inline-flex items-center gap-2 px-6 py-2 bg-white/40 backdrop-blur-md text-zinc-500 rounded-full text-[12px] font-black uppercase tracking-[0.3em] "
               >
                 <Sparkles size={14} className="text-[#BF2024]" /> Poznaj naszą maskotkę
@@ -129,28 +127,34 @@ export default function PoznajUrwisa() {
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute w-[320px] h-[320px] md:w-[500px] md:h-[500px] border-2 border-dashed border-[#BF2024]/10 rounded-full" />
               </div>
 
-              {/* 3. Model 3D - KLUCZOWA ZMIANA TUTAJ: pointer-events-auto na komputerze */}
-              <div className={`relative z-10 w-full h-full flex items-center justify-center ${isMobile ? 'pointer-events-none' : 'pointer-events-auto cursor-grab active:cursor-grabbing'}`}>
-                <ModelViewer 
-                  url="/urwis.glb"
-                  width={isMobile ? 500 : 900} 
-                  height={isMobile ? 500 : 900}
-                  defaultZoom={isMobile ? 1.4 : 2}
-                  defaultRotationX={-85}
-                  defaultRotationY={10}
-                  fadeIn={true}
-                  onModelLoaded={() => setModelLoaded(true)}
-                  autoRotate={true}
-                  autoRotateSpeed={0.3}
-                  enableManualZoom={false}                
-                />
-              </div>
+              {/* 3. Model 3D - Sprytne ładowanie wyprzedzające (1000px przed pojawieniem się) */}
+              <motion.div 
+                onViewportEnter={() => setStartLoadingModel(true)}
+                viewport={{ margin: "1000px", once: true }}
+                className={`relative z-10 w-full h-full flex items-center justify-center ${isMobile ? 'pointer-events-none' : 'pointer-events-auto cursor-grab active:cursor-grabbing'}`}
+              >
+                {startLoadingModel && (
+                  <ModelViewer 
+                    url="/urwis.glb"
+                    width={isMobile ? 500 : 900} 
+                    height={isMobile ? 500 : 900}
+                    defaultZoom={isMobile ? 1.4 : 2}
+                    defaultRotationX={-85}
+                    defaultRotationY={10}
+                    fadeIn={true}
+                    onModelLoaded={() => setModelLoaded(true)}
+                    autoRotate={true}
+                    autoRotateSpeed={0.3}
+                    enableManualZoom={false}                
+                  />
+                )}
+              </motion.div>
 
-              {/* 4. Loader */}
-              {!modelLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center z-30">
+              {/* 4. Loader (Pokaże się tylko gdy zaczniemy pobierać model, a on jeszcze się nie załaduje) */}
+              {startLoadingModel && !modelLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
                   <div className="bg-white/40 backdrop-blur-2xl px-8 py-4 rounded-3xl border border-white/50 shadow-2xl">
-                     <span className="text-sm font-black italic uppercase">Wołam Urwisa...</span>
+                     <span className="text-sm font-black italic uppercase animate-pulse">Wołam Urwisa...</span>
                   </div>
                 </div>
               )}

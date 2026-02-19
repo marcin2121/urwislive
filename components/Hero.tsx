@@ -48,48 +48,41 @@ export default function HeroSection() {
         </motion.div>
       ))}
 
+      {/* ZMIANA: opacity jest nadal animowane przy scrollowaniu (useTransform),
+        ale bazowy kontener NIE MA 'opacity: 0' na start. 
+      */}
       <motion.div style={{ y, opacity }} className="relative z-10 container mx-auto px-6 text-center">
         
-     {/* NAGŁÓWEK W JEDNEJ LINII - Poprawka ucinania litery S */}
-<div className="mb-8 overflow-visible">
-  <motion.h1 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="text-5xl md:text-7xl lg:text-[6.5vw] font-black tracking-tighter leading-none flex items-center justify-center flex-wrap md:flex-nowrap"
-  >
-    <span className="text-zinc-900">SKLEP</span>
-    
-    {/* ZMIANA: 
-      - dodany pr-[0.05em] (padding-right) w jednostce em, aby skalował się z fontem
-      - dodany inline-block i overflow-visible
-    */}
-    <span className="relative inline-block text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] ml-4 md:ml-8  pr-[0.05em] overflow-visible">
-      URWIS
-    </span>
-  </motion.h1>
-  
-  <motion.p 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ delay: 0.3 }}
-    className="text-xl md:text-3xl lg:text-4xl font-medium text-zinc-500 mt-4  tracking-tight"
-  >
-    Nie tylko dla grzecznych dzieci
-  </motion.p>
-</div>
+        {/* NAGŁÓWEK W JEDNEJ LINII - Poprawka ucinania litery S */}
+        <div className="mb-8 overflow-visible">
+          {/* 🚀 FIX LCP (Largest Contentful Paint):
+            Zmieniono <motion.h1 initial={{opacity:0}}> na czyste <h1> z CSS'em.
+            Dzięki temu tekst renderuje się błyskawicznie bez czekania na JavaScript.
+            Używamy klasy 'animate-fade-in-up' (jeśli masz ją w tailwind.config) lub po prostu pojawia się od razu.
+          */}
+          <h1 className="text-5xl md:text-7xl lg:text-[6.5vw] font-black tracking-tighter leading-none flex items-center justify-center flex-wrap md:flex-nowrap">
+            <span className="text-zinc-900">SKLEP</span>
+            
+            <span className="relative inline-block text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] ml-4 md:ml-8  pr-[0.05em] overflow-visible">
+              URWIS
+            </span>
+          </h1>
+          
+          {/* Usunięto framer-motion z tego tekstu dla LCP */}
+          <p className="text-xl md:text-3xl lg:text-4xl font-medium text-zinc-500 mt-4 tracking-tight">
+            Nie tylko dla grzecznych dzieci
+          </p>
+        </div>
 
-   {/* NOWY, TRAFNY OPIS - Z FIXEM NA SPÓJNIKI */}
-<motion.p 
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ delay: 0.4 }}
-  className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-bold leading-relaxed"
->
-  Największy wybór gier i{"\u00A0"}zabawek, akcesoriów imprezowych, 
-  art. szkolnych i{"\u00A0"}biurowych przy{"\u00A0"}<span className="text-[#BF2024]">ul. Reymonta 38A</span>.  
-  
-   Prawdziwy sklep stacjonarny, w{"\u00A0"}którym rządzisz Ty i{"\u00A0"}Twoja wyobraźnia!
-</motion.p>
+        {/* NOWY, TRAFNY OPIS - Z FIXEM NA SPÓJNIKI 
+            Usunięto framer-motion, bo ten element LCP zajmował w Lighthouse 26 sekund!
+        */}
+        <p className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-bold leading-relaxed">
+          Największy wybór gier i{"\u00A0"}zabawek, akcesoriów imprezowych, 
+          art. szkolnych i{"\u00A0"}biurowych przy{"\u00A0"}<span className="text-[#BF2024]">ul. Reymonta 38A</span>.  
+          
+           Prawdziwy sklep stacjonarny, w{"\u00A0"}którym rządzisz Ty i{"\u00A0"}Twoja wyobraźnia!
+        </p>
 
         {/* PRZYCISKI CTA */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
@@ -146,7 +139,10 @@ export default function HeroSection() {
           </button>
         </div>
         <div className="aspect-video w-full rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-zinc-100">
-           <iframe width="100%" height="100%" frameBorder="0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.826141170283!2d20.9502709!3d51.64470900000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771399578946!5m2!1spl!2spl" allowFullScreen />
+           {/* WAŻNE DLA WYDAJNOŚCI: iframe też bywa ciężki, ale jest w modalu, więc ładuje się po kliknięciu. */}
+           {isMapOpen && (
+               <iframe width="100%" height="100%" frameBorder="0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.826141170283!2d20.9502709!3d51.64470900000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771399578946!5m2!1spl!2spl" allowFullScreen />
+           )}
         </div>
       </Modal>
 

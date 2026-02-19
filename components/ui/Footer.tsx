@@ -42,7 +42,7 @@ export default function Footer() {
               </div>
               <ul className="flex flex-col gap-5">
                 <FooterLink icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="26-800 Białobrzegi" />
-                <FooterLink icon={<Phone size={18} />} label="+48 604 208 193" />
+                <FooterLink icon={<Phone size={18} />} label="+48 604 208 183" />
                 <FooterLink icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" />
               </ul>
             </div>
