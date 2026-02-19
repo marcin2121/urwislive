@@ -5,7 +5,8 @@ import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { Toaster } from 'sonner';
 import { RibbonsBg } from '@/components/Ribbons';
-import OrphansFixer from "@/components/utils/OrphansFixer"; // Import automatu
+import OrphansFixer from "@/components/utils/OrphansFixer"; 
+import { GoogleAnalytics } from '@next/third-parties/google'; // 👈 IMPORT GA
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const fredoka = Fredoka({ subsets: ["latin"], variable: "--font-fredoka" });
@@ -19,11 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
-        
+           <GoogleAnalytics gaId="G-FE44ZTQ7GT" />
         {/* AUTOMATYCZNA NAPRAWA SPÓJNIKÓW */}
         <OrphansFixer />
-
-       
 
         {/* WARSTWA 1: SZKŁO (Musi być pod treścią, ale nad tłem) */}
         <div 
@@ -43,6 +42,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <Toaster position="bottom-right" richColors />
+
+        {/* 👇 GOOGLE ANALYTICS - Wklej tu swój kod G-... */}
+     
+        
       </body>
     </html>
   );

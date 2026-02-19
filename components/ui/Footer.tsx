@@ -29,8 +29,9 @@ export default function Footer() {
                 Twoje lokalne centrum zabawy i kreatywności. Od najlepszych zabawek po pełną wyprawkę szkolną i biurową. Działamy z pasją od 2007 roku.
               </p>
               <div className="flex gap-4">
-                <SocialIcon href="https://facebook.com/sklepurwis.bialobrzegi" icon={<Facebook size={20} />} />
-                <SocialIcon href="https://instagram.com/sklepurwis.bialobrzegi" icon={<Instagram size={20} />} />
+                {/* Dodano label dla czytników i rel dla bezpieczeństwa */}
+                <SocialIcon label="Facebook" href="https://facebook.com/sklepurwis.bialobrzegi" icon={<Facebook size={20} />} />
+                <SocialIcon label="Instagram" href="https://instagram.com/sklepurwis.bialobrzegi" icon={<Instagram size={20} />} />
               </div>
             </div>
 
@@ -51,29 +52,32 @@ export default function Footer() {
               <div className="flex items-center gap-2 text-[#0055ff] font-black uppercase tracking-widest text-xs italic">
                 <Gamepad2 size={16} /> Lecę w Kulki
               </div>
-              {/* ✅ ZMIANA: flex-col i gap-5 dla lepszych odstępów */}
+              
               <ul className="flex flex-col gap-5">
-                {/* LINK DO MAPY */}
-                <a href="https://maps.app.goo.gl/xyeqFtwUAvd2VN898" target="_blank" rel="noopener noreferrer" className="block">
-                  <FooterLink 
-                    icon={<MapPin size={18} className="text-[#0055ff]" />} 
-                    label="ul. Targowicka 4" 
-                    sublabel="Białobrzegi" 
-                    isLink 
-                  />
-                </a>
+                {/* NAPRAWA STRUKTURY: <li> jest teraz na zewnątrz <a> */}
+                <li>
+                  <a href="https://maps.app.goo.gl/xyeqFtwUAvd2VN898" target="_blank" rel="noopener noreferrer" className="block group">
+                    <FooterLinkContent 
+                      icon={<MapPin size={18} className="text-[#0055ff]" />} 
+                      label="ul. Targowicka 4" 
+                      sublabel="Białobrzegi" 
+                      isLink 
+                    />
+                  </a>
+                </li>
 
                 <FooterLink icon={<Phone size={18} className="text-[#0055ff]" />} label="+48 666 504 555" />
                 
-                {/* LINK DO STRONY WWW */}
-                <a href="https://lecewkulki.eu/" target="_blank" rel="noopener noreferrer" className="block">
-                  <FooterLink 
-                    icon={<Globe size={18} className="text-[#0055ff]" />} 
-                    label="lecewkulki.eu" 
-                    sublabel="Strona Sali Zabaw" 
-                    isLink
-                  />
-                </a>
+                <li>
+                  <a href="https://lecewkulki.eu/" target="_blank" rel="noopener noreferrer" className="block group">
+                    <FooterLinkContent 
+                      icon={<Globe size={18} className="text-[#0055ff]" />} 
+                      label="lecewkulki.eu" 
+                      sublabel="Strona Sali Zabaw" 
+                      isLink
+                    />
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -83,6 +87,7 @@ export default function Footer() {
                 Szybkie Linki
               </div>
               <ul className="flex flex-col gap-3">
+                {/* QuickLink teraz poprawnie zwraca <li> */}
                 <QuickLink href="/oferta">Nasza Oferta</QuickLink>
                 <QuickLink href="/o-nas">O nas</QuickLink>
                 <QuickLink href="/kontakt">Kontakt</QuickLink>
@@ -100,7 +105,9 @@ export default function Footer() {
             </div>
           </div>
           
-       <a href="#"><span className='text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic'> MARCIN MOLENDA</span></a>
+          <div className="mt-4 text-center md:text-left">
+            <span className='text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic'> MARCIN MOLENDA</span>
+          </div>
         </div>
       </div>
     </footer>
@@ -109,11 +116,13 @@ export default function Footer() {
 
 // --- POMOCNICZE KOMPONENTY ---
 
-function SocialIcon({ href, icon }: { href: string, icon: React.ReactNode }) {
+function SocialIcon({ href, icon, label }: { href: string, icon: React.ReactNode, label: string }) {
   return (
     <Link 
       href={href} 
       target="_blank"
+      rel="noopener noreferrer" // Dodano dla bezpieczeństwa
+      aria-label={label} // Dodano dla Accessibility
       className="w-10 h-10 rounded-xl bg-white/40 flex items-center justify-center text-zinc-900 hover:bg-[#0055ff] hover:text-white transition-all shadow-sm border border-white/50"
     >
       {icon}
@@ -121,28 +130,40 @@ function SocialIcon({ href, icon }: { href: string, icon: React.ReactNode }) {
   )
 }
 
-function FooterLink({ icon, label, sublabel, isLink }: { icon: React.ReactNode, label: string, sublabel?: string, isLink?: boolean }) {
+// Rozdzielono logikę LI i Contentu dla poprawności HTML
+function FooterLink({ icon, label, sublabel }: { icon: React.ReactNode, label: string, sublabel?: string }) {
+    return (
+      <li>
+         <FooterLinkContent icon={icon} label={label} sublabel={sublabel} />
+      </li>
+    )
+}
+
+// Wewnętrzny content linku (bez LI, żeby można go było włożyć w <a>)
+function FooterLinkContent({ icon, label, sublabel, isLink }: { icon: React.ReactNode, label: string, sublabel?: string, isLink?: boolean }) {
   return (
-    <li className={`flex gap-4 group cursor-pointer transition-all ${isLink ? 'hover:translate-x-1' : ''}`}>
-      <div className={`${isLink ? 'text-[#0055ff]' : 'text-[#BF2024]'} group-hover:scale-110 transition-transform`}>
+    <div className={`flex gap-4 cursor-pointer transition-all ${isLink ? 'hover:translate-x-1' : ''}`}>
+      <div className={`${isLink ? 'text-[#0055ff]' : 'text-[#BF2024]'} ${isLink ? 'group-hover:scale-110' : ''} transition-transform`}>
         {icon}
       </div>
       <div className="flex flex-col leading-none">
         <span className={`text-zinc-900 font-bold text-sm tracking-tight ${isLink ? 'group-hover:text-[#0055ff]' : ''}`}>{label}</span>
         {sublabel && <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">{sublabel}</span>}
       </div>
-    </li>
+    </div>
   )
 }
 
 function QuickLink({ href, children }: { href: string, children: React.ReactNode }) {
   return (
-    <Link 
-      href={href} 
-      className="text-zinc-600 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase"
-    >
-      <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 group-hover:bg-[#BF2024] transition-colors" />
-      {children}
-    </Link>
+    <li>
+      <Link 
+        href={href} 
+        className="text-zinc-600 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase"
+      >
+        <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 group-hover:bg-[#BF2024] transition-colors" />
+        {children}
+      </Link>
+    </li>
   )
 }
