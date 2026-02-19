@@ -181,7 +181,7 @@ export default function AboutSection() {
                 </motion.a>
 
                 <motion.a
-                  href="tel:+48604208193"
+                  href="tel:+48604208183"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-10 py-6 bg-white/60 border-2 border-white text-zinc-900 rounded-3xl font-black text-center hover:bg-white transition-all flex items-center justify-center gap-3 backdrop-blur-md shadow-xl text-sm uppercase tracking-widest italic"
