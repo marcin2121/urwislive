@@ -14,7 +14,7 @@ import Link from 'next/link'
 const categories = [
   {
     title: "Świat Zabawek",
-    desc: "Najlepsze klocki, lalki i figurki, które pobudzają wyobraźnię.",
+    desc: "Najlepsze klocki, lalki i figurki w Białobrzegach, które pobudzają wyobraźnię dziecka.",
     icon: Puzzle,
     color: "#BF2024",
     size: "lg", 
@@ -22,7 +22,7 @@ const categories = [
   },  
   {
     title: "Wyprawka Szkolna",
-    desc: "Plecaki i przybory dla małych geniuszy.",
+    desc: "Markowe plecaki i przybory szkolne dla małych geniuszy. Wszystko do szkoły w jednym miejscu.",
     icon: Backpack,
     color: "#0055ff",
     size: "md",
@@ -30,7 +30,7 @@ const categories = [
   },
   {
     title: "Akcesoria Imprezowe",
-    desc: "Balony i dekoracje na każdą okazję.",
+    desc: "Kolorowe dekoracje na każdą okazję. Sprawdź nasze akcesoria na urodziny i przyjęcia.",
     icon: PartyPopper,
     color: "#f59e0b",
     size: "md",
@@ -38,14 +38,14 @@ const categories = [
   },
   {
     title: "Gry Planszowe",
-    desc: "Rodzinne wieczory pełne emocji.",
+    desc: "Gry rodzinne i edukacyjne, które zapewnią wieczory pełne emocji.",
     icon: Gamepad2,
     color: "#06B6D4",
     size: "md",
     href: "/oferta/gry"
   },
   {
-    title: "Nasze usługi:",
+    title: "Usługi i Balony z helem",
     desc: (
       <div className="flex flex-col gap-3">
         <div className="flex items-start gap-2 group/line">
@@ -85,12 +85,13 @@ export default function OfertaGrid() {
             WIĘCEJ NIŻ <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">ZABAWKI</span>
           </motion.h2>
           <p className="text-zinc-600 max-w-2xl text-xl font-bold uppercase tracking-tight leading-tight">
-            Od klocków po wyprawki – w Urwisie znajdziesz wszystko, czego potrzebuje Twój mały bohater.
+            Odwiedź Urwisa w Białobrzegach – od klocków po wyprawki szkolne, znajdziesz u nas wszystko dla swojego dziecka.
           </p>
         </div>
 
         {/* Grid Kategorii - Bento Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[220px]">
+        {/* POPRAWKA: md:auto-rows - na telefonach wysokość będzie auto (dostosowana do treści) */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:auto-rows-[220px]">
           {categories.map((cat, i) => (
             <motion.div
               key={i}
@@ -103,9 +104,8 @@ export default function OfertaGrid() {
                 group relative rounded-[2.5rem] overflow-hidden cursor-pointer transition-all duration-500
                 bg-white/20 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] 
                 hover:bg-white/40 hover:border-white/60 hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]
-                ${cat.size === 'header' ? 'md:col-span-2 md:row-span-1 bg-linear-to-br from-white/40 to-white/10' : ''}
-                ${cat.size === 'lg' ? 'md:col-span-2 md:row-span-2' : ''}
-                ${cat.size === 'md' ? 'md:col-span-2 md:row-span-1' : ''}
+                min-h-[280px] md:min-h-0
+                ${cat.size === 'lg' ? 'md:col-span-2 md:row-span-2' : 'md:col-span-2 md:row-span-1'}
               `}
             >
               {/* Kolorowa poświata w rogu */}
@@ -121,35 +121,34 @@ export default function OfertaGrid() {
                 style={{ color: cat.color }}
               />
 
-              <div className="relative z-10 h-full flex flex-col p-8 pb-10">
+              {/* POPRAWKA: p-6 na mobile dla oszczędności miejsca, p-8 na desktopie */}
+              <div className="relative z-10 h-full flex flex-col p-6 md:p-8 pb-8 md:pb-10">
                 {/* Badge z ikoną */}
                 <div 
-                  className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20 ${cat.size === 'header' ? 'animate-pulse' : ''}`}
+                  className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20"
                   style={{ backgroundColor: cat.color }}
                 >
                   <cat.icon className="text-white" size={24} />
                 </div>
 
                 {/* Tytuł i opis */}
-                <h3 className={`font-black uppercase tracking-tighter leading-none mb-3 ${cat.size === 'header' ? 'text-4xl text-[#BF2024]' : 'text-3xl text-zinc-900'}`}>
+                {/* POPRAWKA: mniejszy tekst tytułu na mobile (text-2xl) */}
+                <h3 className="font-black uppercase tracking-tighter leading-none mb-3 text-2xl md:text-3xl text-zinc-900">
                   {cat.title}
                 </h3>
                 
-                {/* NAPRAWA: Zmieniono <p> na <div>, aby uniknąć błędów zagnieżdżania div w p */}
-                <div className={`font-bold leading-tight max-w-[90%] flex-1 ${cat.size === 'header' ? 'text-zinc-800 text-lg' : 'text-zinc-600 text-sm md:text-base'}`}>
+                <div className="font-bold leading-tight max-w-[90%] flex-1 text-zinc-600 text-sm md:text-base">
                   {cat.desc}
                 </div>
 
-                {/* Link - Ukryty dla kafelka "Nasze usługi:" */}
-                {cat.title !== 'Nasze usługi:' && (
-                  <Link 
-                    href={cat.href}
-                    className="inline-flex items-center gap-2 font-black text-xs lg:text-sm uppercase tracking-widest transition-all group-hover:gap-4 mt-4"
-                    style={{ color: cat.color }}
-                  >
-                    Sprawdź ofertę <ChevronRight size={16} strokeWidth={3} />
-                  </Link>
-                )}
+                {/* Link */}
+                <Link 
+                  href={cat.href}
+                  className="inline-flex items-center gap-2 font-black text-xs lg:text-sm uppercase tracking-widest transition-all group-hover:gap-4 mt-6 md:mt-4"
+                  style={{ color: cat.color }}
+                >
+                  Sprawdź ofertę <ChevronRight size={16} strokeWidth={3} />
+                </Link>
               </div>
             </motion.div>
           ))}
