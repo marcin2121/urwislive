@@ -153,7 +153,7 @@ async function handleAddPromo(e: React.FormEvent) {
         {isAdding && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center p-6"
+            className="fixed inset-0 z-100 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center p-6"
           >
             <motion.form 
               onSubmit={handleAddPromo}
@@ -183,7 +183,7 @@ async function handleAddPromo(e: React.FormEvent) {
                 <input placeholder="Rabat (np. -20%)" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none md:col-span-2" value={formData.discount} onChange={e => setFormData({...formData, discount: e.target.value})} />
               </div>
 
-              <button className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all">
+              <button className="w-full py-6 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all">
                 Zapisz w bazie danych
               </button>
             </motion.form>

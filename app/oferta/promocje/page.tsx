@@ -164,7 +164,7 @@ export default function PromocjePage() {
 
                     <Link 
                       href="/kontakt" 
-                      className="group/btn w-full py-5 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest text-center block relative overflow-hidden shadow-xl transition-all hover:scale-[1.02]"
+                      className="group/btn w-full py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest text-center block relative overflow-hidden shadow-xl transition-all hover:scale-[1.02]"
                     >
                       <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
                       <span className="relative z-10 flex items-center justify-center gap-2">

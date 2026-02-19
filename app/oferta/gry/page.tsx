@@ -150,8 +150,8 @@ export default function GryPage() {
             </p>
           </div>
           <Link 
-            href="tel:+48604208193"
-            className="md:ml-auto px-12 py-5 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs"
+            href="tel:+48604208183"
+            className="md:ml-auto px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs"
           >
             Zadzwoń i zapytaj
           </Link>
