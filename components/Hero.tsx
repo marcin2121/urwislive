@@ -1,7 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import Modal from 'react-modal';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { 
   MapPin, ShoppingBag, Sparkles, 
@@ -50,46 +49,40 @@ export default function HeroSection() {
 
       <motion.div style={{ y, opacity }} className="relative z-10 container mx-auto px-6 text-center">
         
-     {/* NAGŁÓWEK W JEDNEJ LINII - Poprawka ucinania litery S */}
-<div className="mb-8 overflow-visible">
-  <motion.h1 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="text-5xl md:text-7xl lg:text-[6.5vw] font-black tracking-tighter leading-none flex items-center justify-center flex-wrap md:flex-nowrap"
-  >
-    <span className="text-zinc-900">SKLEP</span>
-    
-    {/* ZMIANA: 
-      - dodany pr-[0.05em] (padding-right) w jednostce em, aby skalował się z fontem
-      - dodany inline-block i overflow-visible
-    */}
-    <span className="relative inline-block text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] ml-4 md:ml-8  pr-[0.05em] overflow-visible">
-      URWIS
-    </span>
-  </motion.h1>
-  
-  <motion.p 
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ delay: 0.3 }}
-    className="text-xl md:text-3xl lg:text-4xl font-medium text-zinc-500 mt-4  tracking-tight"
-  >
-    Nie tylko dla grzecznych dzieci
-  </motion.p>
-</div>
+        {/* NAGŁÓWEK W JEDNEJ LINII - Poprawka ucinania litery S */}
+        <div className="mb-8 overflow-visible">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-7xl lg:text-[6.5vw] font-black tracking-tighter leading-none flex items-center justify-center flex-wrap md:flex-nowrap"
+          >
+            <span className="text-zinc-900">SKLEP</span>
+            <span className="relative inline-block text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] ml-4 md:ml-8 pr-[0.05em] overflow-visible">
+              URWIS
+            </span>
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-xl md:text-3xl lg:text-4xl font-medium text-zinc-500 mt-4 tracking-tight"
+          >
+            Nie tylko dla grzecznych dzieci
+          </motion.p>
+        </div>
 
-   {/* NOWY, TRAFNY OPIS - Z FIXEM NA SPÓJNIKI */}
-<motion.p 
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ delay: 0.4 }}
-  className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-bold leading-relaxed"
->
-  Największy wybór gier i{"\u00A0"}zabawek, akcesoriów imprezowych, 
-  art. szkolnych i{"\u00A0"}biurowych przy{"\u00A0"}<span className="text-[#BF2024]">ul. Reymonta 38A</span>.  
-  
-   Prawdziwy sklep stacjonarny, w{"\u00A0"}którym rządzisz Ty i{"\u00A0"}Twoja wyobraźnia!
-</motion.p>
+        {/* NOWY, TRAFNY OPIS - Z FIXEM NA SPÓJNIKI */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-bold leading-relaxed"
+        >
+          Największy wybór gier i{"\u00A0"}zabawek, akcesoriów imprezowych, 
+          art. szkolnych i{"\u00A0"}biurowych przy{"\u00A0"}<span className="text-[#BF2024]">ul. Reymonta 38A</span>.  
+          Prawdziwy sklep stacjonarny, w{"\u00A0"}którym rządzisz Ty i{"\u00A0"}Twoja wyobraźnia!
+        </motion.p>
 
         {/* PRZYCISKI CTA */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
@@ -129,26 +122,55 @@ export default function HeroSection() {
         <div className="w-1 h-10 bg-linear-to-b from-zinc-900 to-transparent rounded-full" />
       </motion.div>
 
-      {/* MODAL MAPY */}
-      <Modal 
-        isOpen={isMapOpen} 
-        onRequestClose={() => setIsMapOpen(false)}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 max-w-5xl w-[92%] shadow-2xl outline-none border border-white/50"
-        overlayClassName="fixed inset-0 bg-black/40 backdrop-blur-md z-[100] flex items-center justify-center"
-      >
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex flex-col">
-            <span className="text-xs font-black text-[#BF2024] uppercase tracking-widest">Zapraszamy stacjonarnie</span>
-            <h2 className="text-3xl font-black text-zinc-900 uppercase italic">Białobrzegi, Reymonta 38A</h2>
+      {/* MODAL MAPY W FRAMER MOTION */}
+      <AnimatePresence>
+        {isMapOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+            {/* Tło przyciemniające (Overlay) */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMapOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-md cursor-pointer"
+            />
+
+            {/* Kontener Modala */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-5xl bg-white/95 backdrop-blur-2xl rounded-[3rem] p-6 md:p-12 shadow-[0_30px_100px_rgba(0,0,0,0.3)] border border-white/50 z-10"
+              onClick={(e) => e.stopPropagation()} // Zapobiega zamknięciu po kliknięciu w sam modal
+            >
+              <div className="flex justify-between items-center mb-6 md:mb-8">
+                <div className="flex flex-col">
+                  <span className="text-xs font-black text-[#BF2024] uppercase tracking-widest">Zapraszamy stacjonarnie</span>
+                  <h2 className="text-2xl md:text-3xl font-black text-zinc-900 uppercase italic">Białobrzegi, Reymonta 38A</h2>
+                </div>
+                <button 
+                  onClick={() => setIsMapOpen(false)} 
+                  className="w-12 h-12 flex shrink-0 items-center justify-center bg-zinc-100/80 hover:bg-zinc-200 text-zinc-600 rounded-full transition-all border border-zinc-200"
+                >
+                  <X size={24} strokeWidth={3} />
+                </button>
+              </div>
+              
+              <div className="aspect-square md:aspect-video w-full rounded-[2rem] overflow-hidden border-4 border-white shadow-xl bg-zinc-100">
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  frameBorder="0" 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.826141170283!2d20.9502709!3d51.64470900000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771399578946!5m2!1spl!2spl" 
+                  allowFullScreen 
+                  className="w-full h-full"
+                />
+              </div>
+            </motion.div>
           </div>
-          <button onClick={() => setIsMapOpen(false)} className="w-12 h-12 flex items-center justify-center bg-zinc-100 rounded-full hover:bg-zinc-200 transition-all">
-            <X size={24} strokeWidth={3} />
-          </button>
-        </div>
-        <div className="aspect-video w-full rounded-[2rem] overflow-hidden border-4 border-white shadow-2xl bg-zinc-100">
-           <iframe width="100%" height="100%" frameBorder="0" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.826141170283!2d20.9502709!3d51.64470900000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771399578946!5m2!1spl!2spl" allowFullScreen />
-        </div>
-      </Modal>
+        )}
+      </AnimatePresence>
 
     </section>
   );
