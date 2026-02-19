@@ -1,0 +1,119 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Cookie, Check, X, Info } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+
+export default function CookieModal() {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const checkConsent = () => {
+      const consent = localStorage.getItem('urwis_cookie_accepted')
+      const introShown = sessionStorage.getItem('urwis_intro_shown')
+
+      // Pokazujemy tylko jeśli nie ma jeszcze decyzji I intro się skończyło
+      if (consent === null && introShown === 'true') {
+        setTimeout(() => setIsVisible(true), 1200)
+      }
+    }
+
+    checkConsent()
+    window.addEventListener('urwis_intro_finished', checkConsent)
+    return () => window.removeEventListener('urwis_intro_finished', checkConsent)
+  }, [])
+
+  // Funkcja zapisu decyzji
+  const saveConsent = (status: 'true' | 'false') => {
+    localStorage.setItem('urwis_cookie_accepted', status)
+    setIsVisible(false)
+    // Tu można dodać odświeżenie strony lub inicjalizację analityki
+  }
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <>
+          {/* TŁO: Bardziej rozmyte i ciemniejsze dla skupienia uwagi */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-xl"
+          />
+
+          {/* MODAL */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none"
+          >
+            <div className="relative w-full max-w-2xl bg-white/80 backdrop-blur-3xl border border-white/60 rounded-[3rem] p-8 md:p-12 shadow-[0_40px_80px_rgba(0,0,0,0.3)] pointer-events-auto overflow-hidden">
+              
+              {/* Kolorowe poświaty w tle modala - dopasowane do marki */}
+              <div className="absolute -top-32 -right-32 w-80 h-80 bg-blue-500/30 rounded-full blur-[120px]" />
+              <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-red-500/30 rounded-full blur-[120px]" />
+
+              <div className="relative z-10 flex flex-col items-center text-center">
+                
+                {/* ZDJĘCIE URWISA - Dynamiczne i duże */}
+                <div className="relative w-56 h-56 md:w-72 md:h-72 mb-4 drop-shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+                  <Image 
+                    src="/urwis-cookies.webp" 
+                    alt="Urwis je ciastka" 
+                    fill
+                    className="object-contain rotate-[-3deg] hover:rotate-[0deg] transition-transform duration-500"
+                    priority
+                  />
+                </div>
+
+                <h2 className="text-3xl md:text-5xl font-black text-zinc-900 uppercase italic tracking-tighter mb-4 leading-none">
+                  Ups! Złapaliśmy Cię na <span className="text-blue-600">CIASTKACH!</span>
+                </h2>
+
+                <p className="text-zinc-600 font-bold uppercase italic text-sm md:text-lg leading-tight mb-8 max-w-lg">
+                  Urwis uwielbia ciacha! 🍪 Używamy ich, aby nasza strona działała idealnie i pamiętała Twoje ulubione zabawki. Kliknij „Daj ciacho”, aby przejść dalej!
+                </p>
+
+                {/* PRZYCISKI - Pełna zgodność z UE */}
+                <div className="flex flex-col w-full gap-3">
+                  
+                  {/* Przycisk Główny */}
+                  <button
+                    onClick={() => saveConsent('true')}
+                    className="w-full py-5 bg-zinc-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-sm shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+                  >
+                    <Check size={20} strokeWidth={4} className="group-hover:scale-125 transition-transform" /> 
+                    Daj ciacho! (Akceptuję)
+                  </button>
+
+                  <div className="flex flex-col sm:flex-row gap-3 w-full">
+                    {/* Przycisk Odrzucenia - Wymagany przez prawo */}
+                    <button
+                      onClick={() => saveConsent('false')}
+                      className="flex-1 py-4 bg-white/40 border border-zinc-200 text-zinc-400 rounded-[1.2rem] font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                    >
+                      <X size={14} strokeWidth={3} /> Odrzuć zbędne
+                    </button>
+
+                    {/* Link do regulaminu */}
+                    <Link 
+                      href="/regulamin"
+                      className="flex-1 py-4 bg-white/40 border border-zinc-200 text-zinc-400 rounded-[1.2rem] font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Info size={14} strokeWidth={3} /> Co to za ciastka?
+                    </Link>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}

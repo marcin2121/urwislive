@@ -6,6 +6,7 @@ import Footer from "@/components/ui/Footer";
 import { Toaster } from 'sonner';
 import { RibbonsBg } from '@/components/Ribbons';
 import OrphansFixer from "@/components/utils/OrphansFixer"; // Import automatu
+import CookieModal from "@/components/ui/CookieModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const fredoka = Fredoka({ subsets: ["latin"], variable: "--font-fredoka" });
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <Toaster position="bottom-right" richColors />
+        <CookieModal />
       </body>
     </html>
   );

@@ -26,7 +26,6 @@ const OPENING_HOURS_TEXT = {
   sun: "Zamknięte"
 };
 
-// Pomocnicza lista do wyświetlenia pełnego grafiku w menu mobilnym
 const FULL_HOURS_LIST = [
   { day: "Poniedziałek", hours: OPENING_HOURS_TEXT.week },
   { day: "Wtorek", hours: OPENING_HOURS_TEXT.week },
@@ -99,54 +98,43 @@ export default function Navbar() {
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
         className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-4"
       >
-        <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-4xl p-2 pr-3 flex items-center justify-between transition-all">
+        {/* Kontener paska - zmieniono rounded-4xl na rounded-full dla idealnej pigułki */}
+        <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full p-1 pr-4 flex items-center justify-between transition-all">
           
- {/* --- LEWA STRONA: Logo & Mobile Badge --- */}
-<div className="flex items-center gap-2 md:gap-4 pl-2">
-  <Link href="/" className="flex items-center gap-2 group shrink-0">
-    <div className="relative w-10 h-10 overflow-hidden rounded-xl shadow-sm border border-white/50">
-      <Image src="/logo.png" alt="Urwis" fill className="object-cover" />
-    </div>
-    
-    <div className="hidden lg:flex flex-col leading-[0.85] pt-0.5">
-      <span className="text-[13px] font-black italic tracking-tighter text-[#BF2024]">SKLEP</span>
-      <span className="text-[13px] font-black italic tracking-tighter text-[#0055ff]">URWIS</span>
-    </div>
-  </Link>
+          {/* --- LEWA STRONA: Logo Flush Look --- */}
+          <div className="flex items-center gap-2 md:gap-4">
+            <Link href="/" className="flex items-center gap-2 group shrink-0">
+              {/* Logo teraz idealnie wypełnia wysokość paska (w-12 h-12) i jest idealnie okrągłe */}
+              <div className="relative w-12 h-12 overflow-hidden rounded-full shadow-sm border border-white/50 bg-white">
+                <Image src="/logo.png" alt="Urwis" fill className="object-contain p-1.5" priority />
+              </div>
+              
+              <div className="hidden lg:flex flex-col leading-[0.85] pt-0.5">
+                <span className="text-[13px] font-black italic tracking-tighter text-[#BF2024]">SKLEP</span>
+                <span className="text-[13px] font-black italic tracking-tighter text-[#0055ff]">URWIS</span>
+              </div>
+            </Link>
 
-  {/* --- KLIKALNY BADGE NA TELEFON --- */}
- {/* --- KLIKALNY BADGE NA TELEFON (koło logo) --- */}
-<button 
-  onClick={() => setMobileMenuOpen(true)}
-  className={`md:hidden flex flex-col items-start px-3 py-1.5 rounded-2xl border shadow-xs transition-all active:scale-95 ${
-    shopStatus.isOpen 
-      ? 'bg-green-50/50 border-green-200/50 hover:bg-green-100/50' 
-      : 'bg-red-50/50 border-red-200/50 hover:bg-red-100/50'
-  }`}
->
-  <div className="flex items-center gap-1.5">
-    <div className={`w-1.5 h-1.5 rounded-full ${shopStatus.isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-    <span className={`text-[10px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>
-      {shopStatus.label}
-    </span>
-  </div>
-  
-  {/* DODATKOWA INFORMACJA NA TELEFONIE */}
-  {!shopStatus.isOpen && (
-    <span className="text-[8px] font-bold text-red-400 uppercase tracking-tighter leading-none mt-0.5 pl-3">
-      {shopStatus.subLabel.includes("08:00") ? "Do 08:00" : "Zapraszamy"}
-    </span>
-  )}
-  {shopStatus.isOpen && (
-    <span className="text-[8px] font-bold text-green-400 uppercase tracking-tighter leading-none mt-0.5 pl-3">
-      {shopStatus.subLabel}
-    </span>
-  )}
-</button>
+            {/* --- BADGE MOBILNY --- */}
+            <button 
+              onClick={() => setMobileMenuOpen(true)}
+              className={`md:hidden flex flex-col items-start px-3 py-1.5 rounded-2xl border shadow-xs transition-all active:scale-95 ${
+                shopStatus.isOpen 
+                  ? 'bg-green-50/50 border-green-200/50 hover:bg-green-100/50' 
+                  : 'bg-red-50/50 border-red-200/50 hover:bg-red-100/50'
+              }`}
+            >
+              <div className="flex items-center gap-1.5">
+                <div className={`w-1.5 h-1.5 rounded-full ${shopStatus.isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                <span className={`text-[10px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>
+                  {shopStatus.label}
+                </span>
+              </div>
+            </button>
 
-  <div className="hidden md:block w-px h-8 bg-zinc-200/60 mx-1"></div>
+            <div className="hidden md:block w-px h-8 bg-zinc-200/60 mx-1"></div>
 
-            {/* --- BADGE DESKTOP (bez zmian) --- */}
+            {/* --- BADGE DESKTOP --- */}
             <div className="relative hidden md:block">
               <button
                 onClick={() => setIsHoursDropdownOpen(!isHoursDropdownOpen)}
@@ -176,7 +164,6 @@ export default function Navbar() {
                       <span className="text-[10px] font-bold uppercase tracking-widest">Godziny Otwarcia</span>
                     </div>
                     <div className="space-y-3 text-sm">
-                       {/* Tutaj na desktopie możemy zostawić uproszczone, bo jest mało miejsca */}
                        <div className="flex justify-between items-center pb-2 border-b border-zinc-100/50"><span className="font-semibold text-zinc-600 text-xs">Pon - Pt</span><span className="font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-md text-xs">{OPENING_HOURS_TEXT.week}</span></div>
                        <div className="flex justify-between items-center pb-2 border-b border-zinc-100/50"><span className="font-semibold text-zinc-600 text-xs">Sobota</span><span className="font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-md text-xs">{OPENING_HOURS_TEXT.sat}</span></div>
                        <div className="flex justify-between items-center"><span className="font-semibold text-zinc-600 text-xs">Niedziela</span><span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md text-xs">{OPENING_HOURS_TEXT.sun}</span></div>
@@ -219,128 +206,120 @@ export default function Navbar() {
 
       {/* --- MENU MOBILNE --- */}
       <AnimatePresence>
-  {mobileMenuOpen && (
-    <>
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        exit={{ opacity: 0 }} 
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-60" 
-        onClick={() => setMobileMenuOpen(false)} 
-      />
-      <motion.div 
-        initial={{ x: "100%" }} 
-        animate={{ x: 0 }} 
-        exit={{ x: "100%" }} 
-        transition={{ type: "spring", damping: 30, stiffness: 300 }} 
-        className="fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white/95 backdrop-blur-3xl shadow-2xl border-l border-white/50 p-6 flex flex-col" 
-      >
-        {/* Header Menu */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 relative rounded-xl overflow-hidden shadow-md">
-              <Image src="/logo.png" alt="Urwis" fill className="object-cover" />
-            </div>
-            <div className="flex flex-col leading-[0.85] pt-0.5">
-              <span className="text-[16px] font-black italic tracking-tighter text-[#BF2024]">SKLEP</span>
-              <span className="text-[16px] font-black italic tracking-tighter text-[#0055ff]">URWIS</span>
-            </div>
-          </div>
-          <button onClick={() => setMobileMenuOpen(false)} className="p-3 bg-zinc-100 rounded-full hover:bg-zinc-200 text-zinc-600">
-            <X size={24} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
-          
-          {/* 1. NAV ITEMS (Główne linki) */}
-          <div className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <Link 
-                key={item.name} 
-                href={item.href} 
-                onClick={() => setMobileMenuOpen(false)} 
-                className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-50 transition-all text-lg font-black italic tracking-tighter uppercase text-zinc-800 group" 
-              >
-                <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 group-hover:bg-zinc-200 transition-colors">
-                  <item.icon size={20} />
-                </div>
-                {item.name}
-              </Link>
-            ))}
-          </div>
-
-          <hr className="border-zinc-100" />
-
-          {/* 2. MARKI URWISA (Kontenery tej samej wielkości) */}
-          <div className="grid grid-cols-1 gap-3">
-            {/* Lecę w Kulki */}
-            <Link 
-              href="/salazabaw" 
+        {mobileMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-60" 
               onClick={() => setMobileMenuOpen(false)} 
-              className="flex flex-col justify-center p-6 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-blue-700 min-h-[120px] relative overflow-hidden group"
+            />
+            <motion.div 
+              initial={{ x: "100%" }} 
+              animate={{ x: 0 }} 
+              exit={{ x: "100%" }} 
+              transition={{ type: "spring", damping: 30, stiffness: 300 }} 
+              className="fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white/95 backdrop-blur-3xl shadow-2xl border-l border-white/50 p-6 flex flex-col" 
             >
-              <div className="relative z-10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                  <Coffee size={24} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase opacity-70 tracking-widest">Sala Zabaw</div>
-                  <div className="text-xl font-black italic tracking-tighter uppercase">Lecę w Kulki</div>
-                </div>
-              </div>
-              <Sparkles className="absolute -right-4 -bottom-4 w-24 h-24 text-blue-200/30 rotate-12" />
-            </Link>
-
-            {/* Akademia Urwisa */}
-            <Link 
-              href="https://akademiaurwisa.pl" 
-              target="_blank" 
-              className="flex flex-col justify-center p-6 rounded-[2rem] text-white min-h-[120px] relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-linear-to-br from-[#BF2024] to-[#0055ff]" />
-              <div className="relative z-10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                  <GraduationCap size={24} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-bold uppercase opacity-80 tracking-widest text-white/90">Gry & Edukacja</div>
-                  <div className="text-xl font-black italic tracking-tighter uppercase">Akademia Urwisa</div>
-                </div>
-              </div>
-              <Zap className="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 -rotate-12" />
-            </Link>
-          </div>
-
-          <hr className="border-zinc-100" />
-
-          {/* 3. GODZINY OTWARCIA (Na dole) */}
-          <div className="bg-zinc-50/50 p-6 rounded-[2rem] border border-zinc-100 shadow-xs mb-6">
-             <div className="flex items-center gap-3 mb-6">
-               <div className={`w-3 h-3 rounded-full ${shopStatus.isOpen ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} />
-               <div className="flex flex-col">
-                  <span className={`text-sm font-black uppercase tracking-widest ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
-                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{shopStatus.subLabel}</span>
-               </div>
-             </div>
-             
-             <div className="space-y-3">
-                {FULL_HOURS_LIST.map((item, idx) => (
-                  <div key={idx} className={`flex justify-between items-center text-xs ${idx !== FULL_HOURS_LIST.length - 1 ? 'pb-2 border-b border-zinc-100/30' : ''}`}>
-                    <span className="font-bold text-zinc-400 italic tracking-tight">{item.day}</span>
-                    <span className={`font-black tracking-tighter ${item.isRed ? 'text-red-500 bg-red-50 px-2 py-0.5 rounded-md' : 'text-zinc-900'}`}>
-                      {item.hours}
-                    </span>
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 relative rounded-full overflow-hidden shadow-md bg-white">
+                    <Image src="/urwis-logo.webp" alt="Urwis" fill className="object-contain p-1.5" />
                   </div>
-                ))}
-             </div>
-          </div>
+                  <div className="flex flex-col leading-[0.85] pt-0.5">
+                    <span className="text-[16px] font-black italic tracking-tighter text-[#BF2024]">SKLEP</span>
+                    <span className="text-[16px] font-black italic tracking-tighter text-[#0055ff]">URWIS</span>
+                  </div>
+                </div>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-3 bg-zinc-100 rounded-full hover:bg-zinc-200 text-zinc-600">
+                  <X size={24} />
+                </button>
+              </div>
 
-        </div>
-      </motion.div>
-    </>
-  )}
-</AnimatePresence>
+              <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
+                <div className="flex flex-col gap-1">
+                  {NAV_ITEMS.map((item) => (
+                    <Link 
+                      key={item.name} 
+                      href={item.href} 
+                      onClick={() => setMobileMenuOpen(false)} 
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-50 transition-all text-lg font-black italic tracking-tighter uppercase text-zinc-800 group" 
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 group-hover:bg-zinc-200 transition-colors">
+                        <item.icon size={20} />
+                      </div>
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+
+                <hr className="border-zinc-100" />
+
+                <div className="grid grid-cols-1 gap-3">
+                  <Link 
+                    href="/salazabaw" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="flex flex-col justify-center p-6 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-blue-700 min-h-[120px] relative overflow-hidden group"
+                  >
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <Coffee size={24} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold uppercase opacity-70 tracking-widest">Sala Zabaw</div>
+                        <div className="text-xl font-black italic tracking-tighter uppercase">Lecę w Kulki</div>
+                      </div>
+                    </div>
+                    <Sparkles className="absolute -right-4 -bottom-4 w-24 h-24 text-blue-200/30 rotate-12" />
+                  </Link>
+
+                  <Link 
+                    href="https://akademiaurwisa.pl" 
+                    target="_blank" 
+                    className="flex flex-col justify-center p-6 rounded-[2rem] text-white min-h-[120px] relative overflow-hidden group"
+                  >
+                    <div className="absolute inset-0 bg-linear-to-br from-[#BF2024] to-[#0055ff]" />
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                        <GraduationCap size={24} />
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold uppercase opacity-80 tracking-widest text-white/90">Gry & Edukacja</div>
+                        <div className="text-xl font-black italic tracking-tighter uppercase">Akademia Urwisa</div>
+                      </div>
+                    </div>
+                    <Zap className="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 -rotate-12" />
+                  </Link>
+                </div>
+
+                <hr className="border-zinc-100" />
+
+                <div className="bg-zinc-50/50 p-6 rounded-[2rem] border border-zinc-100 shadow-xs mb-6">
+                   <div className="flex items-center gap-3 mb-6">
+                     <div className={`w-3 h-3 rounded-full ${shopStatus.isOpen ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} />
+                     <div className="flex flex-col">
+                        <span className={`text-sm font-black uppercase tracking-widest ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{shopStatus.subLabel}</span>
+                     </div>
+                   </div>
+                   
+                   <div className="space-y-3">
+                      {FULL_HOURS_LIST.map((item, idx) => (
+                        <div key={idx} className={`flex justify-between items-center text-xs ${idx !== FULL_HOURS_LIST.length - 1 ? 'pb-2 border-b border-zinc-100/30' : ''}`}>
+                          <span className="font-bold text-zinc-400 italic tracking-tight">{item.day}</span>
+                          <span className={`font-black tracking-tighter ${item.isRed ? 'text-red-500 bg-red-50 px-2 py-0.5 rounded-md' : 'text-zinc-900'}`}>
+                            {item.hours}
+                          </span>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
-}
+}      

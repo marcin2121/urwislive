@@ -6,6 +6,7 @@ import {
   Instagram, ArrowRight, Store, Gamepad2, Globe 
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image' // Importujemy komponent Image
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,9 +22,19 @@ export default function Footer() {
             
             {/* 1. BRAND & MOTTO */}
             <div className="space-y-6">
-              <div className="text-3xl font-black tracking-tighter italic">
-                <span className="text-[#BF2024]">SKLEP</span>
-                <span className="text-[#0055ff]"> URWIS</span>
+              {/* DODANO: Logo obok nazwy */}
+              <div className="flex items-center gap-3">
+                <Image 
+                  src="/logo.png" 
+                  alt="Logo Sklep Urwis" 
+                  width={60} 
+                  height={60} 
+                  className="object-contain"
+                />
+                <div className="text-3xl font-black tracking-tighter italic leading-none">
+                  <span className="text-[#BF2024]">SKLEP</span>
+                  <span className="text-[#0055ff]"> URWIS</span>
+                </div>
               </div>
               <p className="text-zinc-700 font-bold text-sm leading-relaxed uppercase italic">
                 Twoje lokalne centrum zabawy i kreatywności. Od najlepszych zabawek po pełną wyprawkę szkolną i biurową. Działamy z pasją od 2007 roku.
@@ -40,9 +51,15 @@ export default function Footer() {
                 <Store size={16} /> SKLEP URWIS
               </div>
               <ul className="flex flex-col gap-5">
-                <FooterLink icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="26-800 Białobrzegi" />
-                <FooterLink icon={<Phone size={18} />} label="+48 604 208 193" />
-                <FooterLink icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" />
+                <a href="https://maps.app.goo.gl/TwójLinkDoMapy" target="_blank" rel="noopener noreferrer" className="block">
+                    <FooterLink icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="26-800 Białobrzegi" isLink />
+                </a>
+                <a href="tel:+48604208183" className="block">
+                    <FooterLink icon={<Phone size={18} />} label="+48 604 208 183" isLink />
+                </a>
+                <a href="mailto:kontakt@sklep-urwis.pl" className="block">
+                    <FooterLink icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" isLink />
+                </a>
               </ul>
             </div>
 
@@ -51,9 +68,7 @@ export default function Footer() {
               <div className="flex items-center gap-2 text-[#0055ff] font-black uppercase tracking-widest text-xs italic">
                 <Gamepad2 size={16} /> Lecę w Kulki
               </div>
-              {/* ✅ ZMIANA: flex-col i gap-5 dla lepszych odstępów */}
               <ul className="flex flex-col gap-5">
-                {/* LINK DO MAPY */}
                 <a href="https://maps.app.goo.gl/xyeqFtwUAvd2VN898" target="_blank" rel="noopener noreferrer" className="block">
                   <FooterLink 
                     icon={<MapPin size={18} className="text-[#0055ff]" />} 
@@ -62,10 +77,9 @@ export default function Footer() {
                     isLink 
                   />
                 </a>
-
-                <FooterLink icon={<Phone size={18} className="text-[#0055ff]" />} label="+48 666 504 555" />
-                
-                {/* LINK DO STRONY WWW */}
+                <a href="tel:+48666504555" className="block">
+                    <FooterLink icon={<Phone size={18} className="text-[#0055ff]" />} label="+48 666 504 555" isLink />
+                </a>
                 <a href="https://lecewkulki.eu/" target="_blank" rel="noopener noreferrer" className="block">
                   <FooterLink 
                     icon={<Globe size={18} className="text-[#0055ff]" />} 
@@ -92,15 +106,20 @@ export default function Footer() {
 
           </div>
 
-          {/* DOLNY PASEK */}
-          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic">
-            <div>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
-            <div className="flex items-center gap-2">
+          {/* DOLNY PASEK - Z DODANYM NIP I REGON */}
+          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic text-center md:text-left">
+            <div className="space-y-2">
+              <div>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
+              <div className="opacity-60">NIP: 7981093937 | REGON: 671959384</div>
+            </div>
+            <div className="flex flex-col items-center md:items-end gap-2">
               <span> MADE WITH ❤️ IN BIAŁOBRZEGI </span>             
+              <a href="#" className="hover:text-zinc-900 transition-colors">
+                  DESIGN & CODE BY MARCIN MOLENDA
+              </a>
             </div>
           </div>
           
-       <a href="#"><span className='text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic'> MARCIN MOLENDA</span></a>
         </div>
       </div>
     </footer>
@@ -121,14 +140,17 @@ function SocialIcon({ href, icon }: { href: string, icon: React.ReactNode }) {
   )
 }
 
-function FooterLink({ icon, label, sublabel, isLink }: { icon: React.ReactNode, label: string, sublabel?: string, isLink?: boolean }) {
+// ✅ ZMIANA: Dynamiczny kolor ikony w zależności od przekazanej klasy Lucide
+function FooterLink({ icon, label, sublabel, isLink }: { icon: any, label: string, sublabel?: string, isLink?: boolean }) {
+  const isBlue = icon.props.className?.includes('text-[#0055ff]');
+  
   return (
     <li className={`flex gap-4 group cursor-pointer transition-all ${isLink ? 'hover:translate-x-1' : ''}`}>
-      <div className={`${isLink ? 'text-[#0055ff]' : 'text-[#BF2024]'} group-hover:scale-110 transition-transform`}>
+      <div className={`${isBlue ? 'text-[#0055ff]' : 'text-[#bf2024]'} group-hover:scale-110 transition-transform`}>
         {icon}
       </div>
-      <div className="flex flex-col leading-none">
-        <span className={`text-zinc-900 font-bold text-sm tracking-tight ${isLink ? 'group-hover:text-[#0055ff]' : ''}`}>{label}</span>
+      <div className="flex flex-col leading-none text-left">
+        <span className={`text-zinc-900 font-bold text-sm tracking-tight ${isLink ? (isBlue ? 'group-hover:text-[#0055ff]' : 'group-hover:text-[#bf2024]') : ''}`}>{label}</span>
         {sublabel && <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">{sublabel}</span>}
       </div>
     </li>

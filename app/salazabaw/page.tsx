@@ -151,14 +151,14 @@ export default function SalaZabawPage() {
                  href="https://lecewkulki.eu/" 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="w-full sm:w-auto px-12 py-6 bg-[#0055ff] text-white rounded-[2rem] font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all text-center"
+                 className="w-full sm:w-auto px-12 py-6 bg-[#0055ff] text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all text-center"
                >
                   Strona WWW lokalu
                </a>
                <a 
                  href="https://lecewkulki.eu/urodziny/" 
                  target="_blank" 
-                 className="w-full sm:w-auto px-12 py-6 bg-white border-2 border-zinc-100 text-zinc-900 rounded-[2rem] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-center shadow-xl"
+                 className="w-full sm:w-auto px-12 py-6 bg-white border-2 border-zinc-100 text-zinc-900 rounded-4xl font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-center shadow-xl"
                >
                   Zarezerwuj urodziny
                </a>
@@ -191,7 +191,7 @@ function RewardItem({ icon, title, desc }: any) {
 
 function InfoCapsule({ icon, label }: any) {
   return (
-    <div className="flex items-center gap-4 px-8 py-4 border border-white/40 rounded-[2rem] font-black text-[12px] md:text-xs uppercase tracking-[0.2em] bg-white/40 shadow-md text-zinc-700 backdrop-blur-md">
+    <div className="flex items-center gap-4 px-8 py-4 border border-white/40 rounded-4xl font-black text-[12px] md:text-xs uppercase tracking-[0.2em] bg-white/40 shadow-md text-zinc-700 backdrop-blur-md">
       <span className="text-[#0055ff]">{icon}</span>
       <span>{label}</span>
     </div>
