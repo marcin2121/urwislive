@@ -28,6 +28,32 @@ export const metadata: Metadata = {
   title: "Sklep Urwis | Zabawki, Balony i Artykuły Szkolne Białobrzegi",
   description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Prawdziwy sklep stacjonarny dla dzieci!",
   manifest: "/manifest.json", 
+  
+  // 🚀 Konfiguracja Open Graph (Messenger, Facebook, WhatsApp, LinkedIn)
+  openGraph: {
+    title: "Sklep Urwis | Białobrzegi",
+    description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Odkryj prawdziwy sklep stacjonarny dla dzieci!",
+    url: "https://sklep-urwis.pl", 
+    siteName: "Sklep Urwis",
+    images: [
+      {
+        url: "/og-image.webp", 
+        width: 1200,
+        height: 630,
+        alt: "Front Sklepu Urwis i maskotka",
+      },
+    ],
+    locale: "pl_PL",
+    type: "website",
+  },
+
+  // 🚀  Konfiguracja Twitter (X) / iMessage (Apple)
+  twitter: {
+    card: "summary_large_image",
+    title: "Sklep Urwis | Zabawki i Balony",
+    description: "Zabawki, gry planszowe, balony z helem i artykuły szkolne. Białobrzegi, Reymonta 38A.",
+    images: ["/og-image.webp"], // Ten sam obrazek
+  },
 };
 
 export const viewport: Viewport = {
