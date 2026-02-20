@@ -24,7 +24,17 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'maskable',
       },
     ],
-    // DODANO: Skróty pod ikoną aplikacji
+    // 🚀 NOWOŚĆ: Rejestracja aplikacji w menu udostępniania telefonu
+    share_target: {
+      action: '/share-target',
+      method: 'GET',
+      params: {
+        title: 'title',
+        text: 'text',
+        url: 'url'
+      }
+    },
+    // Zachowane skróty pod ikoną aplikacji
     shortcuts: [
       {
         name: "Aktualne Promocje",

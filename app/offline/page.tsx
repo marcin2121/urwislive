@@ -10,23 +10,9 @@ export default function OfflinePage() {
       <div className="max-w-md w-full text-center space-y-8">
         
         {/* Ikona i Grafika */}
-        <div className="relative inline-block">
-          <motion.div 
-            animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 4, repeat: Infinity }}
-            className="relative z-10 w-48 h-48 mx-auto"
-          >
-            <Image 
-              src="/urwis-welcome.webp" 
-              alt="Urwis szuka zasięgu" 
-              fill 
-              className="object-contain"
-            />
-          </motion.div>
           <div className="absolute -top-4 -right-4 p-4 bg-red-500 text-white rounded-full shadow-xl">
             <WifiOff size={32} />
           </div>
-        </div>
 
         {/* Tekst */}
         <div className="space-y-4">

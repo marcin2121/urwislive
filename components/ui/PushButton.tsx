@@ -5,16 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BellRing, Bell, Download, Check, Settings2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
+import { PUSH_CATEGORIES } from '@/lib/push-config'; // 🚀 Korzystamy ze wspólnego pliku
 
 type PushButtonState = 'UNSUPPORTED' | 'INSTALL_PWA' | 'NOT_SUBSCRIBED' | 'SUBSCRIBED';
-
-// Definicja kategorii powiadomień
-const CATEGORIES = [
-  { id: 'zabawki', label: 'Zabawki & LEGO' },
-  { id: 'balony', label: 'Balony & Imprezy' },
-  { id: 'szkola', label: 'Szkoła & Biuro' },
-  { id: 'lecewkulki', label: 'Sala Zabaw' },
-];
 
 export default function PushButton() {
   const supabase = createClient();
@@ -23,7 +16,13 @@ export default function PushButton() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>(['wszystkie']);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Funkcja analityczna (zachowana z Twojego kodu)
+  // Funkcja czyszcząca powiadomienia (czerwoną kropkę) przy interakcji
+  const clearBadge = () => {
+    if ('clearAppBadge' in navigator) {
+      (navigator as any).clearAppBadge().catch((err: any) => console.error(err));
+    }
+  };
+
   const trackPushEvent = (action: string, params: object = {}) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'push_notification_interaction', {
@@ -38,24 +37,18 @@ export default function PushButton() {
     const checkStatus = async () => {
       if (typeof window === 'undefined') return;
 
+      // Czyścimy kropkę przy każdym wejściu w ustawienia dzwonka
+      clearBadge();
+
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                            (window.navigator as any).standalone === true;
-
       const isPushSupported = 'serviceWorker' in navigator && 'PushManager' in window;
 
-      if (!isPushSupported) {
-        setButtonState('UNSUPPORTED');
-        return;
-      }
-
-      if (!isStandalone) {
-        setButtonState('INSTALL_PWA');
-        return;
-      }
+      if (!isPushSupported) return setButtonState('UNSUPPORTED');
+      if (!isStandalone) return setButtonState('INSTALL_PWA');
 
       if (Notification.permission === 'granted') {
         setButtonState('SUBSCRIBED');
-        // 🚀 POBIERANIE TEMATÓW Z BAZY
         try {
           const registration = await navigator.serviceWorker.ready;
           const sub = await registration.pushManager.getSubscription();
@@ -78,16 +71,13 @@ export default function PushButton() {
     checkStatus();
   }, [supabase]);
 
-  // 🚀 FUNKCJA ZAPISU TEMATÓW
   const toggleTopic = async (id: string) => {
     setIsUpdating(true);
     const newTopics = selectedTopics.includes(id)
       ? selectedTopics.filter(t => t !== id)
       : [...selectedTopics, id];
     
-    // Zawsze trzymamy 'wszystkie', jeśli nic nie wybrano
     const finalTopics = newTopics.length === 0 ? ['wszystkie'] : newTopics;
-    
     setSelectedTopics(finalTopics);
 
     try {
@@ -110,43 +100,26 @@ export default function PushButton() {
   };
 
   const handleAction = async () => {
+    clearBadge(); // Czyścimy badge przy kliknięciu
     switch (buttonState) {
       case 'UNSUPPORTED':
-        trackPushEvent('click_unsupported');
-        toast.error('Brak wsparcia', { description: 'Przeglądarka nie obsługuje Push.' });
+        toast.error('Brak wsparcia Push.');
         break;
-
       case 'INSTALL_PWA':
-        trackPushEvent('click_install_instruction');
         toast.info('Zainstaluj aplikację!', {
-          description: 'Dodaj Sklep Urwis do ekranu głównego (Udostępnij -> Dodaj).',
           icon: <Download className="w-4 h-4 text-blue-500" />
         });
         break;
-
       case 'NOT_SUBSCRIBED':
-        trackPushEvent('permission_request_started');
-        try {
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            setButtonState('SUBSCRIBED');
-            trackPushEvent('permission_granted');
-            // Po wyrażeniu zgody otwieramy ustawienia tematów
-            setShowSettings(true); 
-            toast.success('Powiadomienia włączone!');
-          } else {
-            trackPushEvent('permission_denied');
-            toast.error('Brak zgody na powiadomienia.');
-          }
-        } catch (error) {
-          console.error(error);
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          setButtonState('SUBSCRIBED');
+          setShowSettings(true); 
+          toast.success('Powiadomienia włączone!');
         }
         break;
-
       case 'SUBSCRIBED':
-        // 🚀 KLIKNIĘCIE WŁĄCZA/WYŁĄCZA MENU USTAWIEŃ
         setShowSettings(!showSettings);
-        trackPushEvent('toggle_settings_menu');
         break;
     }
   };
@@ -155,21 +128,19 @@ export default function PushButton() {
   const needsPwa = buttonState === 'INSTALL_PWA';
   const canSubscribe = buttonState === 'NOT_SUBSCRIBED';
 
-  let buttonClasses = 'bg-zinc-100/60 hover:bg-zinc-200/80 text-zinc-600 border-white/50';
-  if (isSubscribed) buttonClasses = 'bg-green-50/80 border-green-200/50 text-green-600';
-  else if (needsPwa) buttonClasses = 'bg-red-50/80 border-red-200/50 text-red-500';
-  else if (canSubscribe) buttonClasses = 'bg-blue-50/80 border-blue-200/50 text-blue-600';
-
   return (
     <div className="relative">
       <motion.button
         onClick={handleAction}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className={`relative flex items-center justify-center p-2.5 rounded-full transition-colors border shadow-sm ${buttonClasses}`}
+        className={`relative flex items-center justify-center p-2.5 rounded-full transition-colors border shadow-sm ${
+          isSubscribed ? 'bg-green-50/80 border-green-200/50 text-green-600' : 
+          needsPwa ? 'bg-red-50/80 border-red-200/50 text-red-500' : 
+          'bg-blue-50/80 border-blue-200/50 text-blue-600'
+        }`}
       >
         {isSubscribed ? <BellRing size={20} strokeWidth={2.5} /> : <Bell size={20} strokeWidth={2.5} />}
-        
         {(needsPwa || canSubscribe) && (
           <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#BF2024] opacity-75"></span>
@@ -178,7 +149,6 @@ export default function PushButton() {
         )}
       </motion.button>
 
-      {/* 🚀 MENU WYBORU TEMATÓW */}
       <AnimatePresence>
         {showSettings && (
           <motion.div
@@ -196,7 +166,8 @@ export default function PushButton() {
             </div>
             
             <div className="space-y-2">
-              {CATEGORIES.map((cat) => (
+              {/* 🚀 TERAZ UŻYWAMY PUSH_CATEGORIES Z PLIKU KONFIGURACYJNEGO */}
+              {PUSH_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   disabled={isUpdating}
@@ -216,9 +187,6 @@ export default function PushButton() {
                 </button>
               ))}
             </div>
-            <p className="mt-4 text-[9px] text-zinc-400 font-medium italic text-center">
-              Zapisujemy Twoje wybory automatycznie
-            </p>
           </motion.div>
         )}
       </AnimatePresence>
