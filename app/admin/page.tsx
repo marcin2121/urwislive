@@ -255,7 +255,6 @@ export default function AdminPage() {
                   value={selectedTopic} 
                   onChange={(e) => setSelectedTopic(e.target.value)}
                 >
-                  <option value="wszystkie">Wszyscy subskrybenci</option>
                   {PUSH_CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
                 </select>
               </div>
