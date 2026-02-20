@@ -7,18 +7,19 @@ import Link from 'next/link'
 export function AcademyPromo() {
   return (
     <section className="relative my-20 px-6">
-      {/* 🟢 NEONOWA POŚWIATA POD SPODEM (Glow) */}
-      <div className="absolute inset-0 bg-linear-to-r from-[#BF2024]/20 to-[#0055ff]/20 blur-[100px] rounded-[4rem] -z-10" />
+      
+      {/* 🚀 ZMIANA 1: Zamiast blur-[100px] używamy wydajnego gradientu css */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(191,32,36,0.1)_0%,rgba(0,85,255,0.1)_50%,transparent_100%)] rounded-[4rem] -z-10" />
 
       <motion.div 
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="relative overflow-hidden bg-white/30 backdrop-blur-3xl border-2 border-white/70 rounded-[3.5rem] p-8 md:p-16 shadow-2xl"
+        viewport={{ once: true, margin: "-50px" }}
+        className="relative overflow-hidden bg-white/30 backdrop-blur-3xl border-2 border-white/70 rounded-[3.5rem] p-8 md:p-16 shadow-2xl will-change-transform"
       >
-        {/* Dekoracyjne elementy tła */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[#0055ff]/5 rounded-full blur-3xl -mr-32 -mt-32" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#BF2024]/5 rounded-full blur-3xl -ml-32 -mb-32" />
+        {/* 🚀 ZMIANA 2: Dekoracyjne tła - Radial Gradients zamiast blur-3xl */}
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(0,85,255,0.08)_0%,transparent_70%)] rounded-full -mr-32 -mt-32 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(191,32,36,0.08)_0%,transparent_70%)] rounded-full -ml-32 -mb-32 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
           
@@ -29,9 +30,9 @@ export function AcademyPromo() {
               <span>Nowość w świecie Urwisa!</span>
             </div>
 
-            <h2 className="text-5xl md:text-7xl font-black  uppercase tracking-tighter leading-[0.85] text-zinc-900">
+            <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] text-zinc-900">
               AKADEMIA <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff]">
                 URWISA
               </span>
             </h2>
@@ -45,9 +46,10 @@ export function AcademyPromo() {
               <Link 
                 href="https://akademiaurwisa.pl"
                 target="_blank"
-                className="group relative px-10 py-5 bg-zinc-900 text-white rounded-[2rem] font-black uppercase text-xs tracking-widest transition-all hover:scale-105 shadow-2xl overflow-hidden  w-full sm:w-auto text-center"
+                className="group relative px-10 py-5 bg-zinc-900 text-white rounded-[2rem] font-black uppercase text-xs tracking-widest transition-all hover:scale-105 shadow-2xl overflow-hidden w-full sm:w-auto text-center"
               >
-                <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Zmieniłem bg-linear-to-r na bg-gradient-to-r (bezpieczniejsze w standardowym tailwind) */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   Przejdź do Akademii <GraduationCap size={20} />
                 </span>
@@ -60,26 +62,31 @@ export function AcademyPromo() {
           </div>
 
           {/* PRAWA STRONA: Grafika/Ikona */}
-          <div className="relative group">
-            {/* Animowane pierścienie wokół ikony */}
+          <div className="relative group flex items-center justify-center">
+            
+            {/* 🚀 ZMIANA 3: Dodano will-change-transform do wciąż kręcących się elementów */}
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-[-20px] border-2 border-dashed border-[#0055ff]/20 rounded-full"
+              className="absolute w-64 h-64 md:w-80 md:h-80 border-2 border-dashed border-[#0055ff]/30 rounded-full will-change-transform"
             />
             
-            <div className="w-48 h-48 md:w-64 md:h-64 bg-white/60 backdrop-blur-md rounded-[3rem] flex items-center justify-center shadow-2xl border-2 border-white transition-transform duration-500 group-hover:rotate-6 group-hover:scale-105">
-               <div className="relative">
-                 <GraduationCap className="w-24 h-24 md:w-32 md:h-32 text-zinc-900" strokeWidth={1.5} />
-                 <motion.div 
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                 >
-                 </motion.div>
-               </div>
+            <motion.div 
+              animate={{ rotate: -360 }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              className="absolute w-48 h-48 md:w-60 md:h-60 border-2 border-dashed border-[#BF2024]/30 rounded-full will-change-transform"
+            />
+            
+            <div className="relative z-10 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+               <motion.div
+                 animate={{ y: [0, -15, 0] }}
+                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                 className="will-change-transform"
+               >
+                 <GraduationCap className="w-32 h-32 md:w-40 md:h-40 text-zinc-900 drop-shadow-2xl" strokeWidth={1.5} />
+               </motion.div>
             </div>
           </div>
-
         </div>
       </motion.div>
     </section>

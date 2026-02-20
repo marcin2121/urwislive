@@ -6,10 +6,10 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Sklep Urwis',
     description: 'Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach przy ul. Reymonta 38A.',
     start_url: '/',
-    display: 'standalone', // Dzięki temu zachowuje się jak apka (bez paska URL)
+    display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#0055ff', // Główny niebieski kolor Twojej marki
-    orientation: 'portrait', // Wymusza tryb pionowy (najlepszy dla telefonu)
+    theme_color: '#0055ff',
+    orientation: 'portrait',
     icons: [
       {
         src: '/android-chrome-192x192.png',
@@ -21,8 +21,25 @@ export default function manifest(): MetadataRoute.Manifest {
         src: '/android-chrome-512x512.png',
         sizes: '512x512',
         type: 'image/png',
-        purpose: 'maskable', // Pozwala systemom (np. Android) ładnie zaokrąglać ikonę
+        purpose: 'maskable',
       },
     ],
+    // DODANO: Skróty pod ikoną aplikacji
+    shortcuts: [
+      {
+        name: "Aktualne Promocje",
+        short_name: "Promocje",
+        description: "Sprawdź najnowsze okazje w Sklepie Urwis",
+        url: "/oferta/promocje",
+        icons: [{ src: "/android-chrome-192x192.png", sizes: "192x192" }]
+      },
+      {
+        name: "Kontakt i Mapa",
+        short_name: "Kontakt",
+        description: "Jak do nas dojechać?",
+        url: "/kontakt",
+        icons: [{ src: "/android-chrome-192x192.png", sizes: "192x192" }]
+      }
+    ]
   }
 }

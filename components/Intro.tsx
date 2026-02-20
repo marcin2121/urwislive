@@ -6,6 +6,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 export default function UrwisIntro({ children }: { children: React.ReactNode }) {
   const [shouldShowIntro, setShouldShowIntro] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
+  // Zredukowane stany: tylko loading -> video -> done
   const [step, setStep] = useState<'loading' | 'video' | 'done'>('loading');
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -18,6 +19,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
       document.body.style.overflow = 'unset';
       document.body.style.height = 'unset';
     }
+    // Cleanup przy odmontowaniu
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.height = 'unset';
@@ -35,6 +37,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+ 
   // Funkcja kończąca intro i zapisująca stan
   const finishIntro = () => {
     setStep('done');
@@ -54,6 +57,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     finishIntro();
   };
 
+  // Jeśli intro nie ma być grane, zwracamy od razu dzieci (stronę)
   if (!shouldShowIntro) return <>{children}</>;
 
   return (
@@ -73,6 +77,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
             key="video-step"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            // EFEKT WYJŚCIA: Wideo powiększa się i rozmywa, odsłaniając stronę
             exit={{ 
               opacity: 0, 
               scale: 1.1, 
@@ -93,7 +98,8 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
               <source src="/urwisintro.webm" type="video/webm" />
               <source src="/urwisintro.mp4" type="video/mp4" />
             </video>
-            
+
+            {/* Przycisk Pomiń */}
             <motion.button
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -107,14 +113,17 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
         )}
       </AnimatePresence>
 
-      {/* KROK 3: Główna zawartość */}
+      {/* KROK 3: Główna zawartość (Hero.tsx i reszta) */}
       <motion.main
         animate={{ 
+          // Strona jest widoczna, ale gdy wideo gra, jest schowana pod spodem
           opacity: step === 'done' ? 1 : 0,
+          // Efekt delikatnego wjazdu strony (zoom out)
           scale: step === 'done' ? 1 : 0.95,
         }}
         transition={{ duration: 1, ease: "circOut" }}
         style={{
+            // Zapobiega interakcji ze stroną, gdy wideo gra
             pointerEvents: step === 'done' ? 'auto' : 'none' 
         }}
       >

@@ -6,16 +6,17 @@ import { Coins, ArrowRight, Zap, Trophy, Smile, Store, Sparkles } from 'lucide-r
 export default function LoyaltySection() {
   return (
     <section className="relative py-24 px-6 overflow-hidden bg-transparent">
-      {/* 🔴🔵 TŁO: Urwisowe poświaty (Blur) */}
-      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[#BF2024]/10 blur-[130px] rounded-full -z-10 animate-pulse" />
-      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[#0055ff]/10 blur-[130px] rounded-full -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
+      
+      {/* 🚀 ZMIANA WYDAJNOŚCIOWA: Usunięto zacinające na telefonach blur-[130px] na rzecz gradientów radialnych */}
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(191,32,36,0.08)_0%,transparent_60%)] rounded-full -z-10 animate-pulse" />
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(0,85,255,0.08)_0%,transparent_60%)] rounded-full -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
 
       <div className="max-w-7xl mx-auto">
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative bg-white/30 backdrop-blur-3xl border-2 border-white/70 rounded-[3rem] md:rounded-[4rem] p-6 md:p-20 shadow-2xl overflow-hidden"
+          viewport={{ once: true, margin: "-100px" }} // Uruchomi się chwilę przed przewinięciem do sekcji
+          className="relative bg-white/30 backdrop-blur-xl border-2 border-white/70 rounded-[3rem] md:rounded-[4rem] p-6 md:p-20 shadow-2xl overflow-hidden will-change-transform"
         >
           {/* Watermark w brandowym kolorze */}
           <Zap className="absolute -top-12 -right-12 text-[#0055ff]/5 rotate-12 pointer-events-none w-[300px] h-[300px] md:w-[400px] md:h-[400px]" />
@@ -29,7 +30,7 @@ export default function LoyaltySection() {
                 
                 <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tight leading-[0.85] text-zinc-900">
                   ZŁOTE <br />
-                  <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff]">
                     URWISY
                   </span>
                 </h2>
@@ -39,14 +40,14 @@ export default function LoyaltySection() {
                 </p>
               </div>
 
-              {/* Kalkulator / Przelicznik (Wyśrodkowany na mobile) */}
+              {/* Kalkulator / Przelicznik */}
               <div className="flex flex-col sm:flex-row items-center gap-6 bg-white/40 p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] border border-white/60 shadow-inner group">
                 <div className="text-center sm:text-left">
                   <div className="text-[12px] md:text-[12px] font-black text-zinc-700 uppercase tracking-widest mb-1">Wydajesz w Urwisie</div>
                   <div className="text-4xl md:text-5xl font-black text-[#bf2024] tracking-tighter">10 zł</div>
                 </div>
                 
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-zinc-900 flex items-center justify-center text-white shrink-0 rotate-90 sm:rotate-0 shadow-xl group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 md:w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center text-white shrink-0 rotate-90 sm:rotate-0 shadow-xl group-hover:scale-110 transition-transform">
                   <ArrowRight strokeWidth={3} className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 
@@ -61,7 +62,7 @@ export default function LoyaltySection() {
 
             {/* --- PRAWA STRONA: GDZIE WYDAĆ (Czarna Tafla) --- */}
             <div className="relative">
-              <div className="bg-zinc-900 text-white p-8 md:p-14 pb-16 md:pb-14 rounded-[3rem] md:rounded-[3.5rem] rotate-1 shadow-2xl relative z-10 border border-white/10 group hover:rotate-0 transition-transform duration-500">
+              <div className="bg-zinc-900 text-white p-8 md:p-14 pb-16 md:pb-14 rounded-[3rem] md:rounded-[3.5rem] rotate-1 shadow-2xl relative z-10 border border-white/10 group hover:rotate-0 transition-transform duration-500 will-change-transform">
                 <div className="absolute top-0 right-0 p-6 md:p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                   <Sparkles className="w-20 h-20 md:w-[120px] md:h-[120px]" />
                 </div>
@@ -73,7 +74,7 @@ export default function LoyaltySection() {
                 <div className="text-zinc-400 font-medium text-lg leading-snug mb-10">
                   <h3 className="text-[#0055ff] font-black text-center text-xl"> 1 ZŁOTY URWIS = 1 zł </h3> 
                   <p className="mt-4">
-                    do wydania na co tylko chcesz w Sali Zabaw <a href='/salazabaw' className="text-white font-black uppercase underline decoration-[#BF2024] decoration-2 underline-offset-4">Lecę w Kulki</a>. Wymieniaj URWISY na żetony do gier, wejście do sali zabaw, świeżo parzoną kawę lub pyszne ciasto!
+                    do wydania na co tylko chcesz w Sali Zabaw <a href='/salazabaw' className="text-[white] font-black uppercase ">Lecę w Kulki</a>. Wymieniaj URWISY na żetony do gier, wejście do sali zabaw, świeżo parzoną kawę lub pyszne ciasto!
                   </p>
                 </div>
                 
@@ -89,14 +90,14 @@ export default function LoyaltySection() {
                 </div>
               </div>
 
-              {/* 🪙 Pływająca Moneta (Poprawiona na mobile i w barwach Urwisa) */}
+              {/* 🪙 Pływająca Moneta (Optymalizacja animacji) */}
               <motion.div 
                 animate={{ 
                   y: [0, -10, 0],
                   rotate: [0, 5, -5, 0] 
                 }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-6 -right-2 md:-bottom-10 md:-right-6 w-24 h-24 md:w-32 md:h-32 bg-linear-to-br from-[#BF2024] to-[#0055ff] rounded-4xl shadow-2xl flex items-center justify-center border-4 border-white z-20"
+                className="absolute -bottom-6 -right-2 md:-bottom-10 md:-right-6 w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-[#BF2024] to-[#0055ff] rounded-full shadow-2xl flex items-center justify-center border-4 border-white z-20 will-change-transform"
               >
                 <Coins className="text-white drop-shadow-lg w-9 h-9 md:w-[50px] md:h-[50px]" />
               </motion.div>
