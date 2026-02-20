@@ -3,8 +3,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { X, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Sparkles, Share2 } from 'lucide-react'; // 🚀 DODANO Share2
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner'; // 🚀 DODANO toast
 
 export interface GalleryItem {
   id: number | string;
@@ -106,7 +107,32 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: 400, behavior: 'smooth' });
   };
 
+  // 1. ZNAJDUJEMY WYBRANY ELEMENT
   const selectedItem = items.find(item => item.id === selectedId);
+
+  // 🚀 2. TUTAJ JEST IDEALNE MIEJSCE NA FUNKCJĘ SHARE (Zaraz po wybraniu elementu)
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation(); 
+    
+    if (!selectedItem) return;
+
+    const shareData = {
+      title: `Sklep Urwis - ${selectedItem.title}`,
+      text: `Zobacz co znalazłem w Sklepie Urwis: ${selectedItem.title} z kategorii ${selectedItem.category}!`,
+      url: window.location.href, 
+    };
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+        toast.success("Skopiowano link do schowka!");
+      }
+    } catch (err) {
+      console.log('Błąd udostępniania:', err);
+    }
+  };
 
   if (!items || items.length === 0) return null;
 
@@ -151,7 +177,6 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                 fill 
                 draggable={false}
                 className="object-cover transition-transform duration-700 group-hover/card:scale-105 pointer-events-none"
-                // 🚀 OPTYMALIZACJA: Precyzyjne sizes i obniżona jakość (niewidoczna różnica, waga 50% mniejsza)
                 sizes="(max-width: 768px) 80vw, (max-width: 1200px) 40vw, 30vw"
                 quality={75}
               />
@@ -183,16 +208,31 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,85,255,0.15)_0%,transparent_60%)]" />
               </motion.div>
 
-              <motion.button 
-                initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }}
-                className="absolute top-4 right-4 md:top-8 md:right-8 z-50 p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md hover:bg-white/20 hover:scale-110 transition-all shadow-xl"
-                onClick={() => setSelectedId(null)}
-              >
-                <X size={32} />
-              </motion.button>
+              {/* 🚀 ZMODYFIKOWANY ZESTAW PRZYCISKÓW (SHARE + ZAMKNIJ) */}
+              <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-3">
+                <motion.button 
+                  initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ delay: 0.1 }}
+                  aria-label="Udostępnij to zdjęcie"
+                  className="p-3 md:p-4 bg-blue-600/90 text-white rounded-full border border-blue-400 backdrop-blur-md hover:bg-blue-500 hover:scale-110 transition-all shadow-[0_0_20px_rgba(0,85,255,0.4)]"
+                  onClick={handleShare}
+                >
+                  <Share2 size={24} className="w-5 h-5 md:w-6 md:h-6" />
+                </motion.button>
+
+                <motion.button 
+                  initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }}
+                  aria-label="Zamknij podgląd zdjęcia"
+                  className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md hover:bg-white/20 hover:scale-110 transition-all shadow-xl"
+                  onClick={() => setSelectedId(null)}
+                >
+                  <X size={24} className="w-5 h-5 md:w-6 md:h-6" />
+                </motion.button>
+              </div>
               
               <motion.button 
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                aria-label="Poprzednie zdjęcie"
                 className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md hover:bg-white/20 hover:scale-110 transition-all shadow-xl"
                 onClick={handlePrevClick}
               >
@@ -201,6 +241,7 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
 
               <motion.button 
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                aria-label="Następne zdjęcie"
                 className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md hover:bg-white/20 hover:scale-110 transition-all shadow-xl"
                 onClick={handleNextClick}
               >
@@ -226,7 +267,6 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                   draggable={false}
                   className="object-cover select-none pointer-events-none" 
                   priority 
-                  // 🚀 OPTYMALIZACJA MODALA: 100vw, bo zajmuje cały ekran
                   sizes="100vw"
                   quality={80}
                 />
