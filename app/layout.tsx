@@ -10,7 +10,7 @@ import CookieModal from "@/components/ui/CookieModal";
 import InstallPrompt from "@/components/ui/InstallPrompt";
 import { Suspense } from "react";
 import ReactDOM from "react-dom";
-import Script from "next/script"; // 🚀 DODANE: Importujemy zoptymalizowany tag Script
+import Script from "next/script";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -60,7 +60,6 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// Twój identyfikator GA4
 const GA_MEASUREMENT_ID = "G-FE44ZTQ7GT";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -69,10 +68,51 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     fetchPriority: "high" 
   });
 
+  // 🚀 ZMIENNA Z DANYMI STRUKTURALNYMI DLA GOOGLE (JSON-LD)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": ["LocalBusiness", "ToyStore"], 
+    "name": "Sklep Urwis",
+    "image": "https://sklep-urwis.pl/og-image.webp",
+    "@id": "https://sklep-urwis.pl",
+    "url": "https://sklep-urwis.pl",
+    "telephone": "+48604208183",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "ul. Reymonta 38A",
+      "addressLocality": "Białobrzegi",
+      "postalCode": "26-800",
+      "addressCountry": "PL"
+    },
+    // Opcjonalnie: Dokładne współrzędne sklepu z Google Maps (pomaga w lokalnym SEO)
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 51.6447168175059, 
+      "longitude": 20.950223885817554
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "18:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "08:00",
+        "closes": "15:00"
+      }
+    ],
+    "sameAs": [
+      "https://facebook.com/sklepurwis.bialobrzegi",
+      "https://instagram.com/sklepurwis.bialobrzegi"
+    ]
+  };
+
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
       <head>
-        {/* 🚀 DODANE: Google Analytics 4 (Ładuje się asynchronicznie po głównej zawartości) */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"
@@ -88,6 +128,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             });
           `}
         </Script>
+
+        {/* 🚀 DODANE: Ustrukturyzowane Dane dla Robotów Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
@@ -125,24 +171,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* REJESTRACJA SERVICE WORKERA */}
         <script
-  dangerouslySetInnerHTML={{
-    __html: `
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js');
-        });
-      }
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
 
-      // 🚀 ZDARZENIE GA4: Sukces instalacji PWA
-      window.addEventListener('appinstalled', () => {
-        if (typeof gtag === 'function') {
-          gtag('event', 'pwa_installed', { platform: 'web' });
-        }
-        console.log('PWA zostało zainstalowane!');
-      });
-    `,
-  }}
-/>
+              // 🚀 ZDARZENIE GA4: Sukces instalacji PWA
+              window.addEventListener('appinstalled', () => {
+                if (typeof gtag === 'function') {
+                  gtag('event', 'pwa_installed', { platform: 'web' });
+                }
+                console.log('PWA zostało zainstalowane!');
+              });
+            `,
+          }}
+        />
       </body>
     </html>
   );

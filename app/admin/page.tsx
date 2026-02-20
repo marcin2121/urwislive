@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Trash2, Edit2, X, Lock, 
   Tag, Package, Percent, LogOut, Loader2,
-  Bell, Send, Users, MousePointerClick, BellOff
+  Bell, Send, Users, MousePointerClick, BellOff,
+  Filter, Calendar, ChevronRight
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -19,6 +20,22 @@ interface Promo {
   category: string;
 }
 
+interface DailyStat {
+  date: string;
+  clicks: number;
+  closes: number;
+  total: number;
+  ctr: number;
+}
+
+const PUSH_CATEGORIES = [
+  { id: 'wszystkie', label: 'Wszyscy odbiorcy' },
+  { id: 'zabawki', label: 'Zabawki & LEGO' },
+  { id: 'balony', label: 'Balony & Imprezy' },
+  { id: 'szkola', label: 'Szkoła & Biuro' },
+  { id: 'lecewkulki', label: 'Sala Zabaw' },
+];
+
 export default function AdminPage() {
   const supabase = createClient();
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -28,10 +45,11 @@ export default function AdminPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [isSendingPush, setIsSendingPush] = useState(false)
   const [subscriberCount, setSubscriberCount] = useState(0)
+  const [selectedTopic, setSelectedTopic] = useState('wszystkie')
 
-  // 🚀 DODANE: Stan statystyk Push
+  // 🚀 STATYSTYKI
   const [pushStats, setPushStats] = useState({ clicks: 0, closes: 0 })
-
+  const [dailyStats, setDailyStats] = useState<DailyStat[]>([])
   const [pushData, setPushData] = useState({ title: '', message: '' })
 
   const [formData, setFormData] = useState({
@@ -47,54 +65,73 @@ export default function AdminPage() {
     if (isAuthenticated) {
       fetchPromos();
       fetchSubscriberCount();
-      fetchPushStats(); // 🚀 DODANE: Pobieranie statystyk
+      fetchPushStats();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, selectedTopic]);
 
   async function fetchSubscriberCount() {
-    const { count, error } = await supabase
-      .from('push_subscriptions')
-      .select('*', { count: 'exact', head: true });
+    let query = supabase.from('push_subscriptions').select('*', { count: 'exact', head: true });
+    if (selectedTopic !== 'wszystkie') {
+      query = query.contains('topics', [selectedTopic]);
+    }
+    const { count, error } = await query;
     if (!error) setSubscriberCount(count || 0);
   }
 
-  // 🚀 DODANE: Funkcja pobierająca kliknięcia i zamknięcia
+  // 🚀 ZAKTUALIZOWANA FUNKCJA STATYSTYK: Grupowanie po dacie
   async function fetchPushStats() {
-    const { data, error } = await supabase.from('push_analytics').select('action');
+    const { data, error } = await supabase
+      .from('push_analytics')
+      .select('action, created_at')
+      .order('created_at', { ascending: false });
+
     if (!error && data) {
+      // 1. Suma globalna
       const clicks = data.filter(d => d.action === 'click').length;
       const closes = data.filter(d => d.action === 'close').length;
       setPushStats({ clicks, closes });
+
+      // 2. Grupowanie po dacie
+      const groups = data.reduce((acc: any, curr) => {
+        const date = new Date(curr.created_at).toLocaleDateString('pl-PL');
+        if (!acc[date]) acc[date] = { clicks: 0, closes: 0 };
+        if (curr.action === 'click') acc[date].clicks++;
+        if (curr.action === 'close') acc[date].closes++;
+        return acc;
+      }, {});
+
+      const formattedDaily: DailyStat[] = Object.entries(groups).map(([date, counts]: any) => {
+        const total = counts.clicks + counts.closes;
+        return {
+          date,
+          clicks: counts.clicks,
+          closes: counts.closes,
+          total,
+          ctr: total > 0 ? Math.round((counts.clicks / total) * 100) : 0
+        };
+      });
+
+      setDailyStats(formattedDaily);
     }
   }
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === 'URWIS2026') {
-      setIsAuthenticated(true)
-    } else {
-      toast.error('Niepoprawne hasło!')
-    }
+    if (password === 'URWIS2026') setIsAuthenticated(true)
+    else toast.error('Niepoprawne hasło!')
   }
 
   async function fetchPromos() {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('promocje')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (error) console.error('Błąd pobierania:', error)
-    else setPromos(data || [])
+    const { data, error } = await supabase.from('promocje').select('*').order('created_at', { ascending: false })
+    if (!error) setPromos(data || [])
     setLoading(false)
   }
 
   async function handleAddPromo(e: React.FormEvent) {
     e.preventDefault();
     const { error } = await supabase.from('promocje').insert([formData]);
-    if (error) {
-      toast.error('Błąd zapisu!');
-    } else {
+    if (!error) {
       setIsAdding(false);
       setFormData({ title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', image_url: '' });
       fetchPromos();
@@ -109,64 +146,59 @@ export default function AdminPage() {
       const res = await fetch('/api/push/send-all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pushData)
+        body: JSON.stringify({ ...pushData, topic: selectedTopic })
       });
       const result = await res.json();
       if (result.success) {
-        toast.success(`Wysłano do ${result.count} osób!`);
+        toast.success(`Wysłano!`);
         setPushData({ title: '', message: '' });
-      } else {
-        throw new Error(result.error);
+        fetchPushStats(); // Odśwież statystyki po wysyłce
       }
     } catch (err) {
-      toast.error('Błąd wysyłki powiadomień.');
+      toast.error('Błąd wysyłki.');
     } finally {
       setIsSendingPush(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (confirm('Na pewno usunąć tę promocję?')) {
+    if (confirm('Na pewno usunąć?')) {
       const { error } = await supabase.from('promocje').delete().eq('id', id)
-      if (error) toast.error('Błąd usuwania!')
-      else {
-        fetchPromos();
-        toast.success('Usunięto pomyślnie');
-      }
+      if (!error) { fetchPromos(); toast.success('Usunięto'); }
     }
   }
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent px-6 pt-20">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/30 backdrop-blur-3xl p-12 rounded-[3.5rem] border-2 border-white/60 shadow-2xl max-w-md w-full">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/30 backdrop-blur-3xl p-12 rounded-[3.5rem] border-2 border-white/60 shadow-2xl max-w-md w-full text-center">
           <div className="w-20 h-20 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl"><Lock className="text-white" size={32} /></div>
-          <h2 className="text-3xl font-black uppercase italic tracking-tighter text-center mb-8">Urwis Admin</h2>
+          <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-8 text-zinc-900">Urwis Admin</h2>
           <form onSubmit={handleLogin} className="space-y-4">
             <input type="password" placeholder="Podaj hasło" className="w-full p-5 rounded-2xl bg-white/50 border-2 border-white focus:border-[#BF2024] outline-none font-bold text-center transition-all" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <button className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl">Zaloguj do bazy</button>
+            <button className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl">Wejdź</button>
           </form>
         </motion.div>
       </div>
     )
   }
 
-  // Wyliczenie skuteczności (CTR)
-  const totalInteractions = pushStats.clicks + pushStats.closes;
-  const ctr = totalInteractions > 0 ? Math.round((pushStats.clicks / totalInteractions) * 100) : 0;
+  const globalTotal = pushStats.clicks + pushStats.closes;
+  const globalCtr = globalTotal > 0 ? Math.round((pushStats.clicks / globalTotal) * 100) : 0;
 
   return (
     <main className="min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto">
       
+      {/* HEADER */}
       <header className="flex flex-col lg:grid lg:grid-cols-2 justify-between items-center gap-8 mb-16 bg-white/20 backdrop-blur-xl p-10 rounded-[3rem] border-2 border-white/60 shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none rotate-12"><Users size={200} /></div>
         <div className="relative z-10">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#BF2024] mb-2 block">Centrum Dowodzenia</span>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none text-zinc-900">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#BF2024] mb-2 block text-center lg:text-left">Centrum Dowodzenia</span>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none text-zinc-900 text-center lg:text-left">
             ADMIN <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">URWIS</span>
           </h1>
-          <div className="mt-4 flex items-center gap-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
-            <Users size={14} /> Subskrybentów PWA: <span className="text-[#0055ff]">{subscriberCount}</span>
+          <div className="mt-4 flex items-center justify-center lg:justify-start gap-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
+            <Users size={14} /> Subskrybentów w "{selectedTopic}": <span className="text-[#0055ff]">{subscriberCount}</span>
           </div>
         </div>
         
@@ -181,9 +213,10 @@ export default function AdminPage() {
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* LEWA KOLUMNA: Lista promocji */}
+        
+        {/* LEWA KOLUMNA: LISTA PROMOCJI */}
         <div className="xl:col-span-2 space-y-8">
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3 text-zinc-900">
             <Tag size={24} className="text-[#BF2024]" /> Aktualne Promocje
           </h2>
           {loading ? (
@@ -197,7 +230,7 @@ export default function AdminPage() {
                     <button onClick={() => handleDelete(promo.id)} className="p-2 bg-red-50 text-[#BF2024] rounded-lg hover:bg-[#BF2024] hover:text-white transition-all"><Trash2 size={16} /></button>
                   </div>
                   <h3 className="text-xl font-black italic uppercase tracking-tighter mb-2 line-clamp-1">{promo.title}</h3>
-                  <div className="flex items-baseline gap-2 mb-6">
+                  <div className="flex items-baseline gap-2 mb-4">
                     <span className="text-3xl font-black text-[#BF2024]">{promo.new_price} zł</span>
                     <span className="text-xs text-zinc-400 line-through font-bold">{promo.old_price} zł</span>
                   </div>
@@ -208,79 +241,114 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* PRAWA KOLUMNA: Panel Push & Statystyki */}
+        {/* PRAWA KOLUMNA: PANEL PUSH I HISTORIA DAT */}
         <div className="space-y-8">
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3 text-zinc-900">
             <Bell size={24} className="text-[#0055ff]" /> Wyślij Push
           </h2>
           
+          {/* Formularz Wysyłki */}
           <div className="bg-white/50 backdrop-blur-2xl p-8 rounded-[3rem] border-2 border-white shadow-2xl space-y-6">
-            <p className="text-zinc-500 font-bold uppercase text-[10px] leading-relaxed italic">
-              Wiadomość trafi prosto na ekrany telefonów Twoich klientów. Używaj rozważnie!
-            </p>
             <form onSubmit={handleSendPush} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase ml-4 text-zinc-400 italic">Tytuł powiadomienia</label>
-                <input required placeholder="np. Wielka Dostawa LEGO! 🧱" className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none focus:border-[#0055ff]" value={pushData.title} onChange={e => setPushData({...pushData, title: e.target.value})} />
+                <label className="text-[10px] font-black uppercase ml-4 text-zinc-400 italic">Grupa odbiorców</label>
+                <select className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none appearance-none" value={selectedTopic} onChange={(e) => setSelectedTopic(e.target.value)}>
+                  {PUSH_CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
+                </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase ml-4 text-zinc-400 italic">Treść wiadomości</label>
-                <textarea required placeholder="Wpadnij sprawdzić nowości w Sklepie Urwis..." rows={3} className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none focus:border-[#0055ff]" value={pushData.message} onChange={e => setPushData({...pushData, message: e.target.value})} />
+                <input required placeholder="Tytuł powiadomienia..." className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none focus:border-[#0055ff]" value={pushData.title} onChange={e => setPushData({...pushData, title: e.target.value})} />
               </div>
-              <button disabled={isSendingPush || subscriberCount === 0} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl disabled:opacity-50">
+              <div className="space-y-2">
+                <textarea required placeholder="Treść wiadomości..." rows={2} className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none focus:border-[#0055ff]" value={pushData.message} onChange={e => setPushData({...pushData, message: e.target.value})} />
+              </div>
+              <button disabled={isSendingPush || subscriberCount === 0} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] transition-all disabled:opacity-30">
                 {isSendingPush ? <Loader2 className="animate-spin" size={18} /> : <><Send size={18} /> Wyślij do {subscriberCount} osób</>}
               </button>
             </form>
           </div>
 
-          {/* 🚀 DODANE: Statystyki na żywo */}
+          {/* 🚀 STATYSTYKI GLOBALNE */}
           <div className="bg-white/30 backdrop-blur-xl p-8 rounded-[3rem] border border-white shadow-lg space-y-6">
-            <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 flex items-center gap-2">
-              📊 Skuteczność Powiadomień
-            </h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 italic">Podsumowanie Globalne</h3>
+              <span className={`text-xl font-black italic ${globalCtr > 10 ? 'text-green-500' : 'text-zinc-400'}`}>{globalCtr}% <span className="text-[10px] uppercase tracking-tighter">CTR</span></span>
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-green-50/50 border border-green-100 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-                <MousePointerClick className="text-green-500 mb-2" size={24} />
-                <span className="text-2xl font-black text-green-600 leading-none">{pushStats.clicks}</span>
-                <span className="text-[9px] font-bold uppercase text-green-600/60 tracking-widest mt-1">Kliknięto</span>
+              <div className="bg-white p-4 rounded-2xl flex flex-col items-center border border-zinc-100">
+                <MousePointerClick className="text-green-500 mb-1" size={20} />
+                <span className="text-xl font-black text-zinc-900 leading-none">{pushStats.clicks}</span>
+                <span className="text-[8px] font-black uppercase text-zinc-400 mt-1 tracking-widest">Kliknięć</span>
               </div>
-              <div className="bg-red-50/50 border border-red-100 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-                <BellOff className="text-red-400 mb-2" size={24} />
-                <span className="text-2xl font-black text-red-500 leading-none">{pushStats.closes}</span>
-                <span className="text-[9px] font-bold uppercase text-red-500/60 tracking-widest mt-1">Odrzucono</span>
+              <div className="bg-white p-4 rounded-2xl flex flex-col items-center border border-zinc-100">
+                <BellOff className="text-red-400 mb-1" size={20} />
+                <span className="text-xl font-black text-zinc-900 leading-none">{pushStats.closes}</span>
+                <span className="text-[8px] font-black uppercase text-zinc-400 mt-1 tracking-widest">Ignorowań</span>
               </div>
             </div>
-
-            <div className="flex justify-between items-center px-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Współczynnik otwarć (CTR):</span>
-              <span className={`text-lg font-black italic ${ctr > 10 ? 'text-green-500' : 'text-zinc-700'}`}>{ctr}%</span>
-            </div>
-            
           </div>
+
+          {/* 🚀 NOWOŚĆ: HISTORIA DZIENNA */}
+          <div className="bg-zinc-900 text-white p-8 rounded-[3rem] shadow-2xl space-y-6 overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none"><Calendar size={100} /></div>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 italic flex items-center gap-2">
+              <Calendar size={12} /> Historia Dzień po Dniu
+            </h3>
+            
+            <div className="space-y-5 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              {dailyStats.map((day, idx) => (
+                <div key={day.date} className="relative group">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-[11px] font-black italic tracking-tighter text-white/90">{day.date}</span>
+                    <span className="text-[10px] font-bold text-blue-400">{day.ctr}% <span className="text-[8px] uppercase opacity-50">CTR</span></span>
+                  </div>
+                  
+                  {/* Mini-pasek postępu */}
+                  <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden flex">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(day.clicks / day.total) * 100}%` }}
+                      className="bg-blue-500 h-full"
+                    />
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(day.closes / day.total) * 100}%` }}
+                      className="bg-white/10 h-full"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3 mt-1 opacity-40 text-[8px] font-bold uppercase tracking-widest">
+                    <span>{day.clicks} klik</span>
+                    <span>{day.closes} igno</span>
+                  </div>
+                </div>
+              ))}
+              {dailyStats.length === 0 && <p className="text-zinc-500 text-xs text-center py-4">Brak danych historycznych</p>}
+            </div>
+          </div>
+
         </div>
       </div>
 
+      {/* MODAL (Dodawanie promocji) */}
       <AnimatePresence>
         {isAdding && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center p-6">
-            <motion.form onSubmit={handleAddPromo} initial={{ y: 50, scale: 0.9 }} animate={{ y: 0, scale: 1 }} className="bg-white rounded-[3.5rem] p-12 max-w-2xl w-full shadow-2xl border-2 border-white relative">
+            <motion.form onSubmit={handleAddPromo} initial={{ y: 50, scale: 0.9 }} animate={{ y: 0, scale: 1 }} className="bg-white rounded-[3.5rem] p-12 max-w-2xl w-full shadow-2xl border-2 border-white relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none rotate-12"><Plus size={200} /></div>
               <button type="button" onClick={() => setIsAdding(false)} className="absolute top-8 right-8 text-zinc-400 hover:text-zinc-900"><X size={32} /></button>
-              <h3 className="text-3xl font-black uppercase italic mb-10">Nowa Okazja</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <input required placeholder="Nazwa produktu" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none focus:ring-2 ring-[#BF2024]" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-                <select className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none focus:ring-2 ring-[#0055ff]" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+              <h3 className="text-3xl font-black uppercase italic mb-10 relative">Nowa Okazja</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 relative">
+                <input required placeholder="Produkt" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none focus:ring-2 ring-[#BF2024]" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+                <select className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
                   <option>Zabawki</option><option>Szkoła i biuro</option><option>Imprezy</option><option>Gry</option>
                 </select>
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black uppercase ml-4 text-zinc-400">Link do zdjęcia (URL)</label>
-                  <input placeholder="https://..." className="w-full p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} />
-                </div>
                 <input required placeholder="Stara cena" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.old_price} onChange={e => setFormData({...formData, old_price: e.target.value})} />
                 <input required placeholder="Nowa cena" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.new_price} onChange={e => setFormData({...formData, new_price: e.target.value})} />
-                <input placeholder="Rabat" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none md:col-span-2" value={formData.discount} onChange={e => setFormData({...formData, discount: e.target.value})} />
+                <input placeholder="Rabat (np. -20%)" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none md:col-span-2" value={formData.discount} onChange={e => setFormData({...formData, discount: e.target.value})} />
               </div>
-              <button className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all shadow-2xl">Zapisz w bazie</button>
+              <button className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all shadow-2xl relative">Zapisz w bazie</button>
             </motion.form>
           </motion.div>
         )}
