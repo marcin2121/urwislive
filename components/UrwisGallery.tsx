@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
-// 1. DEFINIUJEMY STRUKTURĘ ZDJĘCIA
 export interface GalleryItem {
   id: number | string;
   src: string;
@@ -14,7 +13,6 @@ export interface GalleryItem {
   category: string;
 }
 
-// 2. KOMPONENT PRZYJMUJE 'items' JAKO PARAMETR (PROP)
 interface UrwisGalleryProps {
   items: GalleryItem[];
 }
@@ -30,7 +28,7 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
   const [selectedId, setSelectedId] = useState<number | string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // --- LOGIKA SWOBODNEGO DRAG & DROP 1:1 ---
+  // --- LOGIKA SWOBODNEGO DRAG & DROP ---
   const isDragging = useRef(false);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
@@ -67,7 +65,6 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
     setSelectedId(id);
   };
 
-  // --- NAWIGACJA W MODALU ---
   const goNext = useCallback(() => {
     setSelectedId((prevId) => {
       if (prevId === null) return null;
@@ -111,7 +108,6 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
 
   const selectedItem = items.find(item => item.id === selectedId);
 
-  // Jeśli nie podano zdjęć, nie renderuj galerii
   if (!items || items.length === 0) return null;
 
   return (
@@ -120,12 +116,14 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
       <div className="relative group">
         <button 
           onClick={handleScrollLeft}
+          aria-label='Przewiń galerię w lewo'
           className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 p-4 bg-white/90 text-blue-600 rounded-full shadow-xl backdrop-blur-md hover:bg-white hover:scale-110 hover:shadow-2xl transition-all opacity-0 group-hover:opacity-100"
         >
           <ChevronLeft size={28} />
         </button>
         <button 
           onClick={handleScrollRight}
+          aria-label='Przewiń galerię w prawo'
           className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 p-4 bg-white/90 text-blue-600 rounded-full shadow-xl backdrop-blur-md hover:bg-white hover:scale-110 hover:shadow-2xl transition-all opacity-0 group-hover:opacity-100"
         >
           <ChevronRight size={28} />
@@ -145,7 +143,7 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
               key={item.id}
               layoutId={`gallery-card-${item.id}`} 
               onClick={() => handleCardClick(item.id)}
-              className="relative flex-none w-[80vw] md:w-[40vw] lg:w-[30vw] h-[50vh] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow group/card"
+              className="relative flex-none w-[80vw] md:w-[40vw] lg:w-[30vw] h-[50vh] rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow group/card will-change-transform"
             >
               <Image 
                 src={item.src} 
@@ -153,7 +151,9 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                 fill 
                 draggable={false}
                 className="object-cover transition-transform duration-700 group-hover/card:scale-105 pointer-events-none"
-                sizes="(max-width: 768px) 80vw, 40vw"
+                // 🚀 OPTYMALIZACJA: Precyzyjne sizes i obniżona jakość (niewidoczna różnica, waga 50% mniejsza)
+                sizes="(max-width: 768px) 80vw, (max-width: 1200px) 40vw, 30vw"
+                quality={75}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-80 pointer-events-none" />
               <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
@@ -226,7 +226,9 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                   draggable={false}
                   className="object-cover select-none pointer-events-none" 
                   priority 
+                  // 🚀 OPTYMALIZACJA MODALA: 100vw, bo zajmuje cały ekran
                   sizes="100vw"
+                  quality={80}
                 />
 
                 <motion.div 

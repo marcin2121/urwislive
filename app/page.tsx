@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 import { AcademyPromo } from "@/components/AcademyPromo";
@@ -8,9 +8,9 @@ import AboutSection from "@/components/AboutSection";
 import PoznajUrwisa from "@/components/PoznajUrwisa";
 import UrwisIntro from "@/components/Intro";
 import LoyaltySection from "@/components/LoyaltySection";
-import UrwisGallery from "@/components/UrwisGallery";
 
-// DODANE: Dynamiczny import cząsteczek (nie blokuje renderowania strony)
+// Dynamiczny import - zostawiamy ssr: false dla galerii i cząsteczek
+const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), { ssr: false });
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
 
 const mainPageItems = [
@@ -20,7 +20,7 @@ const mainPageItems = [
   { id: 4, src: '/gallery/IMG_6013.webp', title: "Gimnastyka Umysłu", category: "Puzzle" },
   { id: 5, src: '/gallery/IMG_6009.webp', title: "Wodne Szaleństwo", category: "Letnie zabawy" },
   { id: 6, src: '/gallery/IMG_6014.webp', title: "Małe Skarby", category: "Bibeloty" },
-  { id: 7, src: '/gallery/sklep-front.jpg', title: "Nasz Sklep", category: "Białobrzegi" },
+  { id: 7, src: '/gallery/sklep-front.webp', title: "Nasz Sklep", category: "Białobrzegi" },
   { id: 8, src: '/gallery/IMG_6035.webp', title: "Szkolna Wyprawka", category: "Artykuły szkolne" },
   { id: 9, src: '/gallery/IMG_6005.webp', title: "Czas na Start", category: "Pojazdy" },
   { id: 10, src: '/gallery/IMG_6004.webp', title: "Moja Bryka", category: "Jeździki" },
@@ -33,71 +33,36 @@ const mainPageItems = [
 ];
 
 export default function StoreFrontPage() {
-  const [isMobile, setIsMobile] = useState(false);
-  const [mounted, setMounted] = useState(false); // Zabezpieczenie dla Next.js
-
-  useEffect(() => {
-    setMounted(true);
-    
-    // TUTAJ ZNAJDUJE SIĘ TA FUNKCJA:
-    const checkMobile = () => setIsMobile(window.innerWidth < 768); 
-    
-    checkMobile(); // Sprawdzamy od razu po wejściu na stronę
-    window.addEventListener('resize', checkMobile); // Nasłuchujemy zmiany rozmiaru okna
-    
-    return () => window.removeEventListener('resize', checkMobile); // Sprzątamy po sobie
-  }, []);
-
-  // 1. WYCIĄGAMY CAŁĄ ZAWARTOŚĆ DO ZMIENNEJ (Zasada DRY - Don't Repeat Yourself)
-  const pageContent = (
-    <div className="min-h-screen bg-transparent text-zinc-900">
-      
-      {/* 🟢 TŁO: Particles - RENDEROWANE TYLKO NA DESKTOPIE */}
-      {!isMobile && mounted && (
-        <div className="fixed inset-0 z-0 pointer-events-none">
+  return (
+    /* Zasada: Page.tsx tylko definiuje STRUKTURĘ. 
+       To UrwisIntro samo sprawdzi w środku: "Czy jestem na mobile? Jeśli tak, po prostu pokaż dzieci (children)".
+    */
+    <UrwisIntro>
+      <div className="min-h-screen bg-transparent text-zinc-900">
+        
+        {/* Particles ukrywamy klasą CSS - to najszybsza metoda, nie blokuje renderowania */}
+        <div className="fixed inset-0 z-0 pointer-events-none hidden md:block">
           <Particles
-            particleCount={200}
+            particleCount={150}
             particleColors={["#BF2024", "#0055ff"]}
             alphaParticles
-            particleBaseSize={150}
+            particleBaseSize={100}
             speed={0.05}
-            sizeRandomness={0.7}
           />
         </div>
-      )}
 
-      <div className="relative z-10">
-        {/* 1. Sekcja powitalna */}
-        <Hero />
+        <div className="relative z-10">
+          <Hero />
+          <LoyaltySection />
+          <UrwisGallery items={mainPageItems} />
+          <PoznajUrwisa />
 
-        {/* 2. Program lojalnościowy */}
-        <LoyaltySection />
-
-        {/* 3. GALERIA (Z EFEKTEM LAYOUT ID) */}
-        <UrwisGallery items={mainPageItems} />
-        
-        {/* 5. Sekcja o maskotce */}
-        <PoznajUrwisa />
-
-        <div className="container mx-auto px-4 py-12">
-          {/* 6. Banner do Akademii */}
-          <AcademyPromo />
-          
-          <AboutSection />
+          <div className="container mx-auto px-4 py-12">
+            <AcademyPromo />
+            <AboutSection />
+          </div>
         </div>
       </div>
-    </div>
+    </UrwisIntro>
   );
-
-  // 2. UNIKAMY BŁĘDU HYDRATACJI W NEXT.JS
-  // Zwracamy czysty content serwerowo, by SEO widziało stronę, 
-  // a klienckie efekty włączamy dopiero po załadowaniu w przeglądarce.
-  if (!mounted) {
-    return pageContent;
-  }
-
-  // 3. WARUNKOWE RENDEROWANIE INTRO
-  // Jeśli to mobile -> renderuj czystą zawartość
-  // Jeśli to desktop -> owiń zawartość w komponent UrwisIntro
-  return isMobile ? pageContent : <UrwisIntro>{pageContent}</UrwisIntro>;
 }

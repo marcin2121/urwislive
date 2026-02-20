@@ -17,7 +17,7 @@ export default function PushButton() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       className="relative flex items-center justify-center p-2.5 rounded-full bg-zinc-100/60 hover:bg-zinc-200/80 text-zinc-600 transition-colors border border-white/50 shadow-sm"
-      aria-label="Włącz powiadomienia"
+      aria-label="Włącz powiadomienia push"
     >
       {/* Elegancka ikonka dzwonka */}
       <BellRing className="w-[18px] h-[18px] md:w-5 md:h-5" strokeWidth={2} />

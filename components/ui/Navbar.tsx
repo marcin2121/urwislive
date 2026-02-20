@@ -109,38 +109,38 @@ export default function Navbar() {
               <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full shadow-sm border border-white/50 bg-white shrink-0">
                 <Image src="/logo.png" alt="Logo Sklepu Urwis" fill className="object-contain p-1.5" priority />
               </div>
-              {/* 🚀 ZMIANA: Usunięto "hidden lg:flex". Teraz tekst jest widoczny zawsze, odpowiednio zeskalowany dla mobile */}
               <div className="flex flex-col leading-[0.85] pt-0.5" aria-hidden="true">
                 <span className="text-[11px] md:text-[13px] font-black italic tracking-tighter text-[#BF2024]">SKLEP</span>
                 <span className="text-[11px] md:text-[13px] font-black italic tracking-tighter text-[#0055ff]">URWIS</span>
               </div>
             </Link>
 
-            {/* STATUS MOBILNY Z CHEVRONEM */}
+            {/* STATUS MOBILNY - TERAZ IDENTYCZNY JAK DESKTOP */}
             <button 
               onClick={() => setIsHoursDropdownOpen(!isHoursDropdownOpen)}
               aria-expanded={isHoursDropdownOpen}
-              className={`md:hidden flex items-center gap-1 px-2 py-1.5 rounded-[14px] border shadow-xs transition-all active:scale-95 shrink-0 ${
-                shopStatus.isOpen 
-                  ? 'bg-green-50/80 border-green-200/50 hover:bg-green-100/80' 
-                  : 'bg-red-50/80 border-red-200/50 hover:bg-red-100/80'
-              }`}
+              aria-haspopup="true"
+              aria-label="Pokaż godziny otwarcia"
+              className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 border border-white/60 shadow-sm transition-all active:scale-95 shrink-0"
             >
+              {/* Pulsująca kropka */}
+              <div className="relative flex h-2 w-2 shrink-0">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${shopStatus.isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
+              </div>
+
               <div className="flex flex-col items-start justify-center">
-                <div className="flex items-center gap-1.5 leading-none">
-                  <div className={`w-1.5 h-1.5 rounded-full ${shopStatus.isOpen ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                  <span className={`text-[9px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>
-                    {shopStatus.label}
-                  </span>
-                </div>
-                <span className="text-[7px] font-bold text-zinc-500 tracking-tighter mt-[3px] leading-none pl-3">
+                <span className={`text-[9px] font-black uppercase tracking-tighter leading-none ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>
+                  {shopStatus.label}
+                </span>
+                <span className="text-[7px] font-bold text-zinc-400 tracking-tighter mt-[1px] leading-none">
                   {shopStatus.subLabel}
                 </span>
               </div>
               <ChevronDown 
-                size={14} 
+                size={12} 
                 strokeWidth={3} 
-                className={`transition-transform duration-300 ${shopStatus.isOpen ? 'text-green-600/50' : 'text-red-500/50'} ${isHoursDropdownOpen ? 'rotate-180' : ''}`} 
+                className={`text-zinc-400 transition-transform duration-300 ${isHoursDropdownOpen ? 'rotate-180' : ''}`} 
               />
             </button>
 
@@ -150,6 +150,8 @@ export default function Navbar() {
             <button
               onClick={() => setIsHoursDropdownOpen(!isHoursDropdownOpen)}
               aria-expanded={isHoursDropdownOpen}
+              aria-haspopup="true"
+              aria-label="Pokaż godziny otwarcia"
               className="hidden md:flex items-center gap-3 px-4 py-2 rounded-full bg-white/50 hover:bg-white border border-white/60 shadow-sm transition-all group"
             >
               <div className="relative flex h-2.5 w-2.5">

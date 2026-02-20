@@ -8,10 +8,21 @@ import { RibbonsBg } from '@/components/Ribbons';
 import OrphansFixer from "@/components/utils/OrphansFixer";
 import CookieModal from "@/components/ui/CookieModal";
 import InstallPrompt from "@/components/ui/InstallPrompt";
-import { Suspense } from "react"; // 🚀 DODANE
+import { Suspense } from "react";
+import ReactDOM from "react-dom"; // 🚀 DODANE
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const fredoka = Fredoka({ subsets: ["latin"], variable: "--font-fredoka" });
+// 🚀 ZMIANA: Dodano 'display: swap', aby tekst pojawiał się błyskawicznie (lepsze FCP)
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: 'swap' 
+});
+
+const fredoka = Fredoka({ 
+  subsets: ["latin"], 
+  variable: "--font-fredoka",
+  display: 'swap'
+});
 
 export const metadata: Metadata = {
   title: "Sklep Urwis | Zabawki, Balony i Artykuły Szkolne Białobrzegi",
@@ -26,11 +37,17 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // 🚀 KLUCZ DO LCP: Preload obrazka fallback. 
+  // Przeglądarka zacznie go pobierać równolegle z plikami CSS/JS.
+  ReactDOM.preload("/urwis-fallback.webp", { 
+    as: "image", 
+    fetchPriority: "high" 
+  });
+
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
         
-        {/* 🚀 ZMIANA: Owinięte w Suspense, aby nie blokowało buildu */}
         <Suspense fallback={null}>
           <OrphansFixer />
         </Suspense>
@@ -43,7 +60,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-20 flex flex-col min-h-screen bg-transparent">
           <Navbar />
           
-          {/* 🚀 ZMIANA: Owinięte w Suspense */}
           <Suspense fallback={null}>
             <InstallPrompt />
           </Suspense>
@@ -59,7 +75,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <Toaster position="bottom-right" richColors />
         
-        {/* 🚀 ZMIANA: Owinięte w Suspense */}
         <Suspense fallback={null}>
           <CookieModal />
         </Suspense>
@@ -72,7 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(
                     function(registration) {
-                      console.log('SW registered! Scope:', registration.scope);
+                      console.log('SW registered!');
                     },
                     function(err) {
                       console.log('SW registration failed:', err);

@@ -2,22 +2,26 @@
 
 import Link from 'next/link';
 import { useRef, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import dynamic from 'next/dynamic'; // Dynamiczny import modelu 3D
+import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { HeartHandshake, Zap, Palette, ChevronRight, Sparkles } from 'lucide-react';
 
-// 🚀 ZMIANA 1: Ładujemy ModelViewer tylko po stronie klienta (bez blokowania serwera)
-const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false });
+// Dynamiczne ładowanie modelu tylko na kliencie
+const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { 
+  ssr: false,
+  loading: () => <div className="w-full h-full" /> 
+});
 
 export default function PoznajUrwisa() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  
-  // Usunięto zacinający się stan shouldLoadModel i event listener na window.scrollY
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    setMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -29,6 +33,8 @@ export default function PoznajUrwisa() {
     { icon: Palette, title: 'Kreatywny', desc: 'Pokaże Ci inspiracje, o których nawet nie śniłeś.', color: '#0055ff' }
   ];
 
+  if (!mounted) return null;
+
   return (
     <section 
       id="poznaj-urwisa"
@@ -39,13 +45,13 @@ export default function PoznajUrwisa() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-center">
           
-          {/* CZĘŚĆ 1: Nagłówek i opisy */}
+          {/* LEWA STRONA: Teksty */}
           <div className="order-1 lg:col-start-1 lg:row-start-1 space-y-12 w-full text-center lg:text-left">
             <div className="space-y-6">
               <motion.span 
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-50px" }} // Aktywacja chwilę przed pojawieniem się
+                viewport={{ once: true }}
                 className="inline-flex items-center gap-2 px-6 py-2 bg-white/40 backdrop-blur-md text-zinc-500 rounded-full text-[12px] font-black uppercase tracking-[0.3em]"
               >
                 <Sparkles size={14} className="text-[#BF2024]" /> Poznaj naszą maskotkę
@@ -69,66 +75,89 @@ export default function PoznajUrwisa() {
             </div>
           </div>
 
-          {/* CZĘŚĆ 2: Model 3D (Zoptymalizowany) */}
+          {/* PRAWA STRONA: Model 3D / Image Fallback (Klucz do LCP) */}
           <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3 relative w-full h-[450px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
             
-            {/* 🚀 ZMIANA 2: Używamy viewport={{ once: true }} z Framer Motion, żeby załadować 3D dopiero, gdy się pojawi! */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true, margin: "200px" }} // margin 200px sprawia, że załaduje się chwilę wcześniej, zanim go zobaczysz
-              className="relative w-full h-full flex items-center justify-center"
-            >
+            <div className="relative w-full h-full flex items-center justify-center">
               
-              {/* 🚀 ZMIANA 3: Koniec z blur-[120px]. Czysty, lekki gradient CSS */}
+              {/* Efekty tła: Radial gradient (wydajniejszy niż blur) */}
               <motion.div
-                animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute w-[280px] h-[280px] md:w-[450px] md:h-[450px] lg:w-[600px] lg:h-[600px] bg-[radial-gradient(circle_at_center,rgba(0,85,255,0.2)_0%,transparent_60%)] rounded-full z-0 will-change-transform"
+                animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute w-[300px] h-[300px] md:w-[550px] md:h-[550px] bg-[radial-gradient(circle,rgba(0,85,255,0.2)_0%,transparent_70%)] rounded-full z-0 will-change-transform"
               />
 
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute w-[320px] h-[320px] md:w-[500px] md:h-[500px] border-2 border-dashed border-[#BF2024]/10 rounded-full will-change-transform" />
-              </div>
-
-              {/* MODEL 3D */}
-              <div className={`relative z-10 w-full h-full flex items-center justify-center ${isMobile ? 'pointer-events-none' : 'pointer-events-auto cursor-grab active:cursor-grabbing'}`}>
-                <ModelViewer 
-                  url="/urwis.glb"
-                  width={isMobile ? 500 : 900} 
-                  height={isMobile ? 500 : 900}
-                  defaultZoom={isMobile ? 1.4 : 2}
-                  defaultRotationX={0}
-                  defaultRotationY={260}
-                  fadeIn={true}
-                  onModelLoaded={() => setModelLoaded(true)}
-                  autoRotate={true}
-                  autoRotateSpeed={0.3}
-                  enableManualZoom={false}       
-                  showScreenshotButton={false}          
+                <motion.div 
+                  animate={{ rotate: 360 }} 
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }} 
+                  className="absolute w-[320px] h-[320px] md:w-[550px] md:h-[550px] border-2 border-dashed border-[#BF2024]/10 rounded-full will-change-transform" 
                 />
               </div>
 
-              {/* LOADER */}
-              {!modelLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-                  <div className="bg-white/40 backdrop-blur-2xl px-8 py-4 rounded-3xl border border-white/50 shadow-2xl">
-                     <span className="text-sm font-black italic uppercase">Wołam Urwisa...</span>
+              {/* Kontener wizualny */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center">
+                
+                {/* 1. OBRAZEK FALLBACK (LCP FIX) - Widoczny natychmiast na obu urządzeniach */}
+                <motion.div
+                  initial={false}
+                  animate={{ 
+                    opacity: (isMobile || !modelLoaded) ? 1 : 0,
+                    scale: (isMobile || !modelLoaded) ? 1 : 0.95 
+                  }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute inset-0 z-20"
+                >
+                  <Image 
+                    src="/urwis-fallback.webp" 
+                    alt="Maskotka Sklepu Urwis"
+                    fill
+                    className="object-contain"
+                    priority // Gwarantuje szybki wynik LCP w Lighthouse
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </motion.div>
+
+                {/* 2. MODEL 3D (Tylko Desktop) - Nakłada się na obrazek po załadowaniu */}
+                {!isMobile && (
+                  <div className={`relative z-30 w-full h-full transition-opacity duration-1000 ${modelLoaded ? 'opacity-100' : 'opacity-0'}`}>
+                    <ModelViewer 
+                      url="/urwis.glb"
+                      width="100%" 
+                      height="100%"
+                      defaultZoom={2}
+                      defaultRotationX={0}
+                      defaultRotationY={260}
+                      fadeIn={true}
+                      onModelLoaded={() => setModelLoaded(true)}
+                      autoRotate={true}
+                      autoRotateSpeed={0.3}
+                      enableManualZoom={false}       
+                      showScreenshotButton={false}          
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Dyskretny Loader dymek */}
+              {!isMobile && !modelLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
+                  <div className="bg-white/40 backdrop-blur-xl px-8 py-4 rounded-3xl border border-white/50 shadow-2xl">
+                     <span className="text-sm font-black italic uppercase animate-pulse">Budzę Urwisa...</span>
                   </div>
                 </div>
               )}
-
-            </motion.div>
+            </div>
           </div>
 
-          {/* CZĘŚĆ 3: Cechy */}
+          {/* DOLNA CZĘŚĆ: Cechy */}
           <div className="order-3 lg:col-start-1 lg:row-start-2 grid gap-6">
             {features.map((feature, i) => (
               <FeatureCard key={i} {...feature} index={i} />
             ))}
           </div>
 
-          {/* CZĘŚĆ 4: Przycisk */}
+          {/* DOLNA CZĘŚĆ: Przycisk */}
           <div className="order-4 lg:col-start-1 lg:row-start-3 pt-4 lg:pt-8 w-full text-center lg:text-left">
             <Link 
               href="/oferta" 
@@ -153,8 +182,8 @@ function FeatureCard({ icon: Icon, title, desc, color, index }: any) {
       initial={{ opacity: 0, x: -30 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ delay: 0.2 + index * 0.1, duration: 0.6 }}
-      whileHover={{ x: 15 }}
+      transition={{ delay: 0.1 + index * 0.1, duration: 0.5 }}
+      whileHover={{ x: 10 }}
       className="flex items-start gap-6 p-6 rounded-[2.5rem] bg-white/20 backdrop-blur-xl border-2 border-white/70 shadow-xl hover:bg-white/40 transition-all duration-500 group will-change-transform"
     >
       <div className="p-4 rounded-2xl shadow-lg shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20" style={{ backgroundColor: color }}>

@@ -43,7 +43,6 @@ export default function InstallPrompt() {
     }
   };
 
-  // LOGIKA DLA SPECJALNEGO TEKSTU
   const isFromQR = searchParams.get('utm_source') === 'qr_store';
   const isPromotionsPage = pathname.includes('/promocje');
   const showSpecialPromoText = isPromotionsPage && isFromQR;
@@ -52,18 +51,17 @@ export default function InstallPrompt() {
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ y: 200, opacity: 0 }}
+          initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 200, opacity: 0 }}
+          exit={{ y: 100, opacity: 0 }}
           className="fixed bottom-8 left-4 right-4 z-[100] md:left-auto md:right-8 md:w-[380px]"
         >
           <div className="relative pt-12"> 
             
-         {/* ZERKAJĄCY URWIS - rączki powinny być na dole grafiki */}
-         <motion.div 
-              initial={{ y: 40, opacity: 0 }}
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
+              transition={{ delay: 0.4 }}
               className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[52%] w-44 h-44 z-20 pointer-events-none"
             >
               <Image 
@@ -71,30 +69,25 @@ export default function InstallPrompt() {
                 alt="Urwis zagląda"
                 fill
                 className="object-contain"
-                priority
+                // 🚀 USUNIĘTO priority.
               />
             </motion.div>
 
-            <div className="bg-white/95 backdrop-blur-2xl p-6 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.2)] border-2 border-white relative z-10">              
+            {/* 🚀 OPTYMALIZACJA: Usunięto backdrop-blur-2xl */}
+            <div className="bg-white p-6 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.3)] border-2 border-zinc-100 relative z-10">              
               <button onClick={() => setShow(false)} className="absolute top-4 right-4 text-zinc-300 hover:text-zinc-600">
                 <X size={20} strokeWidth={3} />
               </button>
 
               <div className="text-center mb-6 pt-2">
-                {/* --- SEKCJA SPECJALNEGO TEKSTU --- */}
                 {showSpecialPromoText && (
-                  <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="mb-4 p-3 bg-blue-50 border-2 border-blue-100 rounded-2xl flex items-center justify-center gap-2"
-                  >
+                  <div className="mb-4 p-3 bg-blue-50 border-2 border-blue-100 rounded-2xl flex items-center justify-center gap-2">
                     <Sparkles className="text-blue-600 shrink-0" size={16} />
                     <p className="text-[12px] font-black text-blue-700 uppercase italic leading-tight">
                       Sprawdź nasze promocje i zainstaluj aplikację!
                     </p>
-                  </motion.div>
+                  </div>
                 )}
-                {/* -------------------------------- */}
 
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter text-zinc-900 leading-none mb-2">
                   {isPromotionsPage ? "Łap okazje" : "Miej Urwisa"} <span className="text-blue-600">{isPromotionsPage ? "z naszą apką!" : "zawsze pod ręką!"}</span>
@@ -107,12 +100,12 @@ export default function InstallPrompt() {
               {platform === 'android' ? (
                 <button
                   onClick={handleAndroidInstall}
-                  className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-3 hover:bg-blue-600 transition-all shadow-xl active:scale-95"
+                  className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-3 active:scale-95"
                 >
                   <Download size={18} /> Zainstaluj w 2 sekundy
                 </button>
               ) : (
-                <div className="space-y-4 bg-zinc-50/80 p-5 rounded-3xl border border-zinc-100">
+                <div className="space-y-4 bg-zinc-50 p-5 rounded-3xl border border-zinc-100">
                   <div className="flex items-center justify-around gap-2 text-[9px] font-black uppercase text-zinc-500">
                     <div className="flex flex-col items-center gap-2 text-center">
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-500 border border-zinc-100"><Share size={20} /></div>
