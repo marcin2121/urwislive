@@ -4,14 +4,13 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
-    const { title, message, topic } = await req.json();
+    const { title, message, topic, image } = await req.json();
 
-    // 1. Sprawdzenie i bezpieczna inicjalizacja kluczy VAPID
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
     const privateKey = process.env.VAPID_PRIVATE_KEY;
 
     if (!publicKey || !privateKey) {
-      console.error('❌ Błąd: Brak kluczy VAPID w Environment Variables.');
+      console.error('❌ Błąd: Brak kluczy VAPID.');
       return NextResponse.json({ error: 'Klucze VAPID nie są skonfigurowane.' }, { status: 500 });
     }
 
@@ -23,21 +22,19 @@ export async function POST(req: Request) {
 
     const supabase = await createClient();
 
-    // 2. Budowanie zapytania do bazy
+    // 1. Budowanie zapytania z uwzględnieniem "wszystkie"
     let query = supabase
       .from('push_subscriptions')
       .select('subscription_data, endpoint');
 
-    // Filtrowanie po temacie (jeśli wybrano konkretny)
     if (topic && topic !== 'wszystkie') {
-      // WAŻNE: Kolumna 'topics' musi istnieć w bazie jako text[]
-      query = query.contains('topics', [topic]);
+      // Szukamy tych z konkretnym tematem LUB tych, którzy chcą wszystko
+      query = query.or(`topics.cs.{"${topic}"},topics.cs.{"wszystkie"}`);
     }
 
     const { data: subs, error: dbError } = await query;
 
     if (dbError) {
-      console.error('❌ Błąd bazy danych Supabase:', dbError.message);
       return NextResponse.json({ error: `Błąd bazy: ${dbError.message}` }, { status: 500 });
     }
 
@@ -45,7 +42,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, count: 0, message: 'Brak odbiorców' });
     }
 
-    // 3. Masowa wysyłka powiadomień
+    // 2. Przygotowanie linku URL z wyzwalaczem ustawień i UTM
+    const targetUrl = `/?settings=open&utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}`;
+
+    // 3. Masowa wysyłka
     const notifications = subs.map((sub: any) => 
       webpush.sendNotification(
         sub.subscription_data,
@@ -53,14 +53,14 @@ export async function POST(req: Request) {
           title: title,
           body: message,
           icon: '/android-chrome-192x192.png',
-          data: { 
-            url: `/?utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}` 
-          }
+          image: image || null, // 🚀 Dodajemy obsługę zdjęcia
+          badge: '/badge-icon.png',
+          data: { url: targetUrl }
         })
       ).catch(async (err) => {
-        // Automatyczne usuwanie nieaktywnych subskrypcji z bazy (status 404 lub 410)
+        // Usuwanie wygasłych tokenów (status 404/410)
         if (err.statusCode === 404 || err.statusCode === 410) {
-          console.log(`[CLEANUP] Usuwanie wygasłego urządzenia: ${sub.endpoint}`);
+          console.log(`[CLEANUP] Usuwanie urządzenia: ${sub.endpoint}`);
           await supabase
             .from('push_subscriptions')
             .delete()
@@ -71,6 +71,15 @@ export async function POST(req: Request) {
 
     await Promise.all(notifications);
 
+    // 4. 🚀 ZAPIS DO HISTORII (abyś widział kampanie w panelu)
+    await supabase.from('push_history').insert([{
+      title: title,
+      message: message,
+      image_url: image || null,
+      topic: topic || 'wszystkie',
+      sent_to_count: subs.length
+    }]);
+
     return NextResponse.json({ 
       success: true, 
       count: subs.length,
@@ -79,9 +88,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('❌ Krytyczny błąd Push API:', error);
-    return NextResponse.json({ 
-      error: 'Wystąpił błąd serwera podczas wysyłki.',
-      details: error.message 
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
   }
 }

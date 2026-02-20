@@ -1,371 +1,549 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Plus, Trash2, Edit2, X, Lock, 
-  Tag, Package, Percent, LogOut, Loader2,
-  Bell, Send, Users, MousePointerClick, BellOff,
-  Filter, Calendar, ChevronRight
+import {
+  Plus, Trash2, X, Lock, Tag, LogOut, Loader2,
+  Bell, Send, Wand2, Clock, Zap, Flame,
+  Image as ImageIcon, Coffee, LayoutDashboard, History, ChevronRight
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { PUSH_CATEGORIES } from '@/lib/push-config' // 🚀 Importujemy wspólne źródło prawdy
+import { PUSH_CATEGORIES, PushTopic } from '@/lib/push-config'
 
-interface Promo {
-  id: string;
-  title: string;
-  old_price: string;
-  new_price: string;
-  discount: string;
-  category: string;
-}
+// --- SZABLONY ---
+const QUICK_TEMPLATES = [
+  { id: 'luz-na-sali', label: 'Dużo luzu', title: 'Mamy sporo miejsca! 🤸', message: 'Szukasz pomysłu na popołudnie? Zapraszamy na kawę!', topic: 'lecewkulki' as PushTopic, icon: Coffee, color: 'bg-orange-500' },
+  { id: 'nowe-lego', label: 'Nowe LEGO', title: 'Dostawa LEGO! 🧩', message: 'Właśnie rozpakowaliśmy nowe zestawy na półkach. Sprawdź!', topic: 'urwis' as PushTopic, icon: Zap, color: 'bg-blue-600' }
+]
 
-interface DailyStat {
-  date: string;
-  clicks: number;
-  closes: number;
-  total: number;
-  ctr: number;
-}
+export default function AdminDashboard() {
+  const supabase = useMemo(() => createClient(), [])
 
-export default function AdminPage() {
-  const supabase = createClient();
+  // --- STATE: AUTH & NAV ---
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
-  const [promos, setPromos] = useState<Promo[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isAdding, setIsAdding] = useState(false)
-  const [isSendingPush, setIsSendingPush] = useState(false)
+  const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history'>('stats')
+
+  // --- STATE: DATA ---
+  const [promos, setPromos] = useState<any[]>([])
+  const [history, setHistory] = useState<any[]>([])
+  const [scheduledPushes, setScheduledPushes] = useState<any[]>([])
   const [subscriberCount, setSubscriberCount] = useState(0)
-  
-  // 🚀 Inicjalizacja domyślnie na "wszystkie"
-  const [selectedTopic, setSelectedTopic] = useState('wszystkie')
-
+  const [totalSubscriberCount, setTotalSubscriberCount] = useState(0)
+  const [totalSentPushes, setTotalSentPushes] = useState(0) // ✅ NOWY STAN: Łączna liczba wysłanych powiadomień
   const [pushStats, setPushStats] = useState({ clicks: 0, closes: 0 })
-  const [dailyStats, setDailyStats] = useState<DailyStat[]>([])
-  const [pushData, setPushData] = useState({ title: '', message: '' })
+  const [loading, setLoading] = useState(false)
 
-  const [formData, setFormData] = useState({
-    title: '',
-    old_price: '',
-    new_price: '',
-    discount: '',
-    category: 'Zabawki',
-    image_url: '',
-  })
+  // --- STATE: FORMS ---
+  const [isAddingPromo, setIsAddingPromo] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [isSendingPush, setIsSendingPush] = useState(false)
+  const [selectedTopic, setSelectedTopic] = useState<PushTopic>('wszystkie')
+  const [pushData, setPushData] = useState({ title: '', message: '', image_url: '', scheduled_for: '' })
+  const [promoForm, setPromoForm] = useState({ title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', expires_at: '' })
+
+  // --- POBIERANIE DANYCH ---
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      // ✅ Dodajemy zapytanie pobierające WSZYSTKIE wysłane powiadomienia, by zsumować ilość dostarczeń
+      const [pRes, hRes, sRes, aRes, allHistRes] = await Promise.all([
+        supabase.from('promocje').select('*').order('created_at', { ascending: false }),
+        supabase.from('push_history').select('*').eq('status', 'sent').order('created_at', { ascending: false }).limit(10),
+        supabase.from('push_history').select('*').eq('status', 'scheduled').order('scheduled_for', { ascending: true }),
+        supabase.from('push_analytics').select('action'),
+        supabase.from('push_history').select('sent_to_count').eq('status', 'sent') // Pobieramy tylko liczniki dla CTR
+      ])
+
+      setPromos(pRes?.data || [])
+      setHistory(hRes?.data || [])
+      setScheduledPushes(sRes?.data || [])
+      
+      if (aRes?.data) {
+        setPushStats({
+          clicks: aRes.data.filter((d: any) => d?.action === 'click').length || 0,
+          closes: aRes.data.filter((d: any) => d?.action === 'close').length || 0
+        })
+      }
+
+      // ✅ Obliczanie sumy wszystkich historycznych dostarczeń dla CTR
+      if (allHistRes?.data) {
+        const totalSent = allHistRes.data.reduce((sum, item) => sum + (item.sent_to_count || 0), 0)
+        setTotalSentPushes(totalSent)
+      }
+
+      let query = supabase.from('push_subscriptions').select('*', { count: 'exact', head: true })
+      if (selectedTopic !== 'wszystkie') {
+        query = query.or(`topics.cs.{"${selectedTopic}"},topics.cs.{"wszystkie"}`)
+      }
+      const { count } = await query
+      setSubscriberCount(count || 0)
+
+      const { count: totalCount } = await supabase.from('push_subscriptions').select('*', { count: 'exact', head: true })
+      setTotalSubscriberCount(totalCount || 0)
+
+    } catch (error) {
+      console.error('Błąd bazy danych:', error)
+      toast.error('Brak dostępu do niektórych danych.')
+    } finally {
+      setLoading(false)
+    }
+  }, [supabase, selectedTopic])
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchPromos();
-      fetchSubscriberCount();
-      fetchPushStats();
+      fetchData()
     }
-  }, [isAuthenticated, selectedTopic]);
+  }, [isAuthenticated, fetchData])
 
-  async function fetchSubscriberCount() {
-    let query = supabase.from('push_subscriptions').select('*', { count: 'exact', head: true });
-    
-    // Filtrowanie po temacie (chyba że wybrano 'wszystkie')
-    if (selectedTopic !== 'wszystkie') {
-      query = query.contains('topics', [selectedTopic]);
-    }
-
-    const { count, error } = await query;
-    if (!error) setSubscriberCount(count || 0);
-  }
-
-  async function fetchPushStats() {
-    const { data, error } = await supabase
-      .from('push_analytics')
-      .select('action, created_at')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      const clicks = data.filter(d => d.action === 'click').length;
-      const closes = data.filter(d => d.action === 'close').length;
-      setPushStats({ clicks, closes });
-
-      const groups = data.reduce((acc: any, curr) => {
-        const date = new Date(curr.created_at).toLocaleDateString('pl-PL');
-        if (!acc[date]) acc[date] = { clicks: 0, closes: 0 };
-        if (curr.action === 'click') acc[date].clicks++;
-        if (curr.action === 'close') acc[date].closes++;
-        return acc;
-      }, {});
-
-      const formattedDaily: DailyStat[] = Object.entries(groups).map(([date, counts]: any) => {
-        const total = counts.clicks + counts.closes;
-        return {
-          date,
-          clicks: counts.clicks,
-          closes: counts.closes,
-          total,
-          ctr: total > 0 ? Math.round((counts.clicks / total) * 100) : 0
-        };
-      });
-
-      setDailyStats(formattedDaily);
-    }
-  }
-
+  // --- HANDLERY ---
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === 'URWIS2026') setIsAuthenticated(true)
-    else toast.error('Niepoprawne hasło!')
-  }
-
-  async function fetchPromos() {
-    setLoading(true)
-    const { data, error } = await supabase.from('promocje').select('*').order('created_at', { ascending: false })
-    if (!error) setPromos(data || [])
-    setLoading(false)
-  }
-
-  async function handleAddPromo(e: React.FormEvent) {
-    e.preventDefault();
-    const { error } = await supabase.from('promocje').insert([formData]);
-    if (!error) {
-      setIsAdding(false);
-      setFormData({ title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', image_url: '' });
-      fetchPromos();
-      toast.success('Dodano promocję!');
+    if (password === 'URWIS2026') {
+      setIsAuthenticated(true)
+    } else {
+      toast.error('Hasło niepoprawne!')
     }
+  }
+
+  const handleDeletePromo = async (id: string) => {
+    if (confirm('Usunąć tę ofertę na stałe?')) {
+      const { error } = await supabase.from('promocje').delete().eq('id', id)
+      if (error) return toast.error('Błąd usuwania')
+      toast.success('Usunięto')
+      fetchData()
+    }
+  }
+
+  const handleDeleteScheduled = async (id: string) => {
+    const { error } = await supabase.from('push_history').delete().eq('id', id)
+    if (error) return toast.error('Błąd usuwania')
+    toast.success('Usunięto zaplanowaną wysyłkę')
+    fetchData()
+  }
+
+  const handleAddPromo = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const payload = {
+      ...promoForm,
+      expires_at: promoForm.expires_at ? new Date(promoForm.expires_at).toISOString() : null,
+      is_active: true
+    }
+    const { error } = await supabase.from('promocje').insert([payload])
+    if (!error) {
+      setIsAddingPromo(false)
+      setPromoForm({ title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', expires_at: '' })
+      toast.success('Promocja dodana!')
+      fetchData()
+    } else {
+      toast.error('Błąd dodawania promocji')
+    }
+  }
+
+  const setQuickExpiry = (hours: number) => {
+    const d = new Date()
+    d.setHours(d.getHours() + hours)
+    setPromoForm(prev => ({ ...prev, expires_at: d.toISOString().slice(0, 16) }))
+    toast.success(`Wygaśnie za ${hours}h`)
+  }
+
+  const applyTemplate = (t: typeof QUICK_TEMPLATES[0]) => {
+    setPushData(prev => ({ ...prev, title: t.title, message: t.message }))
+    setSelectedTopic(t.topic)
+    toast.success(`Wczytano: ${t.label}`)
+  }
+
+  const generateUrwisTalk = () => {
+    const phrases = ['Pst! Zobacz nowości!', 'Urwis melduje okazję!', 'Hej! Wpadniesz sprawdzić?', 'Hop! Mamy coś ekstra!']
+    setPushData(prev => ({ ...prev, title: phrases[Math.floor(Math.random() * phrases.length)] }))
+    toast.success('🪄 Urwis podpowiedział hasło!')
+  }
+
+  async function onImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `broadcasts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    
+    const { error } = await supabase.storage.from('push-images').upload(path, file)
+    if (!error) {
+      const { data } = supabase.storage.from('push-images').getPublicUrl(path)
+      setPushData(prev => ({ ...prev, image_url: data.publicUrl }))
+      toast.success('Zdjęcie wgrane!')
+    } else {
+      toast.error('Błąd wgrywania zdjęcia')
+    }
+    setUploading(false)
   }
 
   async function handleSendPush(e: React.FormEvent) {
-    e.preventDefault();
-    if (subscriberCount === 0) return toast.error('Brak odbiorców w tej grupie!');
-    
-    setIsSendingPush(true);
+    e.preventDefault()
+    if (subscriberCount === 0) return toast.error('Brak odbiorców!')
+    setIsSendingPush(true)
     try {
-      const res = await fetch('/api/push/send-all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...pushData, topic: selectedTopic })
-      });
-      const result = await res.json();
-      if (result.success) {
-        toast.success(`Wysłano do ${result.count} osób!`);
-        setPushData({ title: '', message: '' });
-        fetchPushStats();
+      if (pushData.scheduled_for) {
+        const { error } = await supabase.from('push_history').insert([{
+          ...pushData,
+          topic: selectedTopic,
+          status: 'scheduled',
+          sent_to_count: subscriberCount
+        }])
+        if (error) throw error
+        toast.success('Zaplanowano wysyłkę!')
+      } else {
+        const res = await fetch('/api/push/send-all', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...pushData, topic: selectedTopic })
+        })
+        if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+        toast.success('Wysłano powiadomienia!')
       }
-    } catch (err) {
-      toast.error('Błąd wysyłki.');
+      setPushData({ title: '', message: '', image_url: '', scheduled_for: '' })
+      fetchData()
+    } catch (error) {
+      console.error('Błąd wysyłki:', error)
+      toast.error('Błąd wysyłki, spróbuj ponownie.')
     } finally {
-      setIsSendingPush(false);
+      setIsSendingPush(false)
     }
   }
 
-  async function handleDelete(id: string) {
-    if (confirm('Na pewno usunąć?')) {
-      const { error } = await supabase.from('promocje').delete().eq('id', id)
-      if (!error) { fetchPromos(); toast.success('Usunięto'); }
-    }
-  }
-
+  // --- EKRAN LOGOWANIA ---
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-transparent px-6 pt-20">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/30 backdrop-blur-3xl p-12 rounded-[3.5rem] border-2 border-white/60 shadow-2xl max-w-md w-full text-center text-zinc-900">
-          <div className="w-20 h-20 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl"><Lock className="text-white" size={32} /></div>
-          <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-8">Urwis Admin</h2>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-100 text-black">
+        <div className="bg-white p-10 rounded-4xl shadow-2xl border border-gray-200 w-full max-w-md text-center">
+          <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-white shadow-xl"><Lock size={32} /></div>
+          <h2 className="text-3xl font-black italic uppercase tracking-tighter text-gray-900 mb-8">Admin Urwis</h2>
           <form onSubmit={handleLogin} className="space-y-4">
-            <input type="password" placeholder="Hasło bazy" className="w-full p-5 rounded-2xl bg-white/50 border-2 border-white focus:border-[#BF2024] outline-none font-bold text-center transition-all" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <button className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl">Autoryzuj</button>
+            <input 
+              type="password" 
+              placeholder="Wpisz hasło..." 
+              className="w-full p-5 rounded-2xl bg-gray-100 border border-gray-200 text-center font-black text-black text-xl focus:ring-2 ring-blue-500 outline-none" 
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              autoFocus 
+            />
+            <button className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 transition-all shadow-lg outline-none border-none cursor-pointer">
+              Zaloguj się
+            </button>
           </form>
-        </motion.div>
+        </div>
       </div>
     )
   }
 
-  const globalTotal = pushStats.clicks + pushStats.closes;
-  const globalCtr = globalTotal > 0 ? Math.round((pushStats.clicks / globalTotal) * 100) : 0;
-
+  // --- EKRAN GŁÓWNY (DASHBOARD) ---
   return (
-    <main className="min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto">
-      
-      {/* HEADER SECTION */}
-      <header className="flex flex-col lg:grid lg:grid-cols-2 justify-between items-center gap-8 mb-16 bg-white/20 backdrop-blur-xl p-10 rounded-[3rem] border-2 border-white/60 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none rotate-12"><Users size={200} /></div>
-        <div className="relative z-10">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#BF2024] mb-2 block text-center lg:text-left">System Zarządzania</span>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none text-zinc-900 text-center lg:text-left">
-            ADMIN <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">URWIS</span>
-          </h1>
-          <div className="mt-4 flex items-center justify-center lg:justify-start gap-2 text-zinc-500 font-bold uppercase text-[10px] tracking-widest">
-             Dostępni odbiorcy: <span className="text-[#0055ff]">{subscriberCount}</span>
+    <div className="fixed inset-0 z-[9999] bg-gray-50 flex text-gray-900 overflow-hidden">
+
+      {/* --- MENU BOCZNE --- */}
+      <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-full shrink-0 p-6 overflow-y-auto">
+        <div className="mb-10 px-2">
+          <h1 className="text-2xl font-black italic tracking-tighter">ADMIN <span className="text-blue-600">URWIS</span></h1>
+          <div className="flex items-center gap-2 mt-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> System Aktywny
           </div>
         </div>
-        
-        <div className="flex flex-wrap justify-center lg:justify-end gap-4 relative z-10">
-          <button onClick={() => setIsAdding(true)} className="px-8 py-5 bg-zinc-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 hover:bg-[#BF2024] transition-all shadow-xl hover:scale-105">
-            <Plus size={18} strokeWidth={3} /> Nowa Promocja
-          </button>
-          <button onClick={() => setIsAuthenticated(false)} className="p-5 bg-white/50 rounded-2xl hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-all border border-white">
-            <LogOut size={18} />
-          </button>
-        </div>
-      </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        
-        {/* LEWA KOLUMNA: PROMOCJE */}
-        <div className="xl:col-span-2 space-y-8 text-zinc-900">
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3">
-            <Tag size={24} className="text-[#BF2024]" /> Katalog Ofert
-          </h2>
-          {loading ? (
-            <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#BF2024]" size={48} /></div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {promos.map((promo) => (
-                <motion.div key={promo.id} layout className="bg-white/40 backdrop-blur-xl border-2 border-white/60 p-6 rounded-[2.5rem] shadow-lg group hover:border-[#BF2024] transition-all relative overflow-hidden">
-                  <div className="flex justify-between items-start mb-4">
-                    <span className="px-3 py-1 bg-zinc-900 text-white text-[8px] font-black uppercase rounded-lg tracking-widest">{promo.category}</span>
-                    <button onClick={() => handleDelete(promo.id)} className="p-2 bg-red-50 text-[#BF2024] rounded-lg hover:bg-[#BF2024] hover:text-white transition-all"><Trash2 size={16} /></button>
+        <nav className="space-y-2 flex-1">
+          {([
+            { id: 'stats', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'promos', label: 'Promocje', icon: Tag },
+            { id: 'push', label: 'Kreator Push', icon: Bell },
+            { id: 'history', label: 'Historia i Kolejka', icon: History }
+          ] as const).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all outline-none border-none cursor-pointer ${activeTab === id ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-500'}`}
+            >
+              <Icon size={20} /> {label}
+            </button>
+          ))}
+        </nav>
+
+        <button onClick={() => setIsAuthenticated(false)} className="flex items-center gap-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all mt-auto border-none bg-transparent outline-none cursor-pointer">
+          <LogOut size={20} /> Wyloguj się
+        </button>
+      </aside>
+
+      {/* --- ZAWARTOŚĆ --- */}
+      <main className="flex-1 h-full overflow-y-auto p-10">
+        <div className="max-w-6xl mx-auto">
+          
+          {/* WIDOK: STATYSTYKI */}
+          {activeTab === 'stats' && (
+            <div className="space-y-8">
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter">Przegląd Systemu</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white p-8 rounded-4xl shadow-sm border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Baza Odbiorców</p>
+                  <p className="text-4xl font-black text-blue-600">{totalSubscriberCount}</p>
+                </div>
+                {/* ✅ NOWY KAFELEK: WYSLANE POWIADOMIENIA (IMPRESJE) */}
+                <div className="bg-white p-8 rounded-4xl shadow-sm border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Wysłane (Impresje)</p>
+                  <p className="text-4xl font-black text-gray-900">{totalSentPushes}</p>
+                </div>
+                <div className="bg-white p-8 rounded-4xl shadow-sm border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Kliknięcia (Razem)</p>
+                  <p className="text-4xl font-black text-green-500">{pushStats.clicks}</p>
+                </div>
+                <div className="bg-white p-8 rounded-4xl shadow-sm border border-gray-100 relative overflow-hidden">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Skuteczność CTR</p>
+                  {/* ✅ POPRAWIONA MATEMATYKA: (Kliknięcia / Wysłane powiadomienia) * 100 */}
+                  <p className="text-4xl font-black text-orange-500 relative z-10">
+                    {totalSentPushes > 0 ? Math.round((pushStats.clicks / totalSentPushes) * 100) : 0}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-blue-600 p-10 rounded-4xl text-white shadow-xl flex items-center justify-between overflow-hidden relative">
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-black italic uppercase mb-2">Witaj w Centrum Dowodzenia!</h3>
+                  <p className="opacity-80 font-medium max-w-md text-sm">Z tego miejsca zarządzasz promocjami na stronie głównej oraz wysyłasz powiadomienia do telefonów swoich klientów.</p>
+                </div>
+                <Zap size={140} className="absolute right-10 opacity-20 rotate-12" />
+              </div>
+            </div>
+          )}
+
+          {/* WIDOK: PROMOCJE */}
+          {activeTab === 'promos' && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter">Katalog Ofert</h2>
+                <button onClick={() => setIsAddingPromo(true)} className="px-6 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase text-xs flex items-center gap-2 hover:bg-blue-600 transition-all shadow-lg border-none outline-none cursor-pointer"><Plus size={18} /> Nowa Promocja</button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {promos?.map(p => (
+                  <div key={p.id} className={`bg-white p-6 rounded-4xl border border-gray-100 shadow-sm flex justify-between items-center group ${!p.is_active && 'opacity-50'}`}>
+                    <div>
+                      <span className="px-3 py-1 bg-gray-100 text-gray-500 text-[8px] font-black uppercase rounded-lg mb-2 inline-block">{p.category}</span>
+                      <h3 className="text-xl font-black italic uppercase text-gray-900 line-clamp-1">{p.title}</h3>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-blue-600">{p.new_price} zł</span>
+                        <span className="text-xs text-gray-400 line-through font-bold">{p.old_price} zł</span>
+                      </div>
+                      {p.expires_at && <p className="text-[9px] font-black uppercase text-orange-500 mt-2 flex items-center gap-1"><Clock size={12} /> Wygasa: {new Date(p.expires_at).toLocaleString('pl-PL')}</p>}
+                    </div>
+                    <button onClick={() => handleDeletePromo(p.id)} className="p-4 bg-red-50 text-red-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-all border-none hover:bg-red-600 hover:text-white outline-none cursor-pointer"><Trash2 size={20} /></button>
                   </div>
-                  <h3 className="text-xl font-black italic uppercase tracking-tighter mb-2 line-clamp-1">{promo.title}</h3>
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-3xl font-black text-[#BF2024]">{promo.new_price} zł</span>
-                    <span className="text-xs text-zinc-400 line-through font-bold">{promo.old_price} zł</span>
+                ))}
+                {(!promos || promos.length === 0) && !loading && <p className="text-gray-400 italic col-span-2 py-10 text-center">Brak dodanych promocji.</p>}
+              </div>
+            </div>
+          )}
+
+          {/* WIDOK: KREATOR PUSH */}
+          {activeTab === 'push' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="space-y-8">
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter">Wysyłka Push</h2>
+                <section className="bg-white p-8 rounded-4xl shadow-xl border border-gray-100 space-y-6">
+
+                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {QUICK_TEMPLATES.map(t => (
+                      <button key={t.id} onClick={() => applyTemplate(t)} className="flex items-center gap-3 px-5 py-3 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all border-none outline-none shrink-0 cursor-pointer">
+                        <div className={`${t.color} p-2 rounded-xl text-white`}><t.icon size={16} /></div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-700">{t.label}</span>
+                      </button>
+                    ))}
                   </div>
-                  <div className="px-4 py-2 bg-[#BF2024]/10 text-[#BF2024] rounded-xl font-black text-[10px] w-fit italic">{promo.discount || 'OKAZJA'}</div>
-                </motion.div>
-              ))}
+
+                  <form onSubmit={handleSendPush} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black uppercase text-gray-400 ml-4">Do kogo wysyłamy?</label>
+                      <div className="grid grid-cols-1 gap-2">
+                        {PUSH_CATEGORIES.map(cat => (
+                          <button key={cat.id} type="button" onClick={() => setSelectedTopic(cat.id)} className={`py-4 rounded-xl text-xs font-black uppercase transition-all border-2 border-solid outline-none cursor-pointer ${selectedTopic === cat.id ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'}`}>
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <input required placeholder="Tytuł..." className="w-full p-5 rounded-2xl bg-gray-50 border-none font-bold text-black outline-none focus:ring-2 ring-blue-500" value={pushData.title} onChange={e => setPushData(prev => ({ ...prev, title: e.target.value }))} />
+                        <Wand2 className="absolute right-5 top-5 text-gray-400 cursor-pointer hover:text-blue-500" onClick={generateUrwisTalk} />
+                      </div>
+                      <textarea required placeholder="Treść..." rows={3} className="w-full p-5 rounded-2xl bg-gray-50 border-none font-bold text-black outline-none focus:ring-2 ring-blue-500 text-sm" value={pushData.message} onChange={e => setPushData(prev => ({ ...prev, message: e.target.value }))} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-2xl flex flex-col gap-1">
+                        <label className="text-[8px] font-black uppercase text-gray-400">📅 Zaplanuj</label>
+                        <input type="datetime-local" className="bg-transparent border-none font-bold text-[10px] outline-none text-black mt-1 cursor-pointer" value={pushData.scheduled_for} onChange={e => setPushData(prev => ({ ...prev, scheduled_for: e.target.value }))} />
+                      </div>
+                      <label className="bg-gray-50 p-4 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all group">
+                        {uploading ? <Loader2 className="animate-spin text-blue-600" /> : <><ImageIcon size={20} className="text-gray-400 group-hover:text-blue-600" /><span className="text-[8px] font-black uppercase text-gray-400 mt-1">Dodaj Foto</span></>}
+                        <input type="file" className="hidden" onChange={onImageUpload} accept="image/*" />
+                      </label>
+                    </div>
+
+                    <button disabled={isSendingPush || subscriberCount === 0} className="w-full py-6 bg-blue-600 text-white rounded-3xl font-black uppercase tracking-widest shadow-xl hover:bg-blue-700 active:scale-95 transition-all border-none outline-none disabled:opacity-50 cursor-pointer">
+                      {isSendingPush ? <Loader2 className="animate-spin mx-auto" /> : <><Send size={18} className="inline mr-2" />{pushData.scheduled_for ? 'Zaplanuj wysyłkę' : `Wyślij do ${subscriberCount} osób`}</>}
+                    </button>
+                  </form>
+                </section>
+              </div>
+
+              {/* Podgląd telefonu */}
+              <div className="flex items-center justify-center mt-12 lg:mt-0">
+                <div className="relative w-72 h-[550px] bg-gray-900 rounded-[3rem] border-[10px] border-gray-800 shadow-2xl p-4 flex flex-col">
+                  <div className="w-24 h-5 bg-gray-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-xl" />
+                  <div className="mt-16 flex-1">
+                    <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-lg border border-white relative overflow-hidden">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg">
+                          <img src="/logo.png" className="w-6 h-6 object-contain" alt="Logo" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <span className="text-[11px] font-bold truncate pr-2 text-black">{pushData.title || 'Tytuł...'}</span>
+                            <span className="text-[8px] text-gray-400 font-bold uppercase">teraz</span>
+                          </div>
+                          <p className="text-[10px] text-gray-600 leading-tight line-clamp-2">{pushData.message || 'Twoja wiadomość...'}</p>
+                        </div>
+                      </div>
+                      {pushData.image_url && (
+                        <div className="mt-3 rounded-xl overflow-hidden h-28 w-full bg-gray-200 shadow-inner">
+                          <img src={pushData.image_url} className="w-full h-full object-cover" alt="Push preview" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* WIDOK: HISTORIA I KOLEJKA */}
+          {activeTab === 'history' && (
+            <div className="space-y-10">
+              <section>
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 flex items-center gap-3 text-blue-600"><Clock size={32} /> Zaplanowane Psoty</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {scheduledPushes?.map(s => (
+                    <div key={s.id} className="bg-white p-6 rounded-4xl border border-gray-100 shadow-sm flex justify-between items-center">
+                      <div>
+                        <p className="text-[11px] font-black text-blue-600 uppercase tracking-widest mb-1">
+                          {s.scheduled_for ? new Date(s.scheduled_for).toLocaleString('pl-PL') : ''}
+                        </p>
+                        <h4 className="text-lg font-black italic uppercase text-gray-900 line-clamp-1">{s.title}</h4>
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-1">{s.message}</p>
+                      </div>
+                      <button onClick={() => handleDeleteScheduled(s.id)} className="p-4 text-red-400 hover:text-red-600 border-none bg-transparent transition-colors cursor-pointer outline-none"><Trash2 size={24} /></button>
+                    </div>
+                  ))}
+                  {(!scheduledPushes || scheduledPushes.length === 0) && <p className="text-gray-400 italic py-10 text-center col-span-2">Brak zaplanowanych wysyłek.</p>}
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 text-gray-400">Archiwum wysyłek</h2>
+                <div className="space-y-4">
+                  {history?.map(h => (
+                    <div key={h.id} className="bg-white p-5 rounded-3xl border border-gray-100 flex gap-5 items-center">
+                      <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden">
+                        {h.image_url
+                          ? <img src={h.image_url} className="w-full h-full object-cover" alt="img" />
+                          : <Bell className="text-gray-300" size={24} />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="text-base font-bold text-gray-800 truncate">{h.title}</h4>
+                          <span className="text-[10px] font-bold text-gray-400 shrink-0 ml-2">
+                            {h.created_at ? new Date(h.created_at).toLocaleDateString('pl-PL') : ''}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-gray-500 uppercase font-black">{h.topic} • wysłano do {h.sent_to_count} urządzeń</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
           )}
         </div>
+      </main>
 
-        {/* PRAWA KOLUMNA: KOMUNIKACJA PUSH */}
-        <div className="space-y-8">
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3 text-zinc-900">
-            <Bell size={24} className="text-[#0055ff]" /> Wyślij Push
-          </h2>
-          
-          {/* Panel Wysyłki */}
-          <div className="bg-white/50 backdrop-blur-2xl p-8 rounded-[3rem] border-2 border-white shadow-2xl space-y-6">
-            <form onSubmit={handleSendPush} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase ml-4 text-zinc-400 italic flex items-center gap-2">
-                  <Filter size={12} /> Targetowanie (Grupa)
-                </label>
-                <select 
-                  className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none appearance-none cursor-pointer text-zinc-900" 
-                  value={selectedTopic} 
-                  onChange={(e) => setSelectedTopic(e.target.value)}
-                >
-                  {PUSH_CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <input required placeholder="Tytuł (np. 🚀 Nowości LEGO)" className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none focus:border-[#0055ff] text-zinc-900" value={pushData.title} onChange={e => setPushData({...pushData, title: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <textarea required placeholder="Treść wiadomości..." rows={2} className="w-full p-4 rounded-xl bg-white border border-zinc-100 font-bold outline-none focus:border-[#0055ff] text-zinc-900" value={pushData.message} onChange={e => setPushData({...pushData, message: e.target.value})} />
-              </div>
-              <button disabled={isSendingPush || subscriberCount === 0} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] transition-all disabled:opacity-30">
-                {isSendingPush ? <Loader2 className="animate-spin" size={18} /> : <><Send size={18} /> Wyślij do {subscriberCount} urządzeń</>}
+    {/* MODAL: NOWA PROMOCJA */}
+    <AnimatePresence>
+        {isAddingPromo && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+            <motion.form
+              initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }}
+              onSubmit={handleAddPromo}
+              className="bg-white rounded-[3.5rem] p-12 max-w-2xl w-full shadow-2xl relative text-black"
+            >
+              <button type="button" onClick={() => setIsAddingPromo(false)} className="absolute top-10 right-10 text-gray-400 hover:text-gray-900 border-none bg-transparent outline-none cursor-pointer">
+                <X size={32} />
               </button>
-            </form>
-          </div>
-
-          {/* ANALITYKA ZBIORCZA */}
-          <div className="bg-white/30 backdrop-blur-xl p-8 rounded-[3rem] border border-white shadow-lg space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 italic">Globalny Performance</h3>
-              <span className={`text-xl font-black italic ${globalCtr > 12 ? 'text-green-500' : 'text-zinc-400'}`}>{globalCtr}% <span className="text-[10px] uppercase tracking-tighter">CTR</span></span>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/80 p-4 rounded-2xl flex flex-col items-center border border-zinc-100">
-                <MousePointerClick className="text-green-500 mb-1" size={20} />
-                <span className="text-xl font-black text-zinc-900 leading-none">{pushStats.clicks}</span>
-                <span className="text-[8px] font-black uppercase text-zinc-400 mt-1 tracking-widest">Kliknięcia</span>
-              </div>
-              <div className="bg-white/80 p-4 rounded-2xl flex flex-col items-center border border-zinc-100">
-                <BellOff className="text-red-400 mb-1" size={20} />
-                <span className="text-xl font-black text-zinc-900 leading-none">{pushStats.closes}</span>
-                <span className="text-[8px] font-black uppercase text-zinc-400 mt-1 tracking-widest">Odrzucenia</span>
-              </div>
-            </div>
-          </div>
-
-          {/* HISTORIA DZIENNA */}
-          <div className="bg-zinc-900 text-white p-8 rounded-[3rem] shadow-2xl space-y-6 overflow-hidden relative border border-white/10">
-            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Calendar size={120} /></div>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 italic flex items-center gap-2 relative z-10">
-              <Calendar size={12} /> Dziennik Aktywności
-            </h3>
-            
-            <div className="space-y-5 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
-              {dailyStats.map((day) => (
-                <div key={day.date} className="relative">
-                  <div className="flex justify-between items-end mb-1.5">
-                    <span className="text-[11px] font-black italic text-white/90 tracking-tighter">{day.date}</span>
-                    <span className={`text-[10px] font-bold ${day.ctr > 15 ? 'text-green-400' : 'text-blue-400'}`}>{day.ctr}% <span className="text-[8px] uppercase opacity-50">CTR</span></span>
-                  </div>
-                  
-                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden flex">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${(day.clicks / day.total) * 100}%` }} className="bg-blue-500 h-full" />
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${(day.closes / day.total) * 100}%` }} className="bg-white/10 h-full" />
-                  </div>
-                  
-                  <div className="flex gap-3 mt-1.5 opacity-30 text-[8px] font-black uppercase tracking-[0.1em]">
-                    <span>{day.clicks} wejść</span>
-                    <span>{day.closes} zamknięć</span>
-                  </div>
-                </div>
-              ))}
-              {dailyStats.length === 0 && <p className="text-zinc-600 text-xs text-center py-6 italic">Oczekiwanie na pierwsze dane...</p>}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* MODAL NOWEJ PROMOCJI */}
-      <AnimatePresence>
-        {isAdding && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-zinc-950/60 backdrop-blur-xl flex items-center justify-center p-6 text-zinc-900">
-            <motion.form onSubmit={handleAddPromo} initial={{ y: 50, scale: 0.95 }} animate={{ y: 0, scale: 1 }} className="bg-white rounded-[3.5rem] p-10 md:p-14 max-w-2xl w-full shadow-2xl border-2 border-white relative overflow-hidden">
-               <div className="absolute -top-10 -right-10 p-10 opacity-5 pointer-events-none rotate-12"><Tag size={250} /></div>
-              <button type="button" onClick={() => setIsAdding(false)} className="absolute top-10 right-10 text-zinc-300 hover:text-zinc-900 transition-colors"><X size={32} /></button>
-              <h3 className="text-3xl font-black uppercase italic mb-10 relative">Nowa Promocja</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10 relative">
+              <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-10 flex items-center gap-3 text-blue-600">
+                <Flame size={32} /> Nowa Okazja
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 text-black">
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-[9px] font-black uppercase ml-4 text-zinc-400">Nazwa Produktu</label>
-                  <input required placeholder="np. LEGO Technic Bolid" className="w-full p-5 rounded-2xl bg-zinc-100 font-bold outline-none focus:ring-2 ring-[#BF2024]" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
+                  <label className="text-[9px] font-black uppercase text-gray-500 ml-4">Produkt / Tytuł</label>
+                  <input required placeholder="np. Klocki LEGO" className="w-full p-5 rounded-2xl bg-gray-50 border-none font-bold text-black outline-none focus:ring-2 ring-blue-500" value={promoForm.title} onChange={e => setPromoForm(prev => ({ ...prev, title: e.target.value }))} />
                 </div>
                 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase ml-4 text-zinc-400">Kategoria</label>
-                  <select className="w-full p-5 rounded-2xl bg-zinc-100 font-bold outline-none cursor-pointer" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                    <option>Zabawki</option><option>Szkoła i biuro</option><option>Imprezy</option><option>Gry</option>
+                  <label className="text-[9px] font-black uppercase text-gray-500 ml-4">Kategoria</label>
+                  <select className="w-full p-5 rounded-2xl bg-gray-50 font-bold border-none outline-none text-black cursor-pointer" value={promoForm.category} onChange={e => setPromoForm(prev => ({ ...prev, category: e.target.value }))}>
+                    <option>Zabawki</option>
+                    <option>Sala Zabaw</option>
+                    <option>LEGO</option>
+                    <option>Imprezy</option>
                   </select>
                 </div>
                 
                 <div className="space-y-1">
-                   <label className="text-[9px] font-black uppercase ml-4 text-zinc-400">Rabat (tekst)</label>
-                   <input placeholder="np. -20% / HIT!" className="w-full p-5 rounded-2xl bg-zinc-100 font-bold outline-none focus:ring-2 ring-[#BF2024]" value={formData.discount} onChange={e => setFormData({...formData, discount: e.target.value})} />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase ml-4 text-zinc-400">Stara Cena</label>
-                  <input required placeholder="99.00" className="w-full p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.old_price} onChange={e => setFormData({...formData, old_price: e.target.value})} />
+                  <label className="text-[9px] font-black uppercase text-gray-500 ml-4">Rabat</label>
+                  <input placeholder="-20% / HIT" className="w-full p-5 rounded-2xl bg-gray-50 border-none outline-none font-bold text-black" value={promoForm.discount} onChange={e => setPromoForm(prev => ({ ...prev, discount: e.target.value }))} />
                 </div>
                 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase ml-4 text-zinc-400">Nowa Cena</label>
-                  <input required placeholder="79.00" className="w-full p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.new_price} onChange={e => setFormData({...formData, new_price: e.target.value})} />
+                  <label className="text-[9px] font-black uppercase text-gray-500 ml-4">Stara Cena</label>
+                  <input required placeholder="99.00" className="w-full p-5 rounded-2xl bg-gray-50 border-none font-bold text-black outline-none" value={promoForm.old_price} onChange={e => setPromoForm(prev => ({ ...prev, old_price: e.target.value }))} />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black uppercase text-gray-500 ml-4">Nowa Cena</label>
+                  <input required placeholder="79.00" className="w-full p-5 rounded-2xl bg-gray-50 border-none font-bold text-black outline-none" value={promoForm.new_price} onChange={e => setPromoForm(prev => ({ ...prev, new_price: e.target.value }))} />
+                </div>
+
+                <div className="md:col-span-2 space-y-3 p-8 bg-gray-50 rounded-4xl border border-gray-200 text-center mt-2">
+                  <label className="text-[9px] font-black uppercase text-gray-500 italic flex items-center justify-center gap-2 mb-2">
+                    <Clock size={12} /> Czas Trwania (Gorący Strzał)
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 3, 24].map(h => (
+                      <button key={h} type="button" onClick={() => setQuickExpiry(h)} className="py-4 rounded-xl bg-gray-900 text-white font-black text-[10px] uppercase hover:bg-orange-500 transition-all border-none outline-none cursor-pointer">+{h}h</button>
+                    ))}
+                  </div>
+                  <input type="datetime-local" className="w-full p-4 rounded-xl bg-white border-none font-bold text-xs mt-3 text-center text-black outline-none cursor-pointer" value={promoForm.expires_at} onChange={e => setPromoForm(prev => ({ ...prev, expires_at: e.target.value }))} />
                 </div>
               </div>
-              
-              <button className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-[#0055ff] transition-all shadow-2xl relative">Zatwierdź i publikuj</button>
+
+              <button type="submit" className="w-full py-6 bg-blue-600 text-white rounded-3xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-700 transition-all border-none outline-none active:scale-95 cursor-pointer">
+                Dodaj i publikuj na stronie
+              </button>
             </motion.form>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </main>
+
+    </div>
   )
 }

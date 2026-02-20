@@ -11,6 +11,7 @@ import InstallPrompt from "@/components/ui/InstallPrompt";
 import { Suspense } from "react";
 import ReactDOM from "react-dom";
 import Script from "next/script";
+import WelcomeScreen from "@/components/ui/WelcomeScreen";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -25,7 +26,8 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "Sklep Urwis | Zabawki, Balony i Artykuły Szkolne Białobrzegi",
+  metadataBase: new URL('https://sklep-urwis.pl'), // 🚀 To naprawi warning
+  title: "Sklep Urwis | Zabawki, Art. Szkolne i Biurowe Białobrzegi",
   description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Prawdziwy sklep stacjonarny dla dzieci!",
   manifest: "/manifest.json", 
   
@@ -137,7 +139,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
-        
+      <WelcomeScreen />
         <Suspense fallback={null}>
           <OrphansFixer />
         </Suspense>
@@ -162,7 +164,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           
           <Footer />
         </div>
-
+        
         <Toaster position="bottom-right" richColors />
         
         <Suspense fallback={null}>

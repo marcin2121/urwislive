@@ -50,6 +50,9 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isHoursDropdownOpen, setIsHoursDropdownOpen] = useState(false);
+  
+  // 🚀 Klucz do odświeżania dzwonka po akcji u Urwisa
+  const [pushKey, setPushKey] = useState(0);
 
   const [shopStatus, setShopStatus] = useState({ 
     isOpen: false, 
@@ -57,15 +60,27 @@ export default function Navbar() {
     subLabel: "" 
   });
 
-  // 🚀 POMOCNICZA FUNKCJA DO ANALITYKI
+  // 📊 FUNKCJA ANALITYCZNA GTAG
   const trackEvent = (name: string, params: object = {}) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', name, params);
+      (window as any).gtag('event', name, {
+        ...params,
+        page_path: pathname
+      });
     }
   };
 
   useEffect(() => {
     setMounted(true);
+
+    // 🚀 Nasłuchiwanie na sygnał odświeżenia z WelcomeScreen
+    const handlePushRefresh = () => {
+      setPushKey(prev => prev + 1);
+      trackEvent('push_status_updated_auto');
+    };
+
+    window.addEventListener('push-permission-changed', handlePushRefresh);
+
     const checkStatus = () => {
       const now = new Date();
       const day = now.getDay();
@@ -94,8 +109,12 @@ export default function Navbar() {
 
     checkStatus();
     const interval = setInterval(checkStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('push-permission-changed', handlePushRefresh);
+    };
+  }, [pathname]);
 
   if (!mounted) return null;
 
@@ -109,7 +128,7 @@ export default function Navbar() {
       >
         <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full p-1 pr-2 md:pr-4 flex items-center justify-between transition-all">
           
-          {/* --- LEWA STRONA: LOGO & STATUS --- */}
+          {/* --- LOGO & STATUS --- */}
           <div className="relative flex items-center gap-2 md:gap-4 shrink-0">
             <Link 
               href="/" 
@@ -117,7 +136,7 @@ export default function Navbar() {
               className="flex items-center gap-2 group shrink-0"
             >
               <span className="sr-only">Sklep Urwis</span>
-              <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full shadow-sm border border-white/50 bg-white shrink-0">
+              <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full shadow-sm border border-white/50 bg-white shrink-0 group-active:scale-95 transition-transform">
                 <Image src="/logo.png" alt="Logo Sklepu Urwis" fill className="object-contain p-1.5" priority />
               </div>
               <div className="flex flex-col leading-[0.85] pt-0.5" aria-hidden="true">
@@ -126,59 +145,26 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* STATUS MOBILNY */}
+            {/* STATUS (Działa jako przełącznik godzin) */}
             <button 
               onClick={() => {
                 const newState = !isHoursDropdownOpen;
                 setIsHoursDropdownOpen(newState);
-                if (newState) trackEvent('view_opening_hours', { device: 'mobile' });
+                trackEvent('nav_hours_toggle', { state: newState ? 'open' : 'close' });
               }}
-              aria-expanded={isHoursDropdownOpen}
-              aria-haspopup="true"
-              aria-label="Pokaż godziny otwarcia"
-              className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 border border-white/60 shadow-sm transition-all active:scale-95 shrink-0"
+              className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/50 border border-white/60 shadow-sm shrink-0 hover:bg-white transition-colors"
             >
-              <div className="relative flex h-2 w-2 shrink-0">
+              <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${shopStatus.isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
               </div>
-
-              <div className="flex flex-col items-start justify-center">
-                <span className={`text-[9px] font-black uppercase tracking-tighter leading-none ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>
+              <div className="flex flex-col items-start leading-none text-left">
+                <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-tighter md:tracking-wider ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>
                   {shopStatus.label}
                 </span>
-                <span className="text-[7px] font-bold text-zinc-400 tracking-tighter mt-[1px] leading-none">
+                <span className="text-[7px] md:text-[9px] font-bold text-zinc-400 tracking-tighter mt-[1px]">
                   {shopStatus.subLabel}
                 </span>
-              </div>
-              <ChevronDown 
-                size={12} 
-                strokeWidth={3} 
-                className={`text-zinc-400 transition-transform duration-300 ${isHoursDropdownOpen ? 'rotate-180' : ''}`} 
-              />
-            </button>
-
-            <div className="hidden md:block w-px h-8 bg-zinc-200/60 mx-1"></div>
-
-            {/* STATUS DESKTOP */}
-            <button
-              onClick={() => {
-                const newState = !isHoursDropdownOpen;
-                setIsHoursDropdownOpen(newState);
-                if (newState) trackEvent('view_opening_hours', { device: 'desktop' });
-              }}
-              aria-expanded={isHoursDropdownOpen}
-              aria-haspopup="true"
-              aria-label="Pokaż godziny otwarcia"
-              className="hidden md:flex items-center gap-3 px-4 py-2 rounded-full bg-white/50 hover:bg-white border border-white/60 shadow-sm transition-all group"
-            >
-              <div className="relative flex h-2.5 w-2.5">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${shopStatus.isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
-              </div>
-              <div className="flex flex-col items-start leading-none gap-0.5 text-left">
-                <span className={`text-[10px] font-black uppercase tracking-wider ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
-                <span className="text-[9px] font-semibold text-zinc-400">{shopStatus.subLabel}</span>
               </div>
               <ChevronDown size={14} className={`text-zinc-400 transition-transform duration-300 ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -189,78 +175,75 @@ export default function Navbar() {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="absolute top-full left-0 md:left-14 mt-4 w-[280px] md:w-72 bg-white/95 backdrop-blur-3xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-white/60 p-5 origin-top-left z-[100]"
+                  className="absolute top-full left-0 md:left-14 mt-4 w-[260px] md:w-72 bg-white/95 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/60 p-5 z-[100]"
                 >
                   <div className="flex items-center gap-2 mb-4 text-zinc-400">
                     <Clock size={14} strokeWidth={2.5} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Godziny Otwarcia</span>
                   </div>
-                  <div className="space-y-3 text-sm">
-                      <div className="flex justify-between items-center pb-2 border-b border-zinc-100/50"><span className="font-semibold text-zinc-600 text-xs">Pon - Pt</span><span className="font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-md text-xs">{OPENING_HOURS_TEXT.week}</span></div>
-                      <div className="flex justify-between items-center pb-2 border-b border-zinc-100/50"><span className="font-semibold text-zinc-600 text-xs">Sobota</span><span className="font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-md text-xs">{OPENING_HOURS_TEXT.sat}</span></div>
-                      <div className="flex justify-between items-center"><span className="font-semibold text-zinc-600 text-xs">Niedziela</span><span className="font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-md text-xs">{OPENING_HOURS_TEXT.sun}</span></div>
+                  <div className="space-y-3">
+                      {FULL_HOURS_LIST.map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-xs pb-1 border-b border-zinc-100/50 last:border-0 last:pb-0">
+                          <span className="font-bold text-zinc-500">{item.day}</span>
+                          <span className={`font-black ${item.isRed ? 'text-red-500' : 'text-zinc-900'}`}>{item.hours}</span>
+                        </div>
+                      ))}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* --- ŚRODEK: NAWIGACJA DESKTOP --- */}
+          {/* --- NAWIGACJA DESKTOP --- */}
           <nav className="hidden xl:flex items-center gap-1 bg-zinc-100/50 p-1.5 rounded-full border border-white/20">
             {NAV_ITEMS.map((item) => (
               <Link 
                 key={item.name} 
                 href={item.href} 
-                onClick={() => trackEvent('nav_link_click', { name: item.name, location: 'desktop_nav' })}
-                className={`relative px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-300 ${pathname === item.href ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'}`}
+                onClick={() => trackEvent('nav_link_click', { name: item.name })}
+                className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${pathname === item.href ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'}`}
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
-          {/* --- PRAWA STRONA: AKCJE --- */}
+          {/* --- AKCJE PRAWA STRONA --- */}
           <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
             
-            <div className="lg:hidden shrink-0">
-              <PushButton />
+            {/* 🚀 Dzwonek - wymuszamy odświeżenie kluczem po sygnale od Urwisa */}
+            <div className="shrink-0">
+              <PushButton key={`nav-push-${pushKey}`} />
             </div>
 
-            {/* LECĘ W KULKI NA DESKTOPIE */}
             <Link 
               href="/salazabaw" 
-              onClick={() => trackEvent('cta_click', { type: 'lece_w_kulki', location: 'navbar_desktop' })}
+              onClick={() => trackEvent('nav_cta_kulki')}
               className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/50 rounded-full transition-all group shrink-0"
             >
-              <div className="p-1 bg-white rounded-full group-hover:bg-blue-200 transition-colors">
-                <Coffee size={14} className="text-blue-600" />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">Lecę w Kulki</span>
+              <Coffee size={14} className="group-hover:rotate-12 transition-transform" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Lecę w Kulki</span>
             </Link>
 
-            {/* AKADEMIA URWISA */}
             <Link 
               href="https://akademiaurwisa.pl" 
               target="_blank" 
-              onClick={() => trackEvent('external_link_click', { target: 'akademia_urwisa', location: 'navbar_desktop' })}
-              className="hidden lg:flex relative overflow-hidden items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-full shadow-lg shadow-blue-900/20 group hover:scale-105 transition-transform shrink-0"
+              onClick={() => trackEvent('nav_cta_akademia')}
+              className="hidden lg:flex relative overflow-hidden items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-full shadow-lg shadow-blue-900/20 hover:scale-105 transition-all shrink-0"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-100 group-hover:opacity-90 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff]" />
               <div className="relative flex items-center gap-2">
-                <GraduationCap size={18} className="text-white/90" />
+                <GraduationCap size={18} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Akademia</span>
               </div>
             </Link>
 
-            {/* HAMBURGER MENU */}
             <button 
               onClick={() => {
                 setMobileMenuOpen(true);
                 trackEvent('mobile_menu_open');
               }} 
-              aria-label="Otwórz menu nawigacji"
-              className="xl:hidden p-2 md:p-3 rounded-full bg-zinc-100/50 hover:bg-zinc-200/50 text-zinc-600 transition-colors shrink-0"
+              className="xl:hidden p-2 md:p-3 rounded-full bg-zinc-100/50 hover:bg-zinc-200 text-zinc-600 shrink-0 active:scale-90 transition-transform"
             >
               <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
@@ -272,130 +255,51 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-60" 
-              onClick={() => setMobileMenuOpen(false)} 
-            />
-            <motion.div 
-              initial={{ x: "100%" }} 
-              animate={{ x: 0 }} 
-              exit={{ x: "100%" }} 
-              transition={{ type: "spring", damping: 30, stiffness: 300 }} 
-              className="fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white/95 backdrop-blur-3xl shadow-2xl border-l border-white/50 p-6 flex flex-col" 
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60" onClick={() => setMobileMenuOpen(false)} />
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed inset-y-0 right-0 z-70 w-full max-w-sm bg-white shadow-2xl p-6 flex flex-col" >
+              
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 relative rounded-full overflow-hidden shadow-md bg-white">
-                    <Image src="/logo.png" alt="Urwis" fill className="object-contain p-1.5" />
-                  </div>
-                  <div className="flex flex-col leading-[0.85] pt-0.5">
-                    <span className="text-[16px] font-black italic tracking-tighter text-[#BF2024]">SKLEP</span>
-                    <span className="text-[16px] font-black italic tracking-tighter text-[#0055ff]">URWIS</span>
+                  <Image src="/logo.png" alt="Urwis" width={40} height={40} className="object-contain" />
+                  <div className="flex flex-col leading-none">
+                    <span className="text-sm font-black italic text-[#BF2024]">SKLEP</span>
+                    <span className="text-sm font-black italic text-[#0055ff]">URWIS</span>
                   </div>
                 </div>
-                
-                <button 
-                  onClick={() => setMobileMenuOpen(false)} 
-                  aria-label="Zamknij menu"
-                  className="p-3 bg-zinc-100 rounded-full hover:bg-zinc-200 text-zinc-600"
-                >
-                  <X size={24} />
-                </button>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-3 bg-zinc-100 rounded-full text-zinc-600"><X size={24} /></button>
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-8 pr-2 pb-8 custom-scrollbar">
-                
-                <div className="flex flex-col gap-1">
+              <div className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
+                <nav className="flex flex-col gap-1">
                   {NAV_ITEMS.map((item) => (
                     <Link 
                       key={item.name} 
                       href={item.href} 
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        trackEvent('nav_link_click', { name: item.name, location: 'mobile_nav' });
-                      }} 
-                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-50 transition-all text-lg font-black italic tracking-tighter uppercase text-zinc-800 group" 
+                      onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_nav_click', { name: item.name }); }} 
+                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-50 text-lg font-black italic uppercase tracking-tighter text-zinc-800" 
                     >
-                      <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 group-hover:bg-zinc-200 transition-colors">
-                        <item.icon size={20} />
-                      </div>
+                      <item.icon size={20} className="text-zinc-400" />
                       {item.name}
                     </Link>
                   ))}
-                </div>
+                </nav>
 
                 <hr className="border-zinc-100" />
 
-                <div className="grid grid-cols-1 gap-3">
-                  <Link 
-                    href="/salazabaw" 
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      trackEvent('cta_click', { type: 'lece_w_kulki', location: 'mobile_nav_promo' });
-                    }} 
-                    className="flex flex-col justify-center p-6 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-blue-700 min-h-[120px] relative overflow-hidden group"
-                  >
-                    <div className="relative z-10 flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                        <Coffee size={24} />
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold uppercase opacity-70 tracking-widest">Wskocz do zabawy</div>
-                        <div className="text-xl font-black italic tracking-tighter uppercase">Lecę w Kulki</div>
-                      </div>
-                    </div>
-                    <Sparkles className="absolute -right-4 -bottom-4 w-24 h-24 text-blue-200/30 rotate-12" />
-                  </Link>
+                <Link href="/salazabaw" onClick={() => trackEvent('mobile_cta_kulki')} className="flex items-center gap-4 p-6 rounded-[2rem] bg-blue-50 text-blue-700">
+                   <Coffee size={24} />
+                   <div className="font-black italic uppercase tracking-tighter">Lecę w Kulki</div>
+                </Link>
 
-                  <Link 
-                    href="https://akademiaurwisa.pl" 
-                    target="_blank" 
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      trackEvent('external_link_click', { target: 'akademia_urwisa', location: 'mobile_nav_promo' });
-                    }}
-                    className="flex flex-col justify-center p-6 rounded-[2rem] text-white min-h-[120px] relative overflow-hidden group"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#BF2024] to-[#0055ff]" />
-                    <div className="relative z-10 flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
-                        <GraduationCap size={24} />
+                <div className="bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100">
+                    <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-4 block">Godziny Otwarcia</span>
+                    {FULL_HOURS_LIST.map((item, idx) => (
+                      <div key={idx} className="flex justify-between text-xs py-2 border-b border-zinc-200/50 last:border-0">
+                        <span className="font-bold text-zinc-400">{item.day}</span>
+                        <span className={`font-black ${item.isRed ? 'text-red-500' : 'text-zinc-900'}`}>{item.hours}</span>
                       </div>
-                      <div>
-                        <div className="text-[10px] font-bold uppercase opacity-80 tracking-widest text-white/90">Gry & Edukacja</div>
-                        <div className="text-xl font-black italic tracking-tighter uppercase">Akademia Urwisa</div>
-                      </div>
-                    </div>
-                    <Zap className="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 -rotate-12" />
-                  </Link>
+                    ))}
                 </div>
-
-                <hr className="border-zinc-100" />
-
-                <div className="bg-zinc-50/50 p-6 rounded-[2rem] border border-zinc-100 shadow-xs">
-                   <div className="flex items-center gap-3 mb-6">
-                     <div className={`w-3 h-3 rounded-full ${shopStatus.isOpen ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} />
-                     <div className="flex flex-col">
-                        <span className={`text-sm font-black uppercase tracking-widest ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">{shopStatus.subLabel}</span>
-                     </div>
-                   </div>
-                   
-                   <div className="space-y-3">
-                      {FULL_HOURS_LIST.map((item, idx) => (
-                        <div key={idx} className={`flex justify-between items-center text-xs ${idx !== FULL_HOURS_LIST.length - 1 ? 'pb-2 border-b border-zinc-100/30' : ''}`}>
-                          <span className="font-bold text-zinc-400 italic tracking-tight">{item.day}</span>
-                          <span className={`font-black tracking-tighter ${item.isRed ? 'text-red-500 bg-red-50 px-2 py-0.5 rounded-md' : 'text-zinc-900'}`}>
-                            {item.hours}
-                          </span>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-
               </div>
             </motion.div>
           </>
