@@ -9,9 +9,9 @@ import OrphansFixer from "@/components/utils/OrphansFixer";
 import CookieModal from "@/components/ui/CookieModal";
 import InstallPrompt from "@/components/ui/InstallPrompt";
 import { Suspense } from "react";
-import ReactDOM from "react-dom"; // 🚀 DODANE
+import ReactDOM from "react-dom";
+import Script from "next/script"; // 🚀 DODANE: Importujemy zoptymalizowany tag Script
 
-// 🚀 ZMIANA: Dodano 'display: swap', aby tekst pojawiał się błyskawicznie (lepsze FCP)
 const inter = Inter({ 
   subsets: ["latin"], 
   variable: "--font-inter",
@@ -29,7 +29,6 @@ export const metadata: Metadata = {
   description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Prawdziwy sklep stacjonarny dla dzieci!",
   manifest: "/manifest.json", 
   
-  // 🚀 Konfiguracja Open Graph (Messenger, Facebook, WhatsApp, LinkedIn)
   openGraph: {
     title: "Sklep Urwis | Białobrzegi",
     description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Odkryj prawdziwy sklep stacjonarny dla dzieci!",
@@ -47,12 +46,11 @@ export const metadata: Metadata = {
     type: "website",
   },
 
-  // 🚀  Konfiguracja Twitter (X) / iMessage (Apple)
   twitter: {
     card: "summary_large_image",
     title: "Sklep Urwis | Zabawki i Balony",
     description: "Zabawki, gry planszowe, balony z helem i artykuły szkolne. Białobrzegi, Reymonta 38A.",
-    images: ["/og-image.webp"], // Ten sam obrazek
+    images: ["/og-image.webp"],
   },
 };
 
@@ -62,9 +60,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Twój identyfikator GA4
+const GA_MEASUREMENT_ID = "G-FE44ZTQ7GT";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // 🚀 KLUCZ DO LCP: Preload obrazka fallback. 
-  // Przeglądarka zacznie go pobierać równolegle z plikami CSS/JS.
   ReactDOM.preload("/urwis-fallback.webp", { 
     as: "image", 
     fetchPriority: "high" 
@@ -72,6 +71,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
+      <head>
+        {/* 🚀 DODANE: Google Analytics 4 (Ładuje się asynchronicznie po głównej zawartości) */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '${GA_MEASUREMENT_ID}', {
+              page_path: window.location.pathname,
+            });
+          `}
+        </Script>
+      </head>
+
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
         
         <Suspense fallback={null}>
@@ -107,23 +125,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* REJESTRACJA SERVICE WORKERA */}
         <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(
-                    function(registration) {
-                      console.log('SW registered!');
-                    },
-                    function(err) {
-                      console.log('SW registration failed:', err);
-                    }
-                  );
-                });
-              }
-            `,
-          }}
-        />
+  dangerouslySetInnerHTML={{
+    __html: `
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+
+      // 🚀 ZDARZENIE GA4: Sukces instalacji PWA
+      window.addEventListener('appinstalled', () => {
+        if (typeof gtag === 'function') {
+          gtag('event', 'pwa_installed', { platform: 'web' });
+        }
+        console.log('PWA zostało zainstalowane!');
+      });
+    `,
+  }}
+/>
       </body>
     </html>
   );

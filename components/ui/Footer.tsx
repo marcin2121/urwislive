@@ -8,6 +8,13 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 
+// 🚀 POMOCNICZA FUNKCJA DO ANALITYKI W STOPCE
+const trackFooterEvent = (eventName: string, params: object = {}) => {
+  if (typeof window !== 'undefined' && (window as any).gtag) {
+    (window as any).gtag('event', eventName, params);
+  }
+};
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -96,13 +103,15 @@ export default function Footer() {
           <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic text-center md:text-left">
             <div className="space-y-2">
               <div>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
-              {/* POPRAWKA KONTRASTU: Usunięto opacity-60, zastosowano stały, dostępny kolor tekstu */}
               <div className="text-zinc-500 font-semibold">NIP: 7981093937 | REGON: 671959384</div>
             </div>
             <div className="flex flex-col items-center md:items-end gap-2">
-              <span> MADE WITH ❤️ IN BIAŁOBRZEGI </span>             
-              {/* POPRAWKA A11Y: Usunięto błędne aria-label, które powodowało "mismatch" */}
-              <a href="#" className="hover:text-zinc-900 transition-colors">
+              <span> MADE WITH ❤️ IN BIAŁOBRZEGI </span>            
+              <a 
+                href="#" 
+                onClick={() => trackFooterEvent('click_creator', { location: 'footer' })}
+                className="hover:text-zinc-900 transition-colors"
+              >
                   DESIGN & CODE BY MARCIN MOLENDA
               </a>
             </div>
@@ -115,11 +124,15 @@ export default function Footer() {
 }
 
 function SocialIcon({ href, icon, ariaLabel }: { href: string, icon: React.ReactNode, ariaLabel: string }) {
+  // 🚀 LOGIKA: Wykrywamy, czy to Facebook czy Instagram
+  const platform = href.includes('facebook') ? 'facebook' : href.includes('instagram') ? 'instagram' : 'social';
+  
   return (
     <Link 
       href={href} 
       target="_blank"
       aria-label={ariaLabel}
+      onClick={() => trackFooterEvent('click_social', { platform, location: 'footer' })}
       className="w-10 h-10 rounded-xl bg-white/40 flex items-center justify-center text-zinc-900 hover:bg-[#0055ff] hover:text-white transition-all shadow-sm border border-white/50"
     >
       {icon}
@@ -129,13 +142,28 @@ function SocialIcon({ href, icon, ariaLabel }: { href: string, icon: React.React
 
 function FooterLink({ href, icon, label, sublabel }: { href: string, icon: any, label: string, sublabel?: string }) {
   const isBlue = icon.props.className?.includes('text-[#0055ff]');
+  const destination = isBlue ? 'lece_w_kulki' : 'sklep_urwis';
   
+  // 🚀 LOGIKA: Inteligentne kategoryzowanie kliknięć
+  const handleClick = () => {
+    if (href.startsWith('tel:')) {
+      trackFooterEvent('contact_intent', { method: 'phone', destination, location: 'footer' });
+    } else if (href.startsWith('mailto:')) {
+      trackFooterEvent('contact_intent', { method: 'email', destination, location: 'footer' });
+    } else if (href.includes('maps') || href.includes('google')) {
+      trackFooterEvent('contact_intent', { method: 'routing_map', destination, location: 'footer' });
+    } else if (href.includes('lecewkulki.eu')) {
+      trackFooterEvent('external_link_click', { target: 'lece_w_kulki_website', location: 'footer' });
+    }
+  };
+
   return (
     <li>
       <a 
         href={href}
         target={href.startsWith('http') ? "_blank" : "_self"}
         rel={href.startsWith('http') ? "noopener noreferrer" : ""}
+        onClick={handleClick}
         className="flex gap-4 group cursor-pointer transition-all hover:translate-x-1"
       >
         <div className={`${isBlue ? 'text-[#0055ff]' : 'text-[#bf2024]'} group-hover:scale-110 transition-transform`}>
@@ -156,6 +184,7 @@ function QuickLink({ href, children }: { href: string, children: React.ReactNode
   return (
     <Link 
       href={href} 
+      onClick={() => trackFooterEvent('nav_link_click', { name: children, location: 'footer' })}
       className="text-zinc-600 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase"
     >
       <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 group-hover:bg-[#BF2024] transition-colors" />

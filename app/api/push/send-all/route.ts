@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
-import { createClient } from '@/lib/supabase/server'; // Klient serwerowy
+import { createClient } from '@/lib/supabase/server'; 
 
-// Konfiguracja web-push
 webpush.setVapidDetails(
   'mailto:kontakt@sklep-urwis.pl',
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
@@ -11,12 +10,8 @@ webpush.setVapidDetails(
 
 export async function POST(req: Request) {
   const { title, message } = await req.json();
-  
-  // ROZWIĄZANIE BŁĘDU 1: Dodano 'await', ponieważ createClient() na serwerze 
-  // często zwraca Promise (ze względu na obsługę ciasteczek).
   const supabase = await createClient();
 
-  // 1. Pobierz wszystkie subskrypcje z tabeli push_subscriptions
   const { data: subs, error } = await supabase
     .from('push_subscriptions')
     .select('subscription_data');
@@ -24,8 +19,6 @@ export async function POST(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!subs) return NextResponse.json({ success: true, count: 0 });
 
-  // ROZWIĄZANIE BŁĘDU 2: Dodano typ 'any' (lub konkretny interfejs) dla parametru 'sub', 
-  // aby TypeScript wiedział, jak obsłużyć dane.
   const notifications = subs.map((sub: any) => 
     webpush.sendNotification(
       sub.subscription_data,
@@ -33,10 +26,18 @@ export async function POST(req: Request) {
         title: title,
         body: message,
         icon: '/android-chrome-192x192.png',
-        data: { url: '/' }
+        // 🚀 ZMIANA: Dodajemy tagi UTM, żeby Google Analytics automatycznie śledziło kliknięcia!
+        data: { url: '/?utm_source=pwa_push&utm_medium=notification&utm_campaign=sklep_urwis' }
       })
-    ).catch(err => {
-      console.error('Błąd wysyłki do subskrypcji:', err.statusCode);
+    ).catch(async (err) => {
+      // 🚀 ZMIANA: Usuwanie martwych subskrypcji (np. gdy ktoś usunął apkę)
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        console.log('Usuwanie nieaktywnej subskrypcji z bazy...');
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('endpoint', sub.subscription_data.endpoint);
+      }
     })
   );
 

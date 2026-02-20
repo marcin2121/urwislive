@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Plus, Trash2, Edit2, X, Lock, 
   Tag, Package, Percent, LogOut, Loader2,
-  Bell, Send, Users
+  Bell, Send, Users, MousePointerClick, BellOff
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client' // Używamy poprawnego klienta
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
 interface Promo {
@@ -29,7 +29,9 @@ export default function AdminPage() {
   const [isSendingPush, setIsSendingPush] = useState(false)
   const [subscriberCount, setSubscriberCount] = useState(0)
 
-  // Stan dla Pusha
+  // 🚀 DODANE: Stan statystyk Push
+  const [pushStats, setPushStats] = useState({ clicks: 0, closes: 0 })
+
   const [pushData, setPushData] = useState({ title: '', message: '' })
 
   const [formData, setFormData] = useState({
@@ -45,6 +47,7 @@ export default function AdminPage() {
     if (isAuthenticated) {
       fetchPromos();
       fetchSubscriberCount();
+      fetchPushStats(); // 🚀 DODANE: Pobieranie statystyk
     }
   }, [isAuthenticated]);
 
@@ -53,6 +56,16 @@ export default function AdminPage() {
       .from('push_subscriptions')
       .select('*', { count: 'exact', head: true });
     if (!error) setSubscriberCount(count || 0);
+  }
+
+  // 🚀 DODANE: Funkcja pobierająca kliknięcia i zamknięcia
+  async function fetchPushStats() {
+    const { data, error } = await supabase.from('push_analytics').select('action');
+    if (!error && data) {
+      const clicks = data.filter(d => d.action === 'click').length;
+      const closes = data.filter(d => d.action === 'close').length;
+      setPushStats({ clicks, closes });
+    }
   }
 
   const handleLogin = (e: React.FormEvent) => {
@@ -138,6 +151,10 @@ export default function AdminPage() {
     )
   }
 
+  // Wyliczenie skuteczności (CTR)
+  const totalInteractions = pushStats.clicks + pushStats.closes;
+  const ctr = totalInteractions > 0 ? Math.round((pushStats.clicks / totalInteractions) * 100) : 0;
+
   return (
     <main className="min-h-screen pt-32 pb-24 px-6 max-w-7xl mx-auto">
       
@@ -191,11 +208,12 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* PRAWA KOLUMNA: Panel Push */}
+        {/* PRAWA KOLUMNA: Panel Push & Statystyki */}
         <div className="space-y-8">
           <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-3">
             <Bell size={24} className="text-[#0055ff]" /> Wyślij Push
           </h2>
+          
           <div className="bg-white/50 backdrop-blur-2xl p-8 rounded-[3rem] border-2 border-white shadow-2xl space-y-6">
             <p className="text-zinc-500 font-bold uppercase text-[10px] leading-relaxed italic">
               Wiadomość trafi prosto na ekrany telefonów Twoich klientów. Używaj rozważnie!
@@ -214,13 +232,38 @@ export default function AdminPage() {
               </button>
             </form>
           </div>
+
+          {/* 🚀 DODANE: Statystyki na żywo */}
+          <div className="bg-white/30 backdrop-blur-xl p-8 rounded-[3rem] border border-white shadow-lg space-y-6">
+            <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 flex items-center gap-2">
+              📊 Skuteczność Powiadomień
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-green-50/50 border border-green-100 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                <MousePointerClick className="text-green-500 mb-2" size={24} />
+                <span className="text-2xl font-black text-green-600 leading-none">{pushStats.clicks}</span>
+                <span className="text-[9px] font-bold uppercase text-green-600/60 tracking-widest mt-1">Kliknięto</span>
+              </div>
+              <div className="bg-red-50/50 border border-red-100 p-4 rounded-2xl flex flex-col items-center justify-center text-center">
+                <BellOff className="text-red-400 mb-2" size={24} />
+                <span className="text-2xl font-black text-red-500 leading-none">{pushStats.closes}</span>
+                <span className="text-[9px] font-bold uppercase text-red-500/60 tracking-widest mt-1">Odrzucono</span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center px-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Współczynnik otwarć (CTR):</span>
+              <span className={`text-lg font-black italic ${ctr > 10 ? 'text-green-500' : 'text-zinc-700'}`}>{ctr}%</span>
+            </div>
+            
+          </div>
         </div>
       </div>
 
-      {/* MODAL DODAWANIA PROMOCJI (STARY) */}
       <AnimatePresence>
         {isAdding && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-100 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center p-6">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center p-6">
             <motion.form onSubmit={handleAddPromo} initial={{ y: 50, scale: 0.9 }} animate={{ y: 0, scale: 1 }} className="bg-white rounded-[3.5rem] p-12 max-w-2xl w-full shadow-2xl border-2 border-white relative">
               <button type="button" onClick={() => setIsAdding(false)} className="absolute top-8 right-8 text-zinc-400 hover:text-zinc-900"><X size={32} /></button>
               <h3 className="text-3xl font-black uppercase italic mb-10">Nowa Okazja</h3>
@@ -237,7 +280,7 @@ export default function AdminPage() {
                 <input required placeholder="Nowa cena" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none" value={formData.new_price} onChange={e => setFormData({...formData, new_price: e.target.value})} />
                 <input placeholder="Rabat" className="p-5 rounded-2xl bg-zinc-100 font-bold outline-none md:col-span-2" value={formData.discount} onChange={e => setFormData({...formData, discount: e.target.value})} />
               </div>
-              <button className="w-full py-6 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all shadow-2xl">Zapisz w bazie</button>
+              <button className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all shadow-2xl">Zapisz w bazie</button>
             </motion.form>
           </motion.div>
         )}

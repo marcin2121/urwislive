@@ -64,6 +64,13 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
   const handleCardClick = (id: number | string) => {
     if (draggedDistance.current > 10) return; 
     setSelectedId(id);
+    const clickedItem = items.find(i => i.id === id);
+    if (clickedItem && typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'view_gallery_item', {
+        item_title: clickedItem.title,
+        item_category: clickedItem.category
+      });
+    }
   };
 
   const goNext = useCallback(() => {
@@ -111,7 +118,8 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
   const selectedItem = items.find(item => item.id === selectedId);
 
   // 🚀 2. TUTAJ JEST IDEALNE MIEJSCE NA FUNKCJĘ SHARE (Zaraz po wybraniu elementu)
-  const handleShare = async (e: React.MouseEvent) => {
+// 🚀 POPRAWIONA FUNKCJA handleShare (rozwiązuje błąd TS 2774)
+const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation(); 
     
     if (!selectedItem) return;
@@ -123,14 +131,34 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
     };
 
     try {
-      if (navigator.share && navigator.canShare(shareData)) {
+      // Sprawdzamy dostępność Web Share API poprzez typeof, aby uniknąć błędu TS
+      const isWebShareSupported = typeof navigator.share === 'function';
+      
+      // Niektóre przeglądarki mają share(), ale nie mają canShare()
+      const canCheckShare = typeof navigator.canShare === 'function';
+
+      if (isWebShareSupported && (!canCheckShare || navigator.canShare(shareData))) {
         await navigator.share(shareData);
       } else {
+        // Fallback do schowka
         await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
         toast.success("Skopiowano link do schowka!");
       }
+
+      // --- ANALITYKA (Zdarzenie GA4) ---
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'share_product', {
+          product_title: selectedItem.title,
+          product_category: selectedItem.category,
+          method: isWebShareSupported ? 'native_share' : 'clipboard'
+        });
+      }
+
     } catch (err) {
-      console.log('Błąd udostępniania:', err);
+      // Ignorujemy błąd, jeśli użytkownik po prostu zamknął okno udostępniania bez wysyłania
+      if ((err as Error).name !== 'AbortError') {
+        console.error('Błąd udostępniania:', err);
+      }
     }
   };
 

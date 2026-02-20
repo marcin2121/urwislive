@@ -134,7 +134,12 @@ export default function HeroSection() {
                   <h2 className="text-2xl md:text-3xl font-black text-zinc-900 uppercase italic">Białobrzegi, Reymonta 38A</h2>
                 </div>
                 <button 
-                  onClick={() => setIsMapOpen(false)} 
+                  onClick={() => {
+                    setIsMapOpen(true);
+                    if ((window as any).gtag) {
+                      (window as any).gtag('event', 'hero_map_opened', { location_name: 'Białobrzegi' });
+                    }
+                  }}
                   className="w-12 h-12 flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full transition-all"
                 >
                   <X size={24} strokeWidth={3} />

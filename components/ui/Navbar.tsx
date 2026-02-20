@@ -57,6 +57,13 @@ export default function Navbar() {
     subLabel: "" 
   });
 
+  // 🚀 POMOCNICZA FUNKCJA DO ANALITYKI
+  const trackEvent = (name: string, params: object = {}) => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', name, params);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     const checkStatus = () => {
@@ -104,7 +111,11 @@ export default function Navbar() {
           
           {/* --- LEWA STRONA: LOGO & STATUS --- */}
           <div className="relative flex items-center gap-2 md:gap-4 shrink-0">
-            <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <Link 
+              href="/" 
+              onClick={() => trackEvent('nav_logo_click')}
+              className="flex items-center gap-2 group shrink-0"
+            >
               <span className="sr-only">Sklep Urwis</span>
               <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full shadow-sm border border-white/50 bg-white shrink-0">
                 <Image src="/logo.png" alt="Logo Sklepu Urwis" fill className="object-contain p-1.5" priority />
@@ -115,15 +126,18 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* STATUS MOBILNY - TERAZ IDENTYCZNY JAK DESKTOP */}
+            {/* STATUS MOBILNY */}
             <button 
-              onClick={() => setIsHoursDropdownOpen(!isHoursDropdownOpen)}
+              onClick={() => {
+                const newState = !isHoursDropdownOpen;
+                setIsHoursDropdownOpen(newState);
+                if (newState) trackEvent('view_opening_hours', { device: 'mobile' });
+              }}
               aria-expanded={isHoursDropdownOpen}
               aria-haspopup="true"
               aria-label="Pokaż godziny otwarcia"
               className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 border border-white/60 shadow-sm transition-all active:scale-95 shrink-0"
             >
-              {/* Pulsująca kropka */}
               <div className="relative flex h-2 w-2 shrink-0">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${shopStatus.isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
@@ -148,7 +162,11 @@ export default function Navbar() {
 
             {/* STATUS DESKTOP */}
             <button
-              onClick={() => setIsHoursDropdownOpen(!isHoursDropdownOpen)}
+              onClick={() => {
+                const newState = !isHoursDropdownOpen;
+                setIsHoursDropdownOpen(newState);
+                if (newState) trackEvent('view_opening_hours', { device: 'desktop' });
+              }}
               aria-expanded={isHoursDropdownOpen}
               aria-haspopup="true"
               aria-label="Pokaż godziny otwarcia"
@@ -165,7 +183,6 @@ export default function Navbar() {
               <ChevronDown size={14} className={`text-zinc-400 transition-transform duration-300 ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* DROPDOWN (Godziny Otwarcia) DLA MOBILE I DESKTOP */}
             <AnimatePresence>
               {isHoursDropdownOpen && (
                 <motion.div
@@ -187,34 +204,48 @@ export default function Navbar() {
                 </motion.div>
               )}
             </AnimatePresence>
-
           </div>
 
           {/* --- ŚRODEK: NAWIGACJA DESKTOP --- */}
           <nav className="hidden xl:flex items-center gap-1 bg-zinc-100/50 p-1.5 rounded-full border border-white/20">
             {NAV_ITEMS.map((item) => (
-              <Link key={item.name} href={item.href} className={`relative px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-300 ${pathname === item.href ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'}`}>{item.name}</Link>
+              <Link 
+                key={item.name} 
+                href={item.href} 
+                onClick={() => trackEvent('nav_link_click', { name: item.name, location: 'desktop_nav' })}
+                className={`relative px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-300 ${pathname === item.href ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'}`}
+              >
+                {item.name}
+              </Link>
             ))}
           </nav>
 
           {/* --- PRAWA STRONA: AKCJE --- */}
           <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
             
-            {/* POWIADOMIENIA UKRYTE NA DESKTOPIE (lg:hidden) */}
             <div className="lg:hidden shrink-0">
               <PushButton />
             </div>
 
             {/* LECĘ W KULKI NA DESKTOPIE */}
-            <Link href="/salazabaw" className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/50 rounded-full transition-all group shrink-0">
+            <Link 
+              href="/salazabaw" 
+              onClick={() => trackEvent('cta_click', { type: 'lece_w_kulki', location: 'navbar_desktop' })}
+              className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200/50 rounded-full transition-all group shrink-0"
+            >
               <div className="p-1 bg-white rounded-full group-hover:bg-blue-200 transition-colors">
                 <Coffee size={14} className="text-blue-600" />
               </div>
               <span className="text-[10px] font-black uppercase tracking-widest text-blue-700">Lecę w Kulki</span>
             </Link>
 
-            {/* AKADEMIA URWISA (Ukryta na mobile, widoczna od lg) */}
-            <Link href="https://akademiaurwisa.pl" target="_blank" className="hidden lg:flex relative overflow-hidden items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-full shadow-lg shadow-blue-900/20 group hover:scale-105 transition-transform shrink-0">
+            {/* AKADEMIA URWISA */}
+            <Link 
+              href="https://akademiaurwisa.pl" 
+              target="_blank" 
+              onClick={() => trackEvent('external_link_click', { target: 'akademia_urwisa', location: 'navbar_desktop' })}
+              className="hidden lg:flex relative overflow-hidden items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-full shadow-lg shadow-blue-900/20 group hover:scale-105 transition-transform shrink-0"
+            >
               <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-100 group-hover:opacity-90 transition-opacity" />
               <div className="relative flex items-center gap-2">
                 <GraduationCap size={18} className="text-white/90" />
@@ -224,7 +255,10 @@ export default function Navbar() {
 
             {/* HAMBURGER MENU */}
             <button 
-              onClick={() => setMobileMenuOpen(true)} 
+              onClick={() => {
+                setMobileMenuOpen(true);
+                trackEvent('mobile_menu_open');
+              }} 
               aria-label="Otwórz menu nawigacji"
               className="xl:hidden p-2 md:p-3 rounded-full bg-zinc-100/50 hover:bg-zinc-200/50 text-zinc-600 transition-colors shrink-0"
             >
@@ -274,13 +308,15 @@ export default function Navbar() {
 
               <div className="flex-1 overflow-y-auto space-y-8 pr-2 pb-8 custom-scrollbar">
                 
-                {/* 1. LINKI NAWIGACYJNE */}
                 <div className="flex flex-col gap-1">
                   {NAV_ITEMS.map((item) => (
                     <Link 
                       key={item.name} 
                       href={item.href} 
-                      onClick={() => setMobileMenuOpen(false)} 
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        trackEvent('nav_link_click', { name: item.name, location: 'mobile_nav' });
+                      }} 
                       className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-50 transition-all text-lg font-black italic tracking-tighter uppercase text-zinc-800 group" 
                     >
                       <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-500 group-hover:bg-zinc-200 transition-colors">
@@ -293,11 +329,13 @@ export default function Navbar() {
 
                 <hr className="border-zinc-100" />
 
-                {/* 2. KAFELKI PROMOWANE: LECĘ W KULKI & AKADEMIA */}
                 <div className="grid grid-cols-1 gap-3">
                   <Link 
                     href="/salazabaw" 
-                    onClick={() => setMobileMenuOpen(false)} 
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      trackEvent('cta_click', { type: 'lece_w_kulki', location: 'mobile_nav_promo' });
+                    }} 
                     className="flex flex-col justify-center p-6 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-blue-700 min-h-[120px] relative overflow-hidden group"
                   >
                     <div className="relative z-10 flex items-center gap-4">
@@ -315,6 +353,10 @@ export default function Navbar() {
                   <Link 
                     href="https://akademiaurwisa.pl" 
                     target="_blank" 
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      trackEvent('external_link_click', { target: 'akademia_urwisa', location: 'mobile_nav_promo' });
+                    }}
                     className="flex flex-col justify-center p-6 rounded-[2rem] text-white min-h-[120px] relative overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#BF2024] to-[#0055ff]" />
@@ -333,7 +375,6 @@ export default function Navbar() {
 
                 <hr className="border-zinc-100" />
 
-                {/* 3. GODZINY OTWARCIA NA SAMYM DOLE */}
                 <div className="bg-zinc-50/50 p-6 rounded-[2rem] border border-zinc-100 shadow-xs">
                    <div className="flex items-center gap-3 mb-6">
                      <div className={`w-3 h-3 rounded-full ${shopStatus.isOpen ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} />

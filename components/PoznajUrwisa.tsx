@@ -159,8 +159,13 @@ export default function PoznajUrwisa() {
 
           {/* DOLNA CZĘŚĆ: Przycisk */}
           <div className="order-4 lg:col-start-1 lg:row-start-3 pt-4 lg:pt-8 w-full text-center lg:text-left">
-            <Link 
-              href="/oferta" 
+          <Link 
+  href="/oferta" 
+  onClick={() => {
+    if ((window as any).gtag) {
+      (window as any).gtag('event', 'hero_cta_click', { destination: 'oferta_urwisa' });
+    }
+  }} 
               className="group relative inline-flex items-center gap-4 px-12 py-6 bg-zinc-900 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 shadow-2xl uppercase tracking-tighter italic"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity" />
