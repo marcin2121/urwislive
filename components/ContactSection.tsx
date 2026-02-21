@@ -10,14 +10,23 @@ import {
   CreditCard, 
   Car, 
   Send,
-  MessageSquare,
-  Sparkles
+  MessageSquare
 } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 import Particles from "@/components/Particles";
 
 export default function ContactSection() {
   const [state, handleSubmit] = useForm("mdalgzln");
+
+  // Funkcja do śledzenia zdarzeń GTAG
+  const trackContactClick = (type: string) => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'contact_click', {
+        'event_category': 'Contact',
+        'event_label': type
+      });
+    }
+  };
 
   const contactInfo = [
     {
@@ -26,16 +35,20 @@ export default function ContactSection() {
       value: '604 208 183',
       link: 'tel:+48604208183',
       glowColor: '59, 130, 246',
-      gridClass: 'md:col-span-1 md:row-span-1'
+      gridClass: 'md:col-span-1 md:row-span-1',
+      aria: 'Zadzwoń do Sklepu Urwis',
+      type: 'phone'
     },
     {
       icon: <MapPin className="text-red-500" size={32} />,
       title: 'Odwiedź sklep',
       value: 'ul. Reymonta 38A',
       value2: 'Białobrzegi 26-800',
-      link: 'https://maps.app.goo.gl/xLsL43gW4PQ6dkUAA',
+      link: 'https://www.google.com/maps/dir/?api=1&destination=Sklep+Urwis+Białobrzegi',
       glowColor: '239, 68, 68',
-      gridClass: 'md:col-span-1 md:row-span-1'
+      gridClass: 'md:col-span-1 md:row-span-1',
+      aria: 'Wyznacz trasę do Sklepu Urwis',
+      type: 'map'
     },
     {
       icon: <Clock className="text-green-500" size={48} />,
@@ -51,7 +64,9 @@ export default function ContactSection() {
       value: 'kontakt@sklep-urwis.pl',
       link: 'mailto:kontakt@sklep-urwis.pl',
       glowColor: '168, 85, 247',
-      gridClass: 'md:col-span-2 md:row-span-1'
+      gridClass: 'md:col-span-2 md:row-span-1',
+      aria: 'Wyślij wiadomość e-mail do Sklepu Urwis',
+      type: 'email'
     },
     {
       icon: <Car className="text-orange-500" size={32} />,
@@ -73,8 +88,6 @@ export default function ContactSection() {
 
   return (
     <main className="relative min-h-screen w-full bg-transparent overflow-x-hidden">
-      
-      {/* --- TŁO --- */}
       <div className="fixed inset-0 pointer-events-none -z-10">
         <Particles
           particleCount={60}
@@ -86,7 +99,6 @@ export default function ContactSection() {
       </div>
 
       <div className="relative z-0">
-        {/* --- HEADER --- */}
         <section className="pt-32 pb-16 px-6">
           <div className="max-w-7xl mx-auto text-center">
             <motion.div
@@ -103,60 +115,78 @@ export default function ContactSection() {
             </h1>
             
             <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto font-body font-medium leading-relaxed">
-              Masz pytanie o zabawkę? Chcesz zarezerwować termin w kulkach? Napisz, zadzwoń lub wpadnij do nas osobiście!
+              Masz pytanie o klocki LEGO, wyprawkę szkolną lub artykuły biurowe? Napisz, zadzwoń lub wpadnij do nas w Białobrzegach!
             </p>
           </div>
         </section>
 
-        {/* --- BENTO GRID: INFO --- */}
         <section className="px-6 mb-24">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[200px]">
+          <address className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[200px] not-italic">
             {contactInfo.map((info, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 className={info.gridClass}
               >
-                {/* ✅ ZMIANA: Wyraźniejsza ramka i cień na stałe */}
                 <MagicBento
                   glowColor={info.glowColor}
                   className="h-full rounded-[2.5rem] bg-white/70 backdrop-blur-xl border-2 border-white/80 shadow-lg hover:shadow-2xl transition-all overflow-hidden"
                 >
-                  <a 
-                    href={info.link} 
-                    className={`flex flex-col items-center justify-center p-6 h-full text-center ${!info.link && 'cursor-default'}`}
-                  >
-                    <div className="mb-4 group-hover:scale-110 transition-transform">
-                      {info.icon}
-                    </div>
-                    <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-1">
-                      {info.title}
-                    </h3>
-                    <p className="text-gray-600 font-bold text-sm">
-                      {info.value}
-                    </p>
-                    {info.value2 && (
-                      <p className="text-gray-500 font-medium text-xs mt-1">
-                        {info.value2}
+                  {info.link ? (
+                    <a 
+                      href={info.link} 
+                      aria-label={info.aria}
+                      onClick={() => info.type && trackContactClick(info.type)}
+                      className="flex flex-col items-center justify-center p-6 h-full text-center group"
+                    >
+                      <div className="mb-4 group-hover:scale-110 transition-transform">
+                        {info.icon}
+                      </div>
+                      <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-1">
+                        {info.title}
+                      </h3>
+                      <p className="text-gray-600 font-bold text-sm">
+                        {info.value}
                       </p>
-                    )}
-                  </a>
+                      {info.value2 && (
+                        <p className="text-gray-500 font-medium text-xs mt-1">
+                          {info.value2}
+                        </p>
+                      )}
+                    </a>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 h-full text-center">
+                      <div className="mb-4">
+                        {info.icon}
+                      </div>
+                      <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-1">
+                        {info.title}
+                      </h3>
+                      <p className="text-gray-600 font-bold text-sm">
+                        {info.value}
+                      </p>
+                      {info.value2 && (
+                        <p className="text-gray-500 font-medium text-xs mt-1">
+                          {info.value2}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </MagicBento>
               </motion.div>
             ))}
-          </div>
+          </address>
         </section>
 
-        {/* --- FORMULARZ I MAPA --- */}
         <section className="px-6 pb-24">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 items-stretch">
-            
-            {/* Formularz */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               className="bg-white/70 backdrop-blur-xl rounded-[3.5rem] p-8 md:p-12 border-2 border-white shadow-2xl"
             >
               <div className="flex items-center gap-4 mb-8">
@@ -167,10 +197,10 @@ export default function ContactSection() {
               </div>
 
               {state.succeeded ? (
-                <div className="text-center py-12">
+                <div className="text-center py-12" role="alert">
                   <div className="text-6xl mb-6">🎈</div>
                   <h3 className="text-2xl font-black text-green-600 mb-2">Wiadomość wysłana!</h3>
-                  <p className="text-gray-600">Odpowiemy najszybciej jak to możliwe.</p>
+                  <p className="text-gray-600">Urwis odebrał wiadomość i zaraz odpisze.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -180,19 +210,21 @@ export default function ContactSection() {
                   </div>
                   <InputField label="Temat" name="subject" type="text" placeholder="W czym możemy pomóc?" required />
                   <div>
-                    <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ml-2">Wiadomość</label>
+                    <label htmlFor="message" className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ml-2">Wiadomość</label>
                     <textarea
+                      id="message"
                       name="message"
                       rows={5}
                       required
                       className="w-full px-6 py-4 bg-white/50 border-2 border-white focus:border-[#0055ff] rounded-3xl outline-none transition-all font-medium text-gray-700 resize-none"
-                      placeholder="Twoja wiadomość..."
+                      placeholder="Napisz do Urwisa..."
                     />
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     disabled={state.submitting}
+                    type="submit"
                     className="w-full py-5 bg-linear-to-r from-[#BF2024] to-[#0055ff] text-white rounded-3xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 disabled:opacity-50"
                   >
                     {state.submitting ? 'Wysyłanie...' : 'Wyślij wiadomość'}
@@ -201,24 +233,24 @@ export default function ContactSection() {
               )}
             </motion.div>
 
-            {/* Mapa */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               className="bg-white/40 backdrop-blur-md rounded-[3.5rem] border-2 border-white shadow-xl overflow-hidden min-h-[500px]"
             >
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d8413.861345556805!2d20.950292!3d51.645135!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sSklep%20Urwis!5e1!3m2!1spl!2spl!4v1771091119479!5m2!1spl!2spl"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.5857876735745!2d20.9480352!3d51.6447168!2m3!1f0!2f0!3f0!3m2!1i1024!2i1024!4f13.1!3m3!1m2!1s0x4718e2689626017b%3A0x6739828282828282!2sSklep+Urwis!5e0!3m2!1spl!2spl!4v1234567890"
                 width="100%"
                 height="100%"
                 style={{ border: 0, filter: 'grayscale(0.2) contrast(1.1)' }}
                 allowFullScreen
                 loading="lazy"
-                title="Lokalizacja Sklepu Urwis"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Mapa dojazdu do Sklepu Urwis w Białobrzegach"
                 className="w-full h-full"
               />
             </motion.div>
-
           </div>
         </section>
       </div>
@@ -227,10 +259,12 @@ export default function ContactSection() {
 }
 
 function InputField({ label, name, type, placeholder, required }: any) {
+  const id = `field-${name}`;
   return (
     <div>
-      <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ml-2">{label}</label>
+      <label htmlFor={id} className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ml-2">{label}</label>
       <input
+        id={id}
         type={type}
         name={name}
         placeholder={placeholder}

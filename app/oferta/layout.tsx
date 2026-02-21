@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Oferta i Kategorie | Sklep Urwis Białobrzegi",
-  description: "Poznaj pełną ofertę Sklepu Urwis w Białobrzegach. Szeroki wybór zabawek, klocków LEGO, artykułów szkolnych, gier planszowych oraz profesjonalne pompowanie balonów helem.",
+  title: "Oferta Sklepu Urwis Białobrzegi | LEGO, Szkoła i Biuro",
+  description: "Odkryj świat zabawek i profesjonalne zaopatrzenie dla ucznia oraz firmy w Białobrzegach. 🧸 Największy wybór klocków LEGO, wyprawka szkolna i artykuły biurowe czekają na Reymonta 38A!",
   keywords: [
-    "oferta sklep urwis",
-    "zabawki białobrzegi",
-    "balony z helem białobrzegi",
+    "sklep urwis białobrzegi",
+    "zabawki dla dzieci białobrzegi",
+    "klocki lego białobrzegi",
     "wyprawka szkolna białobrzegi",
+    "artykuły biurowe białobrzegi",
+    "sklep z zabawkami reymonta",
     "gry planszowe białobrzegi",
-    "laminacja książek białobrzegi"
+    "prezenty dla dziecka"
   ],
   openGraph: {
-    title: "Oferta i Kategorie | Sklep Urwis Białobrzegi",
-    description: "Wszystko dla Twojego dziecka w jednym miejscu. Sprawdź nasze zabawki, artykuły szkolne i akcesoria imprezowe.",
-    url: 'https://www.sklep-urwis.pl/oferta',
+    title: "Oferta Sklepu Urwis - Najlepsze Zabawki i Artykuły Szkolne",
+    description: "Wszystko czego potrzebuje Twoje dziecko i Twoje biuro w jednym miejscu w Białobrzegach. Sprawdź nasze kategorie produktowe!",
+    url: 'https://www.sklep-urwis.pl/oferta', // 🚀 Dodano www
+    type: 'website',
   },
 };
 
@@ -25,8 +28,7 @@ export default function OfertaLayout({
 }) {
   return (
     <section>
-      {/* Layout dla sekcji oferta nie wymaga dodatkowych owijaczy, 
-          ponieważ globals.css i główne kontenery są w RootLayout */}
+      {/* Layout pełni rolę kontenera metadanych dla wszystkich podstron oferty */}
       {children}
     </section>
   );

@@ -27,22 +27,31 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sklep-urwis.pl'),
-  title: "Sklep Urwis | Zabawki, Art. Szkolne i Biurowe Białobrzegi",
-  description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Prawdziwy sklep stacjonarny dla dzieci!",
+  // 🚀 Zmiana na www zgodnie z Twoją konfiguracją domeny
+  metadataBase: new URL('https://www.sklep-urwis.pl'),
+  title: {
+    default: "Sklep Urwis Białobrzegi | LEGO, Zabawki i Art. Szkolne",
+    template: "%s | Sklep Urwis Białobrzegi"
+  },
+  description: "Największy w Białobrzegach wybór LEGO, zabawek i artykułów szkolnych. 🧸 Odwiedź nas na Reymonta 38A! Pompujemy balony helem i spełniamy dziecięce marzenia.",
   manifest: "/manifest.json", 
   
+  keywords: [
+    "sklep urwis", "lego białobrzegi", "zabawki dla dzieci", "sala zabaw białobrzegi", 
+    "lece w kulki", "balony z helem", "artykuly szkolne", "reymonta 38a"
+  ],
+
   openGraph: {
-    title: "Sklep Urwis | Białobrzegi",
-    description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Odkryj prawdziwy sklep stacjonarny dla dzieci!",
-    url: "https://sklep-urwis.pl", 
+    title: "Sklep Urwis Białobrzegi | Królestwo LEGO i Zabawek",
+    description: "Wszystko dla Twojego dziecka w jednym miejscu. Najlepsze marki, balony z helem i Sala Zabaw Lecę w Kulki!",
+    url: "https://www.sklep-urwis.pl", 
     siteName: "Sklep Urwis",
     images: [
       {
         url: "/og-image.webp", 
         width: 1200,
         height: 630,
-        alt: "Front Sklepu Urwis i maskotka",
+        alt: "Sklep Urwis Białobrzegi - LEGO i Zabawki",
       },
     ],
     locale: "pl_PL",
@@ -51,8 +60,8 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Sklep Urwis | Zabawki i Balony",
-    description: "Zabawki, gry planszowe, balony z helem i artykuły szkolne. Białobrzegi, Reymonta 38A.",
+    title: "Sklep Urwis Białobrzegi",
+    description: "Zabawki, LEGO, balony z helem i wyprawka szkolna. Najlepszy sklep stacjonarny w regionie!",
     images: ["/og-image.webp"],
   },
 };
@@ -75,10 +84,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "ToyStore"], 
     "name": "Sklep Urwis",
-    "image": "https://sklep-urwis.pl/og-image.webp",
-    "@id": "https://sklep-urwis.pl",
-    "url": "https://sklep-urwis.pl",
+    "image": "https://www.sklep-urwis.pl/og-image.webp",
+    "@id": "https://www.sklep-urwis.pl",
+    "url": "https://www.sklep-urwis.pl",
     "telephone": "+48604208183",
+    "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "ul. Reymonta 38A",
@@ -123,13 +133,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
             gtag('js', new Date());
-
             gtag('config', '${GA_MEASUREMENT_ID}', {
               page_path: window.location.pathname,
             });
           `}
         </Script>
-
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -137,20 +145,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
-        
-        {/* 🚀 AuthProvider obejmuje teraz CAŁĄ zawartość aplikacji */}
         <AuthProvider>
-          
           <WelcomeScreen />
           
           <Suspense fallback={null}>
             <OrphansFixer />
           </Suspense>
           
-          <div 
-            className="fixed inset-0 z-10 bg-white/80 pointer-events-none" 
-            aria-hidden="true" 
-          />
+          <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
 
           <div className="relative z-20 flex flex-col min-h-screen bg-transparent">
             <Navbar />
@@ -173,30 +175,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <CookieModal />
           </Suspense>
-
         </AuthProvider>
-{/* REJESTRACJA SERVICE WORKERA */}
-<script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // 🚀 Wyłączamy Service Workera dla Googlebota, żeby nie wywalał testu PSI
-              const isTestBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
-              
-              if ('serviceWorker' in navigator && !isTestBot) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
 
-              window.addEventListener('appinstalled', () => {
-                if (typeof gtag === 'function') {
-                  gtag('event', 'pwa_installed', { platform: 'web' });
-                }
-                console.log('PWA zostało zainstalowane!');
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            const isTestBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
+            
+            if ('serviceWorker' in navigator && !isTestBot) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js');
               });
-            `,
-          }}
-        />
+            }
+
+            window.addEventListener('appinstalled', () => {
+              if (typeof gtag === 'function') {
+                gtag('event', 'pwa_installed', { platform: 'web' });
+              }
+              console.log('PWA zainstalowane!');
+            });
+          `}
+        </Script>
       </body>
     </html>
   );

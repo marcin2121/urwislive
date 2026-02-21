@@ -21,12 +21,12 @@ const categories = [
     href: "/oferta/zabawki"
   },  
   {
-    title: "Wyprawka Szkolna",
-    desc: "Markowe plecaki i przybory szkolne dla małych geniuszy. Wszystko do szkoły w jednym miejscu.",
+    title: "Artykuły Szkolne i Biurowe",
+    desc: "Kompletna wyprawka szkolna i artykuły biurowe w Białobrzegach.",
     icon: Backpack,
     color: "#0055ff",
     size: "md",
-    href: "/oferta/szkola"
+    href: "/oferta/szkola-i-biuro"
   },
   {
     title: "Akcesoria Imprezowe",
