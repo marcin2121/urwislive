@@ -27,7 +27,6 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  // 🚀 Zmiana na www zgodnie z Twoją konfiguracją domeny
   metadataBase: new URL('https://www.sklep-urwis.pl'),
   title: {
     default: "Sklep Urwis Białobrzegi | LEGO, Zabawki i Art. Szkolne",
@@ -36,9 +35,26 @@ export const metadata: Metadata = {
   description: "Największy w Białobrzegach wybór LEGO, zabawek i artykułów szkolnych. 🧸 Odwiedź nas na Reymonta 38A! Pompujemy balony helem i spełniamy dziecięce marzenia.",
   manifest: "/manifest.json", 
   
+  // 🚀 SEO: Link kanoniczny
+  alternates: {
+    canonical: 'https://www.sklep-urwis.pl',
+  },
+
+  // 🚀 FIX: Ikony dla Google Search (wielokrotność 48px)
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' }, // Kluczowe dla Google!
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  
   keywords: [
     "sklep urwis", "lego białobrzegi", "zabawki dla dzieci", "sala zabaw białobrzegi", 
-    "lece w kulki", "balony z helem", "artykuly szkolne", "reymonta 38a"
+    "lece w kulki", "balony z helem", "artykuly szkolne", "reymonta 38a", "zabawki radom"
   ],
 
   openGraph: {
@@ -80,46 +96,79 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     fetchPriority: "high" 
   });
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": ["LocalBusiness", "ToyStore"], 
-    "name": "Sklep Urwis",
-    "image": "https://www.sklep-urwis.pl/og-image.webp",
-    "@id": "https://www.sklep-urwis.pl",
-    "url": "https://www.sklep-urwis.pl",
-    "telephone": "+48604208183",
-    "priceRange": "$$",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "ul. Reymonta 38A",
-      "addressLocality": "Białobrzegi",
-      "postalCode": "26-800",
-      "addressCountry": "PL"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 51.6447168175059, 
-      "longitude": 20.950223885817554
-    },
-    "openingHoursSpecification": [
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        "opens": "08:00",
-        "closes": "18:00"
+  // 🚀 SEO: Połączone dane strukturalne (Business + FAQ)
+  const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": ["LocalBusiness", "ToyStore"], 
+      "name": "Sklep Urwis",
+      "image": "https://www.sklep-urwis.pl/og-image.webp",
+      "@id": "https://www.sklep-urwis.pl",
+      "url": "https://www.sklep-urwis.pl",
+      "telephone": "+48604208183",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "ul. Reymonta 38A",
+        "addressLocality": "Białobrzegi",
+        "postalCode": "26-800",
+        "addressCountry": "PL"
       },
-      {
-        "@type": "OpeningHoursSpecification",
-        "dayOfWeek": "Saturday",
-        "opens": "08:00",
-        "closes": "15:00"
-      }
-    ],
-    "sameAs": [
-      "https://facebook.com/sklepurwis.bialobrzegi",
-      "https://instagram.com/sklepurwis.bialobrzegi"
-    ]
-  };
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 51.6447168175059, 
+        "longitude": 20.950223885817554
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "08:00",
+          "closes": "18:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "08:00",
+          "closes": "15:00"
+        }
+      ],
+      "sameAs": [
+        "https://facebook.com/sklepurwis.bialobrzegi",
+        "https://instagram.com/sklepurwis.bialobrzegi"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Gdzie znajduje się Sklep Urwis w Białobrzegach?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sklep stacjonarny Urwis znajduje się przy ulicy Reymonta 38A w Białobrzegach (26-800)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Czy w Sklepie Urwis kupię klocki LEGO?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tak, Sklep Urwis posiada największy wybór klocków LEGO w regionie, w tym serie Technic, City, Ninjago, Star Wars i wiele innych."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Czy oferujecie balony z helem?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oczywiście! Pompujemy balony helem na miejscu. Mamy szeroki wybór balonów cyfr oraz postaci z bajek."
+          }
+        }
+      ]
+    }
+  ];
 
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
@@ -138,10 +187,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             });
           `}
         </Script>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {/* Renderowanie tablicy schematów */}
+        {schemas.map((schema, index) => (
+          <script
+            key={index}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
       </head>
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
