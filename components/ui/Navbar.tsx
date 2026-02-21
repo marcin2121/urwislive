@@ -88,7 +88,6 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
-    
     const handlePushRefresh = () => {
       setPushKey(prev => prev + 1);
       trackEvent('push_status_updated_auto');
@@ -104,15 +103,26 @@ export default function Navbar() {
       let label = "ZAMKNIĘTE";
       let subLabel = "";
 
+      // 🚀 NAPRAWIONA LOGIKA GODZIN
       if (day >= 1 && day <= 5) {
         if (currentTime >= 8 && currentTime < 18) {
           isOpen = true; label = "OTWARTE"; subLabel = "do 18:00";
-        } else subLabel = "Otwieramy o 08:00";
+        } else if (currentTime < 8) {
+          subLabel = "do 08:00";
+        } else {
+          subLabel = day === 5 ? "W sobotę" : "do 08:00";
+        }
       } else if (day === 6) {
         if (currentTime >= 8 && currentTime < 15) {
           isOpen = true; label = "OTWARTE"; subLabel = "do 15:00";
-        } else subLabel = "W poniedziałek";
-      } else subLabel = "W poniedziałek";
+        } else if (currentTime < 8) {
+          subLabel = "do 08:00"; // Tutaj był błąd wywalający "W poniedziałek" nad ranem!
+        } else {
+          subLabel = "W poniedziałek";
+        }
+      } else {
+        subLabel = "W poniedziałek";
+      }
 
       setShopStatus({ isOpen, label, subLabel });
     };
@@ -136,18 +146,24 @@ export default function Navbar() {
       >
         <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between">
           
-          <div className="relative flex items-center gap-1.5 md:gap-4 shrink-0">
-            {/* 🚀 LOGO: Brak ramki, bliżej lewej strony i ciaśniej ułożony tekst */}
-            <Link href="/" onClick={() => trackEvent('nav_logo_click')} aria-label="Strona główna" className="flex items-center gap-0.5 md:gap-1 group shrink-0">
-              <div className="relative w-8 h-8 md:w-11 md:h-11 shrink-0 transition-transform group-hover:scale-105">
+          <div className="relative flex items-center gap-2 md:gap-4 shrink-0">
+            {/* LOGO */}
+            <Link 
+              href="/" 
+              onClick={() => trackEvent('nav_logo_click')} 
+              aria-label="Strona główna"
+              className="flex items-center gap-0.5 md:gap-1 group shrink-0"
+            >
+              <div className="relative w-9 h-9 md:w-11 md:h-11 overflow-hidden shrink-0 transition-transform group-hover:scale-105">
                 <Image src="/logo.png" alt="Logo Sklepu Urwis" fill className="object-contain" priority />
               </div>
-              <div className="flex flex-col leading-[0.8] font-black italic">
-                <span className="text-[10px] md:text-[14px] text-[#BF2024]">SKLEP</span>
-                <span className="text-[10px] md:text-[14px] text-[#0055ff]">URWIS</span>
+              <div className="flex flex-col leading-[0.8] pt-0.5 font-black italic">
+                <span className="text-[11px] md:text-[14px] text-[#BF2024]">SKLEP</span>
+                <span className="text-[11px] md:text-[14px] text-[#0055ff]">URWIS</span>
               </div>
             </Link>
 
+            {/* STATUS SKLEPU */}
             <button 
               aria-label="Pokaż godziny otwarcia"
               onClick={() => {
@@ -162,8 +178,8 @@ export default function Navbar() {
                 <span className={`relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
               </div>
               <div className="flex flex-col items-start leading-none text-left">
-                <span className={`text-[9px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
-                <span className="hidden sm:block text-[11px] font-bold text-zinc-400 tracking-tighter mt-[1px]">{shopStatus.subLabel}</span>
+                <span className={`text-[10px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
+                <span className="text-[8px] md:text-[11px] font-bold text-zinc-400 tracking-tighter mt-[1px] leading-none">{shopStatus.subLabel}</span>
               </div>
               <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -199,31 +215,31 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-0.5 md:gap-3 shrink-0">
+          <div className="flex items-center gap-1 md:gap-3 shrink-0">
             
-            {/* 🪙 PORTFEL: Okrągły, wielkości powiadomień. Punkty wyświetlane jako "badge" */}
+            {/* 🪙 PORTFEL: bg-zinc-50 + shadow-sm, idealnie równy z Powiadomieniami */}
             <Link 
               href="/karta" 
               onClick={() => trackEvent('nav_wallet_click')}
               aria-label="Przejdź do portfela lojalnościowego"
-              className={`relative flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full transition-all group shrink-0 border ${user ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white border-amber-300 shadow-md shadow-amber-500/20' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200'}`}
+              className={`relative flex items-center justify-center w-9 h-9 rounded-full transition-all group shrink-0 border shadow-sm ${user ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white border-amber-300 shadow-amber-500/20' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-500 border-zinc-200'}`}
             >
               {user ? (
                 <>
-                  <Coins size={15} className="md:size-[18px] group-hover:rotate-12 transition-transform shrink-0" />
+                  <Coins size={18} className="group-hover:rotate-12 transition-transform shrink-0" />
                   {userPoints !== null && (
-                    <span className="absolute -top-1 -right-1 md:-top-1.5 md:-right-1.5 bg-red-500 text-white text-[8px] md:text-[9px] font-black min-w-[16px] h-[16px] flex items-center justify-center rounded-full border border-white leading-none shadow-sm">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black min-w-[16px] h-[16px] flex items-center justify-center rounded-full border border-white leading-none shadow-sm">
                       {userPoints}
                     </span>
                   )}
                 </>
               ) : (
-                <Wallet size={15} className="md:size-[18px] text-zinc-400 group-hover:scale-110 transition-transform shrink-0" />
+                <Wallet size={18} className="text-zinc-400 group-hover:scale-110 transition-transform shrink-0" />
               )}
             </Link>
 
-            {/* 🔔 POWIADOMIENIA: Minimalnie zmniejszone przez skalowanie */}
-            <div className="shrink-0 flex items-center justify-center transform scale-[0.85] md:scale-90 origin-center">
+            {/* 🔔 POWIADOMIENIA */}
+            <div className="shrink-0 flex items-center justify-center transform scale-90 origin-center">
               <PushButton key={`nav-push-${pushKey}`} />
             </div>
 
@@ -246,7 +262,7 @@ export default function Navbar() {
                 setMobileMenuOpen(true);
                 trackEvent('mobile_menu_open');
               }} 
-              className="xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-100/50 hover:bg-zinc-200 text-zinc-600 active:scale-90 transition-transform shrink-0 ml-0.5"
+              className="xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm hover:bg-zinc-100 text-zinc-600 active:scale-90 transition-transform shrink-0"
             >
               <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
@@ -268,25 +284,24 @@ export default function Navbar() {
                     <span className="text-sm text-[#0055ff]">URWIS</span>
                   </div>
                 </div>
-                <button aria-label="Zamknij menu" onClick={() => setMobileMenuOpen(false)} className="p-3 bg-zinc-100 rounded-full text-zinc-600"><X size={24} /></button>
+                <button aria-label="Zamknij menu" onClick={() => setMobileMenuOpen(false)} className="p-3 bg-zinc-50 border border-zinc-200 shadow-sm rounded-full text-zinc-600"><X size={24} /></button>
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                 
-                {/* Zwiększony wizualnie kafelek mobilny Portfela */}
                 <Link 
                   href="/karta" 
                   onClick={() => {
                     setMobileMenuOpen(false);
                     trackEvent('mobile_wallet_click');
                   }} 
-                  className={`flex items-center justify-between p-4 rounded-3xl border transition-all ${user ? 'bg-gradient-to-br from-amber-400 to-yellow-600 text-white border-amber-300 shadow-lg' : 'bg-zinc-50 text-zinc-900 border-zinc-100'}`}
+                  className={`flex items-center justify-between p-6 rounded-[2rem] border shadow-sm transition-all ${user ? 'bg-gradient-to-br from-amber-400 to-yellow-600 text-white border-amber-300 shadow-lg' : 'bg-zinc-50 text-zinc-900 border-zinc-200 hover:bg-zinc-100'}`}
                 >
-                  <div className="flex items-center gap-3">
-                    {user ? <Coins size={24} /> : <Wallet size={24} className="text-zinc-400" />}
+                  <div className="flex items-center gap-4">
+                    {user ? <Coins size={28} /> : <Wallet size={28} className="text-zinc-400" />}
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-0.5">{user ? 'Twoje Złote Urwisy' : 'Strefa Klienta'}</span>
-                      <span className="text-lg font-black italic uppercase leading-none">
+                      <span className="text-[12px] font-black uppercase opacity-70 leading-none mb-1">{user ? 'Twoje Złote Urwisy' : 'Strefa Klienta'}</span>
+                      <span className="text-xl font-black italic uppercase leading-none">
                         {user ? (userPoints !== null ? `${userPoints} Urwisów` : 'Twój Portfel') : 'Zaloguj się'}
                       </span>
                     </div>
