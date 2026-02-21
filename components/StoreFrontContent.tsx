@@ -14,6 +14,7 @@ import Link from "next/link";
 
 // IMPORT TWOICH KOMPONENTÓW
 import Hero from "@/components/Hero";
+import DualBrandSection from "@/components/DualBrandSection";
 import { AcademyPromo } from "@/components/AcademyPromo";
 import AboutSection from "@/components/AboutSection";
 import PoznajUrwisa from "@/components/PoznajUrwisa";
@@ -24,14 +25,24 @@ import LoyaltySection from "@/components/LoyaltySection";
 const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), { ssr: false });
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
 
-// 📸 GALERIA: Zoptymalizowana pod najczęstsze wyszukiwania (LEGO, Wyprawka, Balony)
+// 📸 GALERIA: Pełne 16 elementów z hybrydą (Twój bajkowy klimat + Twarde SEO dla Google)
 const mainPageItems = [
-  { id: 1, src: '/gallery/IMG_6032.webp', title: "Plecaki i Akcesoria", category: "Wyprawka Szkolna" },
-  { id: 2, src: '/gallery/IMG_6021.webp', title: "Klocki LEGO", category: "Nowości 2026" },
-  { id: 3, src: '/gallery/IMG_6019.webp', title: "Zabawki Kreatywne", category: "Rozwój przez zabawę" },
-  { id: 4, src: '/gallery/IMG_6013.webp', title: "Gry Planszowe", category: "Rodzinne Wieczory" },
-  { id: 5, src: '/gallery/IMG_6009.webp', title: "Artykuły Biurowe", category: "Dla Firm i Domu" },
-  { id: 6, src: '/gallery/IMG_6014.webp', title: "Balony z Helem", category: "Urodziny & Party" },
+  { id: 1, src: '/gallery/IMG_6032.webp', title: "Plecaki Szkolne", category: "Czas do szkoły" },
+  { id: 2, src: '/gallery/IMG_6021.webp', title: "Klocki LEGO", category: "Kraina Klocków" },
+  { id: 3, src: '/gallery/IMG_6019.webp', title: "Maskotki i Pluszaki", category: "Mięciutkie Przytulasy" },
+  { id: 4, src: '/gallery/IMG_6013.webp', title: "Puzzle i Układanki", category: "Gimnastyka Umysłu" },
+  { id: 5, src: '/gallery/IMG_6009.webp', title: "Zabawki Letnie", category: "Wodne Szaleństwo" },
+  { id: 6, src: '/gallery/IMG_6014.webp', title: "Prezenty i Upominki", category: "Małe Skarby" },
+  { id: 7, src: '/gallery/sklep-front.webp', title: "Sklep Białobrzegi", category: "Nasz Sklep stacjonarny" }, // Zmienione rozszerzenie z .jpg na .webp dla optymalizacji
+  { id: 8, src: '/gallery/IMG_6035.webp', title: "Artykuły Szkolne", category: "Szkolna Wyprawka" },
+  { id: 9, src: '/gallery/IMG_6005.webp', title: "Pojazdy Zabawkowe", category: "Moja Bryka" },
+  { id: 10, src: '/gallery/IMG_6004.webp', title: "Jeździki", category: "Odpalaj i jedź" },
+  { id: 11, src: '/gallery/IMG_6003.webp', title: "Akcesoria imprezowe", category: "Świeczki Urodzinowe" },
+  { id: 12, src: '/gallery/IMG_6001.webp', title: "Książki dla Dzieci", category: "Magiczne Opowieści" },
+  { id: 13, src: '/gallery/IMG_5997.webp', title: "Traktory i Maszyny", category: "Mali Farmerzy" },
+  { id: 14, src: '/gallery/IMG_5996.webp', title: "Zabawki Edukacyjne", category: "Szef Kuchni" },
+  { id: 15, src: '/gallery/IMG_5995.webp', title: "Gry Planszowe", category: "Rodzinne Granie" },
+  { id: 16, src: '/gallery/IMG_5994.webp', title: "Artykuły Artystyczne", category: "Mały Artysta" }
 ];
 
 export default function StoreFrontContent() {
@@ -53,6 +64,9 @@ export default function StoreFrontContent() {
         <div className="relative z-10">
           {/* SEKACJA HERO */}
           <Hero />
+
+          {/* TWOJA SEKCJA DUAL BRAND (Dodana pod Hero) */}
+          <DualBrandSection />
 
           {/* 🎯 TRZY FILARY: Szybka nawigacja po najważniejszych działach Sklepu na Reymonta */}
           <section className="py-12 px-6">
