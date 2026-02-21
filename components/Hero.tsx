@@ -68,15 +68,16 @@ export default function HeroSection() {
           </motion.p>
         </div>
 
+        {/* 🚀 KLUCZOWA ZMIANA SEO: Dodano LEGO i wyprawkę szkolną */}
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-bold leading-relaxed balance"
         >
-          Największy wybór gier i{"\u00A0"}zabawek, akcesoriów imprezowych, 
-          art. szkolnych i{"\u00A0"}biurowych przy{"\u00A0"}<span className="text-[#BF2024]">ul. Reymonta 38A</span>.  
-          Prawdziwy sklep stacjonarny, w{"\u00A0"}którym rządzisz Ty i{"\u00A0"}Twoja wyobraźnia!
+          Największy w regionie wybór klocków <span className="text-[#BF2024]">LEGO</span>, zabawek 
+          i pełnej <span className="text-[#0055ff]">wyprawki szkolnej</span> przy ul. Reymonta 38A.  
+          Prawdziwy sklep stacjonarny, w którym rządzisz Ty i Twoja wyobraźnia!
         </motion.p>
 
         <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
@@ -135,10 +136,7 @@ export default function HeroSection() {
                 </div>
                 <button 
                   onClick={() => {
-                    setIsMapOpen(true);
-                    if ((window as any).gtag) {
-                      (window as any).gtag('event', 'hero_map_opened', { location_name: 'Białobrzegi' });
-                    }
+                    setIsMapOpen(false);
                   }}
                   className="w-12 h-12 flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full transition-all"
                 >
@@ -146,15 +144,16 @@ export default function HeroSection() {
                 </button>
               </div>
               
-              <div className="aspect-square md:aspect-video w-full rounded-[2rem] overflow-hidden border-2 border-zinc-100 bg-zinc-50">
-                {/* 🚀 OPTYMALIZACJA: Iframe renderuje się tylko gdy modal jest otwarty */}
+              <div className="aspect-square md:aspect-video w-full rounded-[2rem] overflow-hidden border-2 border-zinc-100 bg-zinc-50 relative">
+                {/* 🚀 Zaktualizowany i przekonwertowany Iframe z Google Maps */}
                 <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.7798969279215!2d20.950946668338!3d51.645555856910185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771662047423!5m2!1spl!2spl" 
                   width="100%" 
                   height="100%" 
-                  style={{ border: 0 }}
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.5682855793444!2d20.9504889772396!3d51.64941910056157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718e00192a5433f%3A0xc6443c2f0f878f7!2sSklep%20Urwis%20-%20Zabawki%2C%20Balony%20z%20Helem%20i%20Art.%20Szkolne!5e0!3m2!1spl!2spl!4v1710000000000!5m2!1spl!2spl"
+                  style={{ border: 0, position: "absolute", top: 0, left: 0 }} 
                   allowFullScreen 
-                  loading="lazy"
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>
             </motion.div>
