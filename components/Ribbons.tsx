@@ -110,7 +110,13 @@ const Ribbons: React.FC<RibbonsProps> = ({
 
     function resize() {
       if (!container) return;
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      // 🚀 OPTYMALIZACJA SEO/WEBGL: Zabezpieczenie przed Googlebotem i Lighthouse!
+      // Ograniczamy maksymalny rozmiar canvasa, żeby bot testujący stronę 
+      // nie zabił GPU rozciągając okno do 10000px w dół.
+      const width = Math.min(window.innerWidth, 2560);
+      const height = Math.min(window.innerHeight, 1440);
+      
+      renderer.setSize(width, height);
       lines.forEach(line => line.polyline.resize());
     }
     window.addEventListener('resize', resize);
@@ -145,7 +151,7 @@ const Ribbons: React.FC<RibbonsProps> = ({
 
     resize();
 
-    // --- FIX: ŚLEDZENIE MYSZY WZGLĘDEM OKNA (VIEWPORT) ---
+    // --- ŚLEDZENIE MYSZY WZGLĘDEM OKNA (VIEWPORT) ---
     const mouse = new Vec3();
     function updateMouse(e: MouseEvent | TouchEvent) {
       let x: number, y: number;
@@ -157,7 +163,6 @@ const Ribbons: React.FC<RibbonsProps> = ({
         y = e.clientY;
       } else return;
 
-      // Obliczamy pozycję względem całego okna, co ignoruje scroll strony
       mouse.set((x / window.innerWidth) * 2 - 1, (y / window.innerHeight) * -2 + 1, 0);
     }
     
@@ -203,7 +208,8 @@ const Ribbons: React.FC<RibbonsProps> = ({
     };
   }, [colors, baseSpring, baseFriction, baseThickness, offsetFactor, maxAge, pointCount, speedMultiplier, enableFade, enableShaderEffect, effectAmplitude]);
 
-  return <div ref={containerRef} className="fixed inset-0 w-full h-full pointer-events-none" />;
+  // Używamy absolute wewnątrz fixed
+  return <div ref={containerRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
 };
 
 // --- WRAPPER Z DYNAMICZNYMI KOLORAMI ---
@@ -211,18 +217,17 @@ export function RibbonsBg({ colors }: RibbonsProps) {
   const pathname = usePathname();
 
   const activeColors = useMemo(() => {
-    // Pastelowe dla Sali Zabaw
     if (pathname?.includes('salazabaw')) {
       return ['#ffc2d1', '#a2d2ff']; 
     }
-    // Standardowe dla Urwisa
     return ['#BF2024', '#0055ff'];
   }, [pathname]);
 
   return (
-    <div className="fixed inset-0 w-full h-full pointer-events-none z-0 bg-white">
+    // 🚀 Zmiana na w-screen i h-screen upewnia nas, że kontener nigdy nie przekroczy rozmiaru monitora/telefonu
+    <div className="fixed top-0 left-0 w-screen h-screen overflow-hidden pointer-events-none z-0 bg-white">
       <Ribbons
-        key={pathname} // Resetuje WebGL przy zmianie strony (ważne!)
+        key={pathname}
         colors={activeColors}
         baseSpring={0.05}
         baseFriction={0.9}
@@ -234,7 +239,6 @@ export function RibbonsBg({ colors }: RibbonsProps) {
         enableFade={false}
         enableShaderEffect={false}
         effectAmplitude={5.5}
-
       />
     </div>
   );

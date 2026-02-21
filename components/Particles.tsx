@@ -74,7 +74,6 @@ const vertex = /* glsl */ `
     }
     
     gl_Position = projectionMatrix * mvPos;
-    gl_Position = projectionMatrix * mvPos;
   }
 `;
 
@@ -133,11 +132,15 @@ const Particles: React.FC<ParticlesProps> = ({
     camera.position.set(0, 0, cameraDistance);
 
     const resize = () => {
-      const width = container.clientWidth;
-      const height = container.clientHeight;
+      // 🚀 Zabezpieczenie WebGL: Ograniczamy renderowanie do 1440p
+      // Niszczy to błąd GPU przy symulacjach SEO
+      const width = Math.min(container.clientWidth, 2560);
+      const height = Math.min(container.clientHeight, 1440);
+      
       renderer.setSize(width, height);
       camera.perspective({ aspect: gl.canvas.width / gl.canvas.height });
     };
+    
     window.addEventListener('resize', resize, false);
     resize();
 
@@ -251,7 +254,8 @@ const Particles: React.FC<ParticlesProps> = ({
     pixelRatio
   ]);
 
-  return <div ref={containerRef} className={`relative w-full h-full ${className}`} />;
+  // 🚀 Zabezpieczenie CSS: overflow-hidden powstrzyma wylewanie się elementów poza kontener
+  return <div ref={containerRef} className={`absolute inset-0 w-full h-full pointer-events-none overflow-hidden ${className || ''}`} />;
 };
 
 export default Particles;
