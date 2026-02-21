@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Szkoła i Biuro w Sklepie Urwis - Wszystko dla ucznia i firmy",
     description: "Przygotuj się na nowy rok szkolny lub doposaż swoje biuro. Największy wybór artykułów papierniczych i piśmienniczych w Białobrzegach przy ul. Reymonta 38A.",
-    url: 'https://sklep-urwis.pl/oferta/szkola',
+    url: 'https://sklep-urwis.pl/oferta/szkola-i-biuro',
     type: 'website',
   }
 };

@@ -9,8 +9,9 @@ export default function robots(): MetadataRoute.Robots {
         '/admin',    // Blokujemy dostęp do panelu administratora
         '/karta',    // Blokujemy dostęp do portfela lojalnościowego
         '/regulamin', // Blokujemy regulaminy z indeksowania
+        '/api'
       ],
     },
-    sitemap: 'https://sklep-urwis.pl/sitemap.xml',
+    sitemap: 'https://www.sklep-urwis.pl/sitemap.xml',
   };
 }
