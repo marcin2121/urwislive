@@ -55,7 +55,7 @@ export default function Footer() {
                 <Store size={16} /> SKLEP URWIS
               </div>
               <ul className="flex flex-col gap-5">
-                <FooterLink href="https://maps.app.goo.gl/TwójLinkDoMapy" icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="Białobrzegi 26-800" />
+                <FooterLink href="https://maps.app.goo.gl/waDKoEToDzETMnCv9" icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="Białobrzegi 26-800" />
                 <FooterLink href="tel:+48604208183" icon={<Phone size={18} />} label="+48 604 208 183" />
                 <FooterLink href="mailto:kontakt@sklep-urwis.pl" icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" />
               </ul>

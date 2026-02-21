@@ -240,8 +240,7 @@ export default function ContactSection() {
               className="bg-white/40 backdrop-blur-md rounded-[3.5rem] border-2 border-white shadow-xl overflow-hidden min-h-[500px]"
             >
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.5857876735745!2d20.9480352!3d51.6447168!2m3!1f0!2f0!3f0!3m2!1i1024!2i1024!4f13.1!3m3!1m2!1s0x4718e2689626017b%3A0x6739828282828282!2sSklep+Urwis!5e0!3m2!1spl!2spl!4v1234567890"
-                width="100%"
+src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.7798969279215!2d20.950946668338!3d51.645555856910185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771662047423!5m2!1spl!2spl"                width="100%"
                 height="100%"
                 style={{ border: 0, filter: 'grayscale(0.2) contrast(1.1)' }}
                 allowFullScreen
