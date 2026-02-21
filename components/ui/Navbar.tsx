@@ -88,6 +88,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true);
+    
     const handlePushRefresh = () => {
       setPushKey(prev => prev + 1);
       trackEvent('push_status_updated_auto');
@@ -131,18 +132,19 @@ export default function Navbar() {
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-2 md:px-4"
+        className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4"
       >
-        <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full p-1 pr-2 md:pr-4 flex items-center justify-between">
+        <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between">
           
-          <div className="relative flex items-center gap-2 md:gap-4 shrink-0">
-            <Link href="/" onClick={() => trackEvent('nav_logo_click')} className="flex items-center gap-2 group shrink-0">
-              <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full shadow-sm border border-white/50 bg-white">
-                <Image src="/logo.png" alt="Logo Sklepu Urwis" fill className="object-contain p-1.5" priority />
+          <div className="relative flex items-center gap-1.5 md:gap-4 shrink-0">
+            {/* 🚀 LOGO: Brak ramki, bliżej lewej strony i ciaśniej ułożony tekst */}
+            <Link href="/" onClick={() => trackEvent('nav_logo_click')} aria-label="Strona główna" className="flex items-center gap-0.5 md:gap-1 group shrink-0">
+              <div className="relative w-8 h-8 md:w-11 md:h-11 shrink-0 transition-transform group-hover:scale-105">
+                <Image src="/logo.png" alt="Logo Sklepu Urwis" fill className="object-contain" priority />
               </div>
-              <div className="flex flex-col leading-[0.85] pt-0.5 font-black italic">
-                <span className="text-[11px] md:text-[13px] text-[#BF2024]">SKLEP</span>
-                <span className="text-[11px] md:text-[13px] text-[#0055ff]">URWIS</span>
+              <div className="flex flex-col leading-[0.8] font-black italic">
+                <span className="text-[10px] md:text-[14px] text-[#BF2024]">SKLEP</span>
+                <span className="text-[10px] md:text-[14px] text-[#0055ff]">URWIS</span>
               </div>
             </Link>
 
@@ -153,17 +155,17 @@ export default function Navbar() {
                 setIsHoursDropdownOpen(newState);
                 trackEvent('nav_hours_toggle', { state: newState ? 'open' : 'close' });
               }}
-              className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/50 border border-white/60 shadow-sm shrink-0 hover:bg-white transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1.5 md:px-4 md:py-2 rounded-full bg-white/50 border border-white/60 shadow-sm shrink-0 hover:bg-white transition-colors"
             >
-              <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
+              <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5 shrink-0">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${shopStatus.isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
                 <span className={`relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
               </div>
               <div className="flex flex-col items-start leading-none text-left">
-                <span className={`text-[11px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
-                <span className="text-[11px] md:text-[11px] font-bold text-zinc-400 tracking-tighter mt-[1px]">{shopStatus.subLabel}</span>
+                <span className={`text-[9px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
+                <span className="hidden sm:block text-[11px] font-bold text-zinc-400 tracking-tighter mt-[1px]">{shopStatus.subLabel}</span>
               </div>
-              <ChevronDown size={14} className={`text-zinc-400 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             <AnimatePresence>
@@ -197,31 +199,33 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-1 md:gap-3 shrink-0">
+          <div className="flex items-center gap-0.5 md:gap-3 shrink-0">
             
-            {/* 🪙 ZMNIEJSZONY PRZYCISK PORTFELA */}
+            {/* 🪙 PORTFEL: Okrągły, wielkości powiadomień. Punkty wyświetlane jako "badge" */}
             <Link 
               href="/karta" 
               onClick={() => trackEvent('nav_wallet_click')}
               aria-label="Przejdź do portfela lojalnościowego"
-              className={`flex items-center gap-1 px-2.5 py-1.5 md:gap-2 md:px-5 md:py-2.5 rounded-full transition-all group shrink-0 border ${user ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white border-amber-300 shadow-md shadow-amber-500/20' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200'}`}
+              className={`relative flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full transition-all group shrink-0 border ${user ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-white border-amber-300 shadow-md shadow-amber-500/20' : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200'}`}
             >
               {user ? (
                 <>
-                  <Coins size={14} className="md:size-4 group-hover:rotate-12 transition-transform" />
-                  <span className="text-[10px] md:text-[12px] font-black uppercase tracking-widest leading-none">
-                    {userPoints !== null ? `${userPoints} 🪙` : 'Portfel'}
-                  </span>
+                  <Coins size={15} className="md:size-[18px] group-hover:rotate-12 transition-transform shrink-0" />
+                  {userPoints !== null && (
+                    <span className="absolute -top-1 -right-1 md:-top-1.5 md:-right-1.5 bg-red-500 text-white text-[8px] md:text-[9px] font-black min-w-[16px] h-[16px] flex items-center justify-center rounded-full border border-white leading-none shadow-sm">
+                      {userPoints}
+                    </span>
+                  )}
                 </>
               ) : (
-                <>
-                  <Wallet size={14} className="md:size-4 text-zinc-400 group-hover:scale-110 transition-transform" />
-                  <span className="hidden md:block text-[12px] font-black uppercase tracking-widest">Portfel</span>
-                </>
+                <Wallet size={15} className="md:size-[18px] text-zinc-400 group-hover:scale-110 transition-transform shrink-0" />
               )}
             </Link>
 
-            <PushButton key={`nav-push-${pushKey}`} />
+            {/* 🔔 POWIADOMIENIA: Minimalnie zmniejszone przez skalowanie */}
+            <div className="shrink-0 flex items-center justify-center transform scale-[0.85] md:scale-90 origin-center">
+              <PushButton key={`nav-push-${pushKey}`} />
+            </div>
 
             <Link 
               href="https://akademiaurwisa.pl" 
@@ -242,7 +246,7 @@ export default function Navbar() {
                 setMobileMenuOpen(true);
                 trackEvent('mobile_menu_open');
               }} 
-              className="xl:hidden p-2 md:p-3 rounded-full bg-zinc-100/50 hover:bg-zinc-200 text-zinc-600 active:scale-90 transition-transform"
+              className="xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-100/50 hover:bg-zinc-200 text-zinc-600 active:scale-90 transition-transform shrink-0 ml-0.5"
             >
               <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
@@ -269,7 +273,7 @@ export default function Navbar() {
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                 
-                {/* 🪙 ZMNIEJSZONY KAFELEK PORTFELA W MENU MOBILNYM */}
+                {/* Zwiększony wizualnie kafelek mobilny Portfela */}
                 <Link 
                   href="/karta" 
                   onClick={() => {
