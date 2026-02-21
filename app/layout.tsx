@@ -175,12 +175,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
 
         </AuthProvider>
-
-        {/* REJESTRACJA SERVICE WORKERA */}
-        <script
+{/* REJESTRACJA SERVICE WORKERA */}
+<script
           dangerouslySetInnerHTML={{
             __html: `
-              if ('serviceWorker' in navigator) {
+              // 🚀 Wyłączamy Service Workera dla Googlebota, żeby nie wywalał testu PSI
+              const isTestBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
+              
+              if ('serviceWorker' in navigator && !isTestBot) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js');
                 });

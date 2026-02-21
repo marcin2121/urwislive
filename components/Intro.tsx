@@ -4,53 +4,47 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function UrwisIntro({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false); // 🚀 Zabezpieczenie przed hydracją
   const [shouldShowIntro, setShouldShowIntro] = useState(false);
   const [step, setStep] = useState<'loading' | 'video' | 'done'>('loading');
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // 1. Detekcja środowiska
+    setMounted(true); // Oznaczamy, że jesteśmy po stronie przeglądarki
+
     const isMobile = window.innerWidth < 768;
-    // 🚀 KLUCZOWA POPRAWKA: Detekcja botów testujących (PSI/Lighthouse)
     const isBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
     const introShown = sessionStorage.getItem('urwis_intro_shown');
 
-    // 2. LOGIKA BYPASSU: Mobile LUB Bot Google
     if (isMobile || isBot) {
       setStep('done');
-      // Wysyłamy sygnał dla innych komponentów (np. modali ciasteczek)
       window.dispatchEvent(new Event('urwis_intro_finished'));
-      return; // Kończymy, shouldShowIntro zostaje false - renderuje czysty children
+      return; 
     }
 
-    // 3. LOGIKA DLA ZWYKŁEGO DESKTOPU
     if (!introShown) {
       setShouldShowIntro(true);
-    } else {
-      setStep('done');
-      window.dispatchEvent(new Event('urwis_intro_finished'));
-    }
-  }, []);
-
-  // Obsługa blokowania scrolla
-  useEffect(() => {
-    if (shouldShowIntro && step !== 'done') {
+      // Blokada scrolla przeniesiona tutaj, by nie powodować błędów Hydracji
       document.body.style.overflow = 'hidden';
       document.body.style.height = '100vh';
     } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.height = 'unset';
+      setStep('done');
+      window.dispatchEvent(new Event('urwis_intro_finished'));
     }
+
+    // Sprzątanie po odmontowaniu
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.height = 'unset';
     };
-  }, [shouldShowIntro, step]);
+  }, []);
 
   const finishIntro = () => {
     setStep('done');
     sessionStorage.setItem('urwis_intro_shown', 'true');
     window.dispatchEvent(new Event('urwis_intro_finished'));
+    document.body.style.overflow = 'unset';
+    document.body.style.height = 'unset';
   };
 
   const handleVideoEnd = () => finishIntro();
@@ -61,7 +55,13 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     finishIntro();
   };
 
-  // 🚀 Jeśli bypass (mobile/bot/powracający): Renderujemy czysty content
+  // 🚀 ZAPOBIEGANIE BŁĘDOM HYDRACJI (To psuło Google PSI!)
+  // Zanim React się "zbudzi" na kliencie, renderujemy ukrytą stronę
+  if (!mounted) {
+    return <div style={{ opacity: 0 }}>{children}</div>;
+  }
+
+  // 🚀 Bypassy dla bota i mobile (Czysty render)
   if (!shouldShowIntro) {
     return <>{children}</>;
   }
