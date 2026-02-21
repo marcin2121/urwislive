@@ -12,6 +12,7 @@ import { Suspense } from "react";
 import ReactDOM from "react-dom";
 import Script from "next/script";
 import WelcomeScreen from "@/components/ui/WelcomeScreen";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -26,7 +27,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sklep-urwis.pl'), // 🚀 To naprawi warning
+  metadataBase: new URL('https://sklep-urwis.pl'),
   title: "Sklep Urwis | Zabawki, Art. Szkolne i Biurowe Białobrzegi",
   description: "Największy wybór zabawek, gier i artykułów imprezowych w Białobrzegach. Prawdziwy sklep stacjonarny dla dzieci!",
   manifest: "/manifest.json", 
@@ -70,7 +71,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     fetchPriority: "high" 
   });
 
-  // 🚀 ZMIENNA Z DANYMI STRUKTURALNYMI DLA GOOGLE (JSON-LD)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "ToyStore"], 
@@ -86,7 +86,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       "postalCode": "26-800",
       "addressCountry": "PL"
     },
-    // Opcjonalnie: Dokładne współrzędne sklepu z Google Maps (pomaga w lokalnym SEO)
     "geo": {
       "@type": "GeoCoordinates",
       "latitude": 51.6447168175059, 
@@ -131,7 +130,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
-        {/* 🚀 DODANE: Ustrukturyzowane Dane dla Robotów Google */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -139,37 +137,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
-      <WelcomeScreen />
-        <Suspense fallback={null}>
-          <OrphansFixer />
-        </Suspense>
-
-        <div 
-          className="fixed inset-0 z-10 bg-white/80 pointer-events-none" 
-          aria-hidden="true" 
-        />
-
-        <div className="relative z-20 flex flex-col min-h-screen bg-transparent">
-          <Navbar />
+        
+        {/* 🚀 AuthProvider obejmuje teraz CAŁĄ zawartość aplikacji */}
+        <AuthProvider>
+          
+          <WelcomeScreen />
           
           <Suspense fallback={null}>
-            <InstallPrompt />
+            <OrphansFixer />
           </Suspense>
           
-          <RibbonsBg />
+          <div 
+            className="fixed inset-0 z-10 bg-white/80 pointer-events-none" 
+            aria-hidden="true" 
+          />
+
+          <div className="relative z-20 flex flex-col min-h-screen bg-transparent">
+            <Navbar />
+            
+            <Suspense fallback={null}>
+              <InstallPrompt />
+            </Suspense>
+            
+            <RibbonsBg />
+            
+            <main className="grow bg-transparent">
+              {children}
+            </main>
+            
+            <Footer />
+          </div>
           
-          <main className="grow bg-transparent">
-            {children}
-          </main>
+          <Toaster position="bottom-right" richColors />
           
-          <Footer />
-        </div>
-        
-        <Toaster position="bottom-right" richColors />
-        
-        <Suspense fallback={null}>
-          <CookieModal />
-        </Suspense>
+          <Suspense fallback={null}>
+            <CookieModal />
+          </Suspense>
+
+        </AuthProvider>
 
         {/* REJESTRACJA SERVICE WORKERA */}
         <script
@@ -181,7 +186,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 });
               }
 
-              // 🚀 ZDARZENIE GA4: Sukces instalacji PWA
               window.addEventListener('appinstalled', () => {
                 if (typeof gtag === 'function') {
                   gtag('event', 'pwa_installed', { platform: 'web' });
