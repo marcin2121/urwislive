@@ -28,6 +28,7 @@
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "facebook-nodejs-business-sdk": "^24.0.1",
     "framer-motion": "^12.34.0",
     "gsap": "^3.14.2",
     "jsonwebtoken": "^9.0.3",
