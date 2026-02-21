@@ -175,7 +175,6 @@ export default function PushButton() {
             window.dispatchEvent(new Event('push-permission-changed'));
             toast.success('Urwis melduje się na posterunku!');
             
-            // Tutaj można wywołać fetch do /api/push/send-welcome
           }
         } catch (error) {
           toast.error("Błąd subskrypcji.");
@@ -191,10 +190,20 @@ export default function PushButton() {
   const needsPwa = buttonState === 'INSTALL_PWA';
   const canSubscribe = buttonState === 'NOT_SUBSCRIBED';
 
+  // DYNAMICZNY ARIA-LABEL W ZALEŻNOŚCI OD STANU
+  const getAriaLabel = () => {
+    if (isSubscribed) return "Ustawienia powiadomień";
+    if (needsPwa) return "Powiadomienia wymagają instalacji aplikacji";
+    return "Włącz powiadomienia";
+  };
+
   return (
     <div className="relative">
       <motion.button
         onClick={handleAction}
+        aria-label={getAriaLabel()}
+        aria-haspopup={isSubscribed ? "menu" : undefined}
+        aria-expanded={isSubscribed ? showSettings : undefined}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={`relative flex items-center justify-center p-2.5 rounded-full transition-all border shadow-sm ${
@@ -219,35 +228,44 @@ export default function PushButton() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.95 }}
             className="absolute top-full right-0 mt-4 w-64 bg-white/98 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-zinc-100 p-5 z-[110]"
+            role="menu"
+            aria-orientation="vertical"
+            aria-label="Ustawienia kategorii powiadomień"
           >
             <div className="flex items-center justify-between mb-4 px-1">
               <div className="flex items-center gap-2 text-zinc-400">
-                <Settings2 size={14} />
+                <Settings2 size={14} aria-hidden="true" />
                 <span className="text-[10px] font-black uppercase tracking-widest">Twoje powiadomienia</span>
               </div>
-              {isUpdating && <Loader2 size={14} className="animate-spin text-blue-500" />}
+              {isUpdating && <Loader2 size={14} className="animate-spin text-blue-500" aria-label="Zapisywanie zmian" />}
             </div>
             
             <div className="space-y-2">
-              {PUSH_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  disabled={isUpdating}
-                  onClick={() => toggleTopic(cat.id)}
-                  className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all ${
-                    selectedTopics.includes(cat.id) 
-                    ? 'bg-blue-600 text-white shadow-md' 
-                    : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
-                  }`}
-                >
-                  <span className="text-[11px] font-black uppercase tracking-tight">{cat.label}</span>
-                  {selectedTopics.includes(cat.id) && (
-                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                      <Check size={14} strokeWidth={4} />
-                    </motion.div>
-                  )}
-                </button>
-              ))}
+              {PUSH_CATEGORIES.map((cat) => {
+                const isSelected = selectedTopics.includes(cat.id);
+                return (
+                  <button
+                    key={cat.id}
+                    disabled={isUpdating}
+                    onClick={() => toggleTopic(cat.id)}
+                    role="menuitemcheckbox"
+                    aria-checked={isSelected}
+                    aria-label={`Przełącz kategorię: ${cat.label}`}
+                    className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all ${
+                      isSelected 
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100'
+                    }`}
+                  >
+                    <span className="text-[11px] font-black uppercase tracking-tight">{cat.label}</span>
+                    {isSelected && (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                        <Check size={14} strokeWidth={4} aria-hidden="true" />
+                      </motion.div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             <p className="mt-4 text-[9px] text-zinc-400 font-bold uppercase tracking-tighter text-center italic">
               Zapisujemy automatycznie
