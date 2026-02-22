@@ -2,7 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { 
   ShoppingCart, 
   GraduationCap, 
@@ -21,11 +21,15 @@ import PoznajUrwisa from "@/components/PoznajUrwisa";
 import UrwisIntro from "@/components/Intro";
 import LoyaltySection from "@/components/LoyaltySection";
 import ColoringBanner from "@/components/ColoringBanner";
+
+// HOOK WYDAJNOŚCI GPU
+import { useGpuAcceleration } from "@/lib/useGpu";
+
 // DYNAMICZNE IMPORTY (SSR: FALSE dla stabilności animacji i cząsteczek)
 const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), { ssr: false });
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
 
-// 📸 GALERIA: Pełne 16 elementów z hybrydą (Twój bajkowy klimat + Twarde SEO dla Google)
+// 📸 GALERIA: Pełne 16 elementów
 const mainPageItems = [
     { id: 1, src: '/gallery/IMG_6032.webp', title: "Plecaki Szkolne", category: "Czas do szkoły", seoAlt: "Plecaki szkolne i tornistry dla dzieci - Sklep Urwis Białobrzegi" },
     { id: 2, src: '/gallery/IMG_6021.webp', title: "Klocki LEGO", category: "Kraina Klocków", isNew: true, seoAlt: "Największy wybór klocków LEGO w Białobrzegach - Sklep Urwis Reymonta 38A" },
@@ -46,79 +50,96 @@ const mainPageItems = [
   ];
 
 export default function StoreFrontContent() {
+  const hasGpu = useGpuAcceleration();
+
   return (
-    <UrwisIntro>
-      <div className="min-h-screen bg-transparent text-zinc-900">
-        
-        {/* 🟢 TŁO: Particles (Tylko na desktopie dla max wydajności) */}
-        <div className="fixed inset-0 z-0 pointer-events-none hidden md:block">
-          <Particles
-            particleCount={80}
-            particleColors={["#BF2024", "#0055ff"]}
-            alphaParticles
-            particleBaseSize={100}
-            speed={0.03}
-          />
-        </div>
-
-        <div className="relative z-10">
-          {/* SEKCJA HERO */}
-          <Hero />
-
-          {/* TWOJA SEKCJA DUAL BRAND (Dodana pod Hero) */}
-          <DualBrandSection />
-
-          {/* 🎯 TRZY FILARY: Szybka nawigacja po najważniejszych działach Sklepu na Reymonta */}
-          <section className="py-12 px-6">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-              <QuickCard 
-                icon={ShoppingCart} 
-                title="LEGO & Zabawki" 
-                link="/oferta/zabawki"
-                colorClass="text-[#BF2024]"
-              />
-              <QuickCard 
-                icon={GraduationCap} 
-                title="Szkoła & Biuro" 
-                link="/oferta/szkola-i-biuro"
-                colorClass="text-[#0055ff]"
-              />
-              <QuickCard 
-                icon={PartyPopper} 
-                title="Party & Balony" 
-                link="/oferta/imprezy"
-                colorClass="text-amber-500"
-              />
-            </div>
-          </section>
-
-          {/* 🟡 LOYALTY: Łącznik ze światem Lecę w Kulki (Targowicka 4) */}
-          <LoyaltySection />
-           {/* Baner kolorowanek */}
-          <ColoringBanner />
-          {/* GALERIA ASORTYMENTU */}
-          <section className="py-20">
-            <div className="container mx-auto px-6 mb-12">
-              <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
-                Twoje Centrum <span className="text-[#BF2024]">Zabawy</span>
-              </h2>
-              <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm mt-2">
-                Odkryj najlepsze marki w Białobrzegach
-              </p>
-            </div>
-            <UrwisGallery items={mainPageItems} />
-          </section>
+    // 🚀 MAGIA OPTYMALIZACJI: Jeśli brak GPU, MotionConfig wyłącza płynne animacje dla wszystkich <motion.div> wewnątrz!
+    <MotionConfig reducedMotion={hasGpu ? "user" : "always"}>
+      <UrwisIntro>
+        <div className="min-h-screen bg-transparent text-zinc-900">
           
-          <PoznajUrwisa />
+          {/* 🟢 TŁO: Particles (Renderowane TYLKO gdy JEST GPU) */}
+          {hasGpu && (
+            <div className="fixed inset-0 z-0 pointer-events-none hidden md:block">
+              <Particles
+                particleCount={80}
+                particleColors={["#BF2024", "#0055ff"]}
+                alphaParticles
+                particleBaseSize={100}
+                speed={0.03}
+              />
+            </div>
+          )}
 
-          {/* SEKACJE DODATKOWE */}
-          <div className="container mx-auto px-4 py-24 space-y-32">
-            <AcademyPromo />
-            <AboutSection />
+          <div className="relative z-10">
+
+            {/* DYSKRETNY KOMUNIKAT O TRYBIE WYDAJNOŚCI (Opcjonalny) */}
+            {!hasGpu && (
+              <div className="w-full bg-zinc-900 text-zinc-400 text-[10px] uppercase font-black tracking-widest text-center py-1.5 z-50">
+                Uruchomiono w trybie wysokiej wydajności (Brak Akceleracji GPU)
+              </div>
+            )}
+
+            {/* SEKCJA HERO */}
+            <Hero />
+
+            {/* TWOJA SEKCJA DUAL BRAND (Dodana pod Hero) */}
+            <DualBrandSection />
+
+            {/* 🎯 TRZY FILARY: Szybka nawigacja po najważniejszych działach Sklepu na Reymonta */}
+            <section className="py-12 px-6">
+              <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                <QuickCard 
+                  icon={ShoppingCart} 
+                  title="LEGO & Zabawki" 
+                  link="/oferta/zabawki"
+                  colorClass="text-[#BF2024]"
+                />
+                <QuickCard 
+                  icon={GraduationCap} 
+                  title="Szkoła & Biuro" 
+                  link="/oferta/szkola-i-biuro"
+                  colorClass="text-[#0055ff]"
+                />
+                <QuickCard 
+                  icon={PartyPopper} 
+                  title="Party & Balony" 
+                  link="/oferta/imprezy"
+                  colorClass="text-amber-500"
+                />
+              </div>
+            </section>
+
+            {/* 🟡 LOYALTY: Łącznik ze światem Lecę w Kulki (Targowicka 4) */}
+            <LoyaltySection />
+
+            {/* Baner kolorowanek */}
+            <ColoringBanner />
+
+            {/* GALERIA ASORTYMENTU */}
+            <section className="py-20">
+              <div className="container mx-auto px-6 mb-12">
+                <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
+                  Twoje Centrum <span className="text-[#BF2024]">Zabawy</span>
+                </h2>
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm mt-2">
+                  Odkryj najlepsze marki w Białobrzegach
+                </p>
+              </div>
+              <UrwisGallery items={mainPageItems} />
+            </section>
+            
+            <PoznajUrwisa />
+
+            {/* SEKACJE DODATKOWE */}
+            <div className="container mx-auto px-4 py-24 space-y-32">
+              <AcademyPromo />
+              <AboutSection />
+            </div>
           </div>
         </div>
-      </div>
-    </UrwisIntro>
+      </UrwisIntro>
+    </MotionConfig>
   );
 }
 

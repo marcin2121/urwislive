@@ -6,7 +6,7 @@ import {
   RotateCcw, Download, Smartphone, ChevronLeft, 
   Eraser, ZoomIn, Palette, Move, Pipette, Trash2, Eye, EyeOff,
   Wand2, Star, Sun, Heart, Smile, X, Plus, Hand, Paintbrush,
-  Volume2, VolumeX, Volume1
+  Volume2, VolumeX, Volume1, Minus
 } from 'lucide-react';
 
 export interface Template { 
@@ -32,12 +32,15 @@ const trackEvent = (action: string, params?: object) => {
 const PRESET_PALETTE = ['#BF2024', '#EF4444', '#F97316', '#FACC15', '#22C55E', '#10B981', '#0055ff', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E', '#71717A', '#000000', '#FFFFFF', '#4B0082'];
 const STAMP_LIST = [{ id: 'urwis', icon: Smile }, { id: 'star', icon: Star }, { id: 'sun', icon: Sun }, { id: 'heart', icon: Heart }];
 
+const BRUSH_STEPS = [2, 4, 6, 10, 15, 20, 30, 40, 50, 60];
+
 export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const ghostCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const rainbowHue = useRef(0);
   
+  // --- STANY ---
   const [isDrawing, setIsDrawing] = useState(false);
   const [selectedColor, setSelectedColor] = useState(PRESET_PALETTE[0]);
   const [recentColors, setRecentColors] = useState<string[]>(['#BF2024', '#0055ff', '#FACC15', '#22C55E', '#000000']);
@@ -50,15 +53,25 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [trashHold, setTrashHold] = useState(0);
   const [zenMode, setZenMode] = useState(false);
 
+  // --- AUDIO ---
   const [ambientVolume, setAmbientVolume] = useState(15);
   const [lastVolume, setLastVolume] = useState(15); 
-  const [isTemporaryPan, setIsTemporaryPan] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const ambientAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // --- NAWIGACJA & WIZUALIZACJA ---
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  
+  // TO BYŁO USUNIĘTE: Pamięć dla tymczasowej "rączki" przy użyciu Scroll Click na PC lub 2 palców
+  const [isTemporaryPan, setIsTemporaryPan] = useState(false);
+  
+  const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
+  const [initialScale, setInitialScale] = useState<number>(1);
+  const [pinchCenter, setPinchCenter] = useState<{x: number, y: number} | null>(null);
+
   const [lastPoint, setLastPoint] = useState<{x: number, y: number} | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
@@ -67,51 +80,107 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [dynamicCursor, setDynamicCursor] = useState('default');
 
-  // Funkcja wybierająca kolor (Naprawia błędy Cannot find name 'selectColor')
-  const selectColor = (color: string) => {
+  const [showBrushPreview, setShowBrushPreview] = useState(false);
+  const brushPreviewTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // --- FUNKCJE POMOCNICZE ---
+  const selectColor = useCallback((color: string) => {
     setSelectedColor(color);
     if (tool === 'eraser') setTool('brush');
     setShowColorPicker(false);
-  };
+    setRecentColors(prev => [color, ...prev.filter(c => c !== color)].slice(0, 5));
+  }, [tool]);
 
-  useEffect(() => {
-    const audio = new Audio('/sfx/ambient.mp3');
-    audio.loop = true;
-    audio.volume = ambientVolume / 100;
-    audio.play().catch(() => {});
-    ambientAudioRef.current = audio;
-
-    return () => {
-      audio.pause();
-      audio.src = '';
-    };
+  const playSfx = useCallback((type: string) => { 
+    const a = new Audio(`/sfx/${type}.mp3`); a.volume = 0.1; a.play().catch(() => {}); 
   }, []);
 
-  useEffect(() => {
-    if (ambientAudioRef.current) {
-      ambientAudioRef.current.volume = ambientVolume / 100;
-    }
-  }, [ambientVolume]);
+  const saveState = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL();
+    setUndoStack(prev => [...prev.slice(-20), dataUrl]);
+  }, []);
 
-  const toggleMute = () => {
-    if (ambientVolume > 0) {
-      setLastVolume(ambientVolume);
-      setAmbientVolume(0);
-    } else {
-      setAmbientVolume(lastVolume > 0 ? lastVolume : 15);
+  const undo = useCallback(() => {
+    if (undoStack.length <= 1) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!ctx || !canvas) return;
+    const img = new window.Image();
+    img.src = undoStack[undoStack.length - 2];
+    img.onload = () => {
+      ctx.globalCompositeOperation = 'source-over'; ctx.clearRect(0, 0, 1280, 720); ctx.drawImage(img, 0, 0);
+      setUndoStack(prev => prev.slice(0, -1));
+      playSfx('click');
+    };
+  }, [undoStack, playSfx]);
+
+  const clearCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (ctx && canvas) {
+      ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, 1280, 720);
+      saveState(); playSfx('trash');
     }
+  }, [saveState, playSfx]);
+
+  // AUDIO LOGIKA
+  const toggleMute = () => setIsMuted(prev => !prev);
+  
+  const handleVolumeChange = (val: number) => {
+    setAmbientVolume(val);
+    if (isMuted && val > 0) setIsMuted(false); 
   };
 
   const getVolumeIcon = () => {
-    if (ambientVolume === 0) return <VolumeX size={16} className="text-zinc-500" />;
-    if (ambientVolume < 50) return <Volume1 size={16} className="text-white/40" />;
-    return <Volume2 size={16} className="text-green-400" />;
+    if (isMuted || ambientVolume === 0) return <VolumeX size={16} className="text-zinc-500 shrink-0" />;
+    if (ambientVolume < 50) return <Volume1 size={16} className="text-white/40 shrink-0" />;
+    return <Volume2 size={16} className="text-green-400 shrink-0" />;
   };
 
+  // OBSŁUGA ZMIANY ROZMIARU PĘDZLA (Z WIZUALIZACJĄ)
+  const handleBrushChange = (val: number) => {
+    setLineWidth(val);
+    setShowBrushPreview(true);
+    if (brushPreviewTimer.current) clearTimeout(brushPreviewTimer.current);
+    brushPreviewTimer.current = setTimeout(() => {
+      setShowBrushPreview(false);
+    }, 800); 
+  };
+
+  const handleZoom = (newScale: number, centerX: number = 0, centerY: number = 0) => {
+    const minScale = 1;
+    const maxScale = 5;
+    const safeScale = Math.max(minScale, Math.min(maxScale, newScale));
+    if (safeScale === scale) return;
+
+    if (containerRef.current && safeScale > minScale) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const dx = (centerX - rect.width / 2) - offset.x;
+        const dy = (centerY - rect.height / 2) - offset.y;
+        const ratio = safeScale / scale;
+        const newOffsetX = offset.x - (dx * (ratio - 1));
+        const newOffsetY = offset.y - (dy * (ratio - 1));
+
+        setScale(safeScale);
+        setOffset({ x: newOffsetX, y: newOffsetY });
+    } else {
+        setScale(safeScale);
+        if (safeScale === minScale) setOffset({ x: 0, y: 0 }); 
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (zenMode) return;
+    const delta = e.deltaY > 0 ? -0.2 : 0.2;
+    handleZoom(scale + delta, e.clientX, e.clientY);
+  };
+
+  // --- LOGIKA KURSORA ---
   useEffect(() => {
     if (isTouchDevice) return; 
     const activeTool = isTemporaryPan ? 'pan' : tool;
-
     if (activeTool === 'brush' || activeTool === 'magic' || activeTool === 'eraser') {
       const cursorCanvas = document.createElement('canvas');
       const size = Math.max(4, lineWidth * scale); 
@@ -124,24 +193,37 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
           ctx.strokeStyle = 'white'; ctx.lineWidth = 1; ctx.stroke();
         } else {
           ctx.fillStyle = activeTool === 'magic' ? 'rgba(255, 255, 255, 0.3)' : selectedColor;
-          ctx.fill();
-          ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
+          ctx.fill(); ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
           ctx.strokeStyle = 'black'; ctx.lineWidth = 0.5; ctx.stroke();
         }
       }
       setDynamicCursor(`url(${cursorCanvas.toDataURL()}) ${cursorCanvas.width / 2} ${cursorCanvas.height / 2}, crosshair`);
     } else if (activeTool === 'pan') {
       setDynamicCursor(isPanning ? 'grabbing' : 'grab');
-    } else {
-      setDynamicCursor('crosshair');
-    }
+    } else { setDynamicCursor('crosshair'); }
   }, [tool, lineWidth, selectedColor, scale, isPanning, isTouchDevice, isTemporaryPan]);
 
+  // --- EFEKT AUDIO ---
+  useEffect(() => {
+    const audio = new Audio('/sfx/ambient.mp3');
+    audio.loop = true; 
+    audio.volume = isMuted ? 0 : (ambientVolume / 100); 
+    audio.play().catch(() => {});
+    ambientAudioRef.current = audio;
+    return () => { audio.pause(); audio.src = ''; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (ambientAudioRef.current) { 
+      ambientAudioRef.current.volume = isMuted ? 0 : (ambientVolume / 100); 
+    }
+  }, [ambientVolume, isMuted]);
+
+  // --- LOGIKA PŁÓTNA ---
   useEffect(() => {
     trackEvent('coloring_start', { template_id: template.id, template_title: template.title });
     const checkOrientation = () => setIsPortrait(window.innerHeight > window.innerWidth);
-    checkOrientation();
-    window.addEventListener('resize', checkOrientation);
+    checkOrientation(); window.addEventListener('resize', checkOrientation);
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     const canvas = canvasRef.current;
@@ -169,40 +251,6 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     return () => window.removeEventListener('resize', checkOrientation);
   }, [template]);
 
-  const playSfx = (type: string) => { 
-    const a = new Audio(`/sfx/${type}.mp3`); a.volume = 0.1; a.play().catch(() => {}); 
-  };
-
-  const saveState = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dataUrl = canvas.toDataURL();
-    setUndoStack(prev => [...prev.slice(-20), dataUrl]);
-  }, []);
-
-  const undo = () => {
-    if (undoStack.length <= 1) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!ctx || !canvas) return;
-    const img = new window.Image();
-    img.src = undoStack[undoStack.length - 2];
-    img.onload = () => {
-      ctx.globalCompositeOperation = 'source-over'; ctx.clearRect(0, 0, 1280, 720); ctx.drawImage(img, 0, 0);
-      setUndoStack(prev => prev.slice(0, -1));
-      playSfx('click');
-    };
-  };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx && canvas) {
-      ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, 1280, 720);
-      saveState(); playSfx('trash');
-    }
-  };
-
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -220,13 +268,10 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     };
   };
 
-  const getPos = (e: any) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+  const getPos = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current; if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: (cx - rect.left) * (1280 / rect.width), y: (cy - rect.top) * (720 / rect.height) };
+    return { x: (clientX - rect.left) * (1280 / rect.width), y: (clientY - rect.top) * (720 / rect.height) };
   };
 
   const pickColorRealTime = (pos: {x: number, y: number}) => {
@@ -244,41 +289,80 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     } catch (e) {}
   };
 
+  const getDistance = (touch1: React.Touch, touch2: React.Touch) => {
+    return Math.sqrt(Math.pow(touch2.clientX - touch1.clientX, 2) + Math.pow(touch2.clientY - touch1.clientY, 2));
+  };
+  const getCenter = (touch1: React.Touch, touch2: React.Touch) => {
+    return { x: (touch1.clientX + touch2.clientX) / 2, y: (touch1.clientY + touch2.clientY) / 2 };
+  };
+
   const handleStart = (e: any) => {
+    if (e.touches && e.touches.length === 2) {
+      setIsDrawing(false); setIsPanning(true); setIsTemporaryPan(true);
+      const dist = getDistance(e.touches[0], e.touches[1]);
+      const center = getCenter(e.touches[0], e.touches[1]);
+      setInitialPinchDistance(dist); setInitialScale(scale); setPinchCenter(center);
+      setPanStart({ x: center.x - offset.x, y: center.y - offset.y });
+      return;
+    }
+
     if (e.button === 1) { 
       e.preventDefault(); setIsTemporaryPan(true); setIsPanning(true);
       setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
       return;
     }
-    const pos = getPos(e);
+
+    const cx = e.touches ? e.touches[0].clientX : e.clientX; 
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    setMousePos({ x: cx, y: cy });
+    
+    const pos = getPos(cx, cy);
     if (tool === 'stamp') {
       const ctx = canvasRef.current?.getContext('2d');
       if (ctx) {
         ctx.fillStyle = selectedColor; ctx.font = `${lineWidth * 4}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         const glyphs: Record<string, string> = { star: '⭐', sun: '☀️', heart: '❤️', urwis: '😊' };
         ctx.fillText(glyphs[selectedStamp.id] || '?', pos.x, pos.y);
-        setRecentColors(prev => [selectedColor, ...prev.filter(c => c !== selectedColor)].slice(0, 5));
         saveState(); playSfx('success');
       }
       return;
     }
     if (tool === 'picker') { setIsDrawing(true); pickColorRealTime(pos); return; }
     if (tool === 'pan') {
-      setIsPanning(true); setPanStart({ x: (e.touches ? e.touches[0].clientX : e.clientX) - offset.x, y: (e.touches ? e.touches[0].clientY : e.clientY) - offset.y });
+      setIsPanning(true); setPanStart({ x: cx - offset.x, y: cy - offset.y });
     } else {
       setIsDrawing(true); setLastPoint(pos);
       const ctx = canvasRef.current?.getContext('2d'); ctx?.beginPath(); ctx?.moveTo(pos.x, pos.y);
-      setRecentColors(prev => [selectedColor, ...prev.filter(c => c !== selectedColor)].slice(0, 5));
       playSfx(tool === 'eraser' ? 'erase' : 'paint');
     }
   };
 
   const handleMove = (e: any) => {
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    if (e.touches && e.touches.length === 2 && initialPinchDistance !== null && pinchCenter) {
+      e.preventDefault(); 
+      const dist = getDistance(e.touches[0], e.touches[1]);
+      const center = getCenter(e.touches[0], e.touches[1]);
+      const scaleChange = dist / initialPinchDistance;
+      const newScale = Math.max(1, Math.min(5, initialScale * scaleChange));
+      setScale(newScale);
+
+      if (containerRef.current) {
+        const limitX = (containerRef.current.getBoundingClientRect().width * newScale - containerRef.current.getBoundingClientRect().width) / 2; 
+        const limitY = (containerRef.current.getBoundingClientRect().height * newScale - containerRef.current.getBoundingClientRect().height) / 2;
+        setOffset({ 
+          x: Math.max(-limitX, Math.min(limitX, center.x - panStart.x)), 
+          y: Math.max(-limitY, Math.min(limitY, center.y - panStart.y)) 
+        });
+      }
+      return;
+    }
+
+    const cx = e.touches ? e.touches[0].clientX : e.clientX; 
     const cy = e.touches ? e.touches[0].clientY : e.clientY;
     setMousePos({ x: cx, y: cy });
-    const pos = getPos(e);
+    const pos = getPos(cx, cy);
     const activeTool = isTemporaryPan ? 'pan' : tool;
+    
     if (activeTool === 'picker' && isDrawing) { pickColorRealTime(pos); return; }
     if (isPanning && activeTool === 'pan') {
       const rect = containerRef.current?.getBoundingClientRect();
@@ -288,7 +372,8 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       }
       return;
     }
-    if (!isDrawing || !lastPoint || isTemporaryPan) return;
+    if (!isDrawing || !lastPoint || isTemporaryPan || (e.touches && e.touches.length > 1)) return;
+    
     const ctx = canvasRef.current?.getContext('2d'); if (!ctx) return;
     ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = lineWidth;
     if (tool === 'magic') {
@@ -302,6 +387,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   };
 
   const handleEnd = () => { 
+    setInitialPinchDistance(null); setPinchCenter(null);
     if (isTemporaryPan) { setIsTemporaryPan(false); setIsPanning(false); return; }
     if (tool === 'picker' && isDrawing) { setTool('brush'); playSfx('click'); }
     if (isDrawing && tool !== 'picker') saveState();
@@ -313,6 +399,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   return (
     <div className="fixed inset-0 z-50 bg-zinc-950 overflow-hidden touch-none flex flex-row p-2 gap-2 safe-p text-white font-sans">
       
+      {/* 📱 BLOKADA ORIENTACJI */}
       <AnimatePresence>
         {isTouchDevice && isPortrait && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-5000 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6 touch-none">
@@ -325,6 +412,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         )}
       </AnimatePresence>
 
+      {/* CUSTOM CURSOR UI */}
       <AnimatePresence>
         {showCustomCursorIcon && (
           <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1, x: mousePos.x - 20, y: mousePos.y - 60 }} exit={{ scale: 0, opacity: 0 }} className="fixed top-0 left-0 z-2000 pointer-events-none">
@@ -335,13 +423,14 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         )}
       </AnimatePresence>
 
+      {/* MODAL PALETY (TYLKO DLA MOBILE) */}
       <AnimatePresence>
         {showColorPicker && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-1100 bg-black/60 backdrop-blur-xl flex items-center justify-center p-4 lg:hidden">
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-zinc-900 border border-white/10 p-6 rounded-[2.5rem] max-w-sm w-full">
               <div className="flex justify-between items-center mb-6"><h3 className="font-black uppercase italic">Paleta Urwisa</h3><button onClick={() => setShowColorPicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center"><X size={20}/></button></div>
               <div className="grid grid-cols-6 gap-3 mb-8">
-                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor === c ? 'border-white scale-110' : 'border-white/10'}`} style={{ backgroundColor: c }} />)}
+                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor === c ? 'border-white scale-110 shadow-lg' : 'border-white/10'}`} style={{ backgroundColor: c }} />)}
                 <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center relative bg-white/5">
                   <input type="color" className="absolute inset-0 opacity-0" onInput={(e) => setSelectedColor(e.currentTarget.value)} onChange={(e) => selectColor(e.currentTarget.value)} /><Plus size={16} />
                 </label>
@@ -355,20 +444,30 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         )}
       </AnimatePresence>
 
+      {/* LEFT PANEL */}
       {!zenMode && (
-        <motion.div initial={{ x: -100 }} animate={{ x: 0 }} className="w-14 lg:w-72 shrink-0 flex flex-col gap-2 lg:gap-8 overflow-y-auto py-1 lg:py-4 lg:px-4 bg-zinc-950 lg:bg-transparent border-r border-white/5 z-40">
-          <button onClick={() => setShowExitConfirm(true)} className="w-full lg:py-4 lg:px-5 bg-white/10 rounded-2xl flex items-center justify-center lg:justify-start border border-white/20 hover:bg-red-600 transition-colors group">
+        <motion.div initial={{ x: -100 }} animate={{ x: 0 }} className="w-14 lg:w-72 shrink-0 flex flex-col gap-2 lg:gap-8 overflow-y-auto py-1 lg:py-4 lg:px-4 bg-zinc-950 lg:bg-transparent border-r border-white/5 z-40 scrollbar-hide touch-pan-y">
+          <button onClick={() => setShowExitConfirm(true)} className="w-full lg:py-4 lg:px-5 bg-white/10 rounded-2xl flex items-center justify-center lg:justify-start border border-white/20 hover:bg-red-600 transition-colors group shrink-0 aspect-square lg:aspect-auto">
             <ChevronLeft size={20} /><span className="hidden lg:block ml-3 font-black uppercase text-xs">Wróć</span>
           </button>
           
-          <div className="flex lg:hidden flex-col gap-2">
-            <button onClick={() => { if(['brush','magic','picker'].includes(tool)) setShowColorPicker(true); else setTool('brush'); }} className="w-full aspect-square rounded-2xl border-4 border-white" style={{ backgroundColor: tool === 'magic' ? 'red' : selectedColor }} />
+          <div className="flex lg:hidden flex-col gap-2 shrink-0">
+            <button 
+              onClick={() => { if(['brush','magic','picker'].includes(tool)) setShowColorPicker(true); else setTool('brush'); }} 
+              className={`w-full aspect-square rounded-2xl border-4 shadow-lg relative overflow-hidden transition-all flex items-center justify-center ${tool === 'brush' || tool === 'magic' || tool === 'picker' ? 'border-white scale-110' : 'border-white/30'}`} 
+              style={{ backgroundColor: tool === 'magic' ? 'transparent' : selectedColor }}
+            >
+              {tool === 'magic' && <div className="absolute inset-0 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)] animate-spin-slow" />}
+              {tool === 'picker' && <Pipette size={20} className="text-white drop-shadow-md relative z-10" />}
+              {(tool !== 'magic' && tool !== 'picker') && <Palette size={22} className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] relative z-10 opacity-90" />}
+            </button>
+
             <div className="flex flex-col gap-1 p-1 bg-white/5 rounded-2xl">
-              {recentColors.map(c => <button key={c} onClick={() => selectColor(c)} className="w-full aspect-square rounded-full border border-white/10" style={{ backgroundColor: c }} />)}
+              {recentColors.map(c => <button key={`mob-${c}`} onClick={() => selectColor(c)} className="w-full aspect-square rounded-full border border-white/10" style={{ backgroundColor: c }} />)}
             </div>
           </div>
 
-          <div className="hidden lg:flex flex-col gap-8">
+          <div className="hidden lg:flex flex-col gap-8 shrink-0">
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-4 block">Narzędzia</span>
               <div className="grid grid-cols-2 gap-3">
@@ -380,14 +479,14 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-4 block">Paleta</span>
               <div className="grid grid-cols-5 gap-2 bg-white/5 p-4 rounded-3xl border border-white/10">
-                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor===c?'border-white':'border-white/10'}`} style={{ backgroundColor: c }} />)}
+                {PRESET_PALETTE.map(c => <button key={`desk-${c}`} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor===c?'border-white shadow-[0_0_10px_rgba(255,255,255,0.4)] scale-110':'border-white/10'}`} style={{ backgroundColor: c }} />)}
               </div>
             </div>
           </div>
         </motion.div>
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center relative min-w-0">
+      <div className="flex-1 flex flex-col items-center justify-center relative min-w-0" onWheel={handleWheel}>
         <div 
           ref={containerRef} onMouseDown={handleStart} onMouseMove={handleMove} onMouseUp={handleEnd} onMouseLeave={handleEnd} onTouchStart={handleStart} onTouchMove={handleMove} onTouchEnd={handleEnd} 
           className="relative w-full max-h-full aspect-video bg-white shadow-2xl border-4 border-zinc-900 overflow-hidden" style={{ cursor: dynamicCursor }}
@@ -396,30 +495,51 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <canvas ref={canvasRef} width={1280} height={720} className="absolute inset-0 w-full h-full pointer-events-none" />
             <img src={template.src} className="absolute inset-0 w-full h-full object-fill pointer-events-none" style={{ mixBlendMode: 'multiply' }} />
           </motion.div>
+
+          {/* WIDOCZNY ROZMIAR PĘDZLA PODCZAS ZMIANY (OVERLAY) */}
+          <AnimatePresence>
+            {showBrushPreview && (
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-6000 pointer-events-none flex items-center justify-center"
+                >
+                    <div 
+                        className="rounded-full shadow-[0_0_30px_rgba(0,0,0,0.5)] border-[3px] border-white backdrop-blur-sm transition-all duration-75"
+                        style={{ 
+                            width: lineWidth * scale, 
+                            height: lineWidth * scale,
+                            backgroundColor: tool === 'eraser' ? '#FFFFFF' : tool === 'magic' ? 'rgba(255, 0, 0, 0.5)' : selectedColor
+                        }}
+                    />
+                </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="absolute bottom-4 left-4 z-30 flex items-center gap-2">
-            <button onClick={() => setZenMode(!zenMode)} className="w-10 h-10 lg:w-12 lg:h-12 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md">{zenMode ? <Eye size={20} /> : <EyeOff size={20} />}</button>
-            <button onClick={toggleMute} className="lg:hidden w-10 h-10 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20">{ambientVolume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
+            <button onClick={() => setZenMode(!zenMode)} className="w-10 h-10 lg:w-12 lg:h-12 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md text-white">{zenMode ? <Eye size={20} /> : <EyeOff size={20} />}</button>
           </div>
         </div>
       </div>
 
       {!zenMode && (
-        <motion.div initial={{ x: 100 }} animate={{ x: 0 }} className="w-14 lg:w-72 shrink-0 flex flex-col gap-2 lg:gap-8 overflow-y-auto py-1 lg:py-4 lg:px-4 bg-zinc-950 lg:bg-transparent border-l border-white/5 z-40">
+        <motion.div initial={{ x: 100 }} animate={{ x: 0 }} className="w-14 lg:w-72 shrink-0 flex flex-col gap-2 lg:gap-8 py-1 lg:py-4 lg:px-4 bg-zinc-950 lg:bg-transparent border-l border-white/5 z-40">
           <div className="hidden lg:flex flex-col gap-8 h-full">
             <div className="flex flex-col gap-6 bg-white/5 p-6 rounded-3xl border border-white/10 text-white">
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between uppercase text-[10px] font-black"><span>Grubość</span><span>{lineWidth}px</span></div>
-                <input type="range" min="1" max="60" value={lineWidth} onChange={(e) => setLineWidth(parseInt(e.target.value))} className="w-full accent-blue-500" />
+                <input type="range" min="1" max="60" value={lineWidth} onChange={(e) => handleBrushChange(parseInt(e.target.value))} className="w-full accent-blue-500" />
               </div>
               <div className="flex flex-col gap-4 pt-4 border-t border-white/10">
                 <div className="flex justify-between uppercase text-[10px] font-black"><span>Zoom</span><span>{scale.toFixed(1)}x</span></div>
                 <input type="range" min="1" max="4" step="0.1" value={scale} onChange={(e) => setScale(parseFloat(e.target.value))} className="w-full accent-blue-500" />
               </div>
               <div className="flex flex-col gap-4 pt-4 border-t border-white/10">
-                <div className="flex justify-between uppercase text-[10px] font-black"><span>Muzyka</span><span>{ambientVolume}%</span></div>
+                <div className="flex justify-between uppercase text-[10px] font-black"><span>Muzyka</span><span>{isMuted ? 0 : ambientVolume}%</span></div>
                 <div className="flex items-center gap-3">
                   <button onClick={toggleMute}>{getVolumeIcon()}</button>
-                  <input type="range" min="0" max="100" value={ambientVolume} onChange={(e) => setAmbientVolume(parseInt(e.target.value))} className="w-full accent-green-400" />
+                  <input type="range" min="0" max="100" value={isMuted ? 0 : ambientVolume} onChange={(e) => handleVolumeChange(parseInt(e.target.value))} className="w-full accent-green-400" />
                 </div>
               </div>
             </div>
@@ -433,15 +553,41 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
 
             <div className="mt-auto flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-3">
-                <button onClick={undo} disabled={undoStack.length <= 1} className="py-4 bg-white/5 rounded-2xl flex flex-col items-center gap-2 border border-white/10 disabled:opacity-30"><RotateCcw size={20}/><span className="text-[10px] font-black uppercase">Cofnij</span></button>
+                <button onClick={undo} disabled={undoStack.length <= 1} className="py-4 bg-white/5 rounded-2xl flex flex-col items-center gap-2 border border-white/10 disabled:opacity-30 text-white"><RotateCcw size={20}/><span className="text-[10px] font-black uppercase">Cofnij</span></button>
                 <button onPointerDown={() => setTrashHold(Date.now())} onPointerUp={() => { if(Date.now()-trashHold > 1000) clearCanvas(); setTrashHold(0); }} className="py-4 bg-white/5 rounded-2xl flex flex-col items-center justify-center gap-2 border border-white/10 relative overflow-hidden text-red-400"><Trash2 size={20}/><span className="text-[10px] font-black uppercase">Wyczyść</span>{trashHold > 0 && <motion.div initial={{width:0}} animate={{width:'100%'}} transition={{duration:1}} className="absolute bottom-0 left-0 h-1 bg-red-500" />}</button>
               </div>
-              <button onClick={handleDownload} className="w-full py-5 bg-[#0055ff] hover:bg-blue-600 rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-blue-500/20"><Download size={20} /> Pobierz</button>
+              <button onClick={handleDownload} className="w-full py-5 bg-[#0055ff] text-white hover:bg-blue-600 rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"><Download size={20} /> Pobierz</button>
             </div>
+          </div>
+
+          <div className="lg:hidden flex flex-col gap-2 h-full">
+             
+             {/* NOWE - PIONOWY SUWAK DLA MOBILE, WYZWALAJĄCY WIDOK KROPKI */}
+             <div className="flex-1 bg-white/5 rounded-[2rem] border border-white/10 flex flex-col items-center py-4 relative overflow-hidden">
+                <input 
+                  type="range" min="1" max="60" value={lineWidth} 
+                  onChange={(e) => handleBrushChange(parseInt(e.target.value))} 
+                  className="absolute inset-0 w-full h-full appearance-none bg-transparent cursor-pointer z-20" 
+                  style={{ WebkitAppearance: 'slider-vertical' } as any} 
+                />
+                {/* Wypełnienie suwaka (pasek postępu) */}
+                <div className="w-1.5 h-full bg-white/10 rounded-full overflow-hidden flex flex-col justify-end pointer-events-none">
+                    <div className="w-full bg-white transition-all duration-75" style={{ height: `${(lineWidth / 60) * 100}%` }} />
+                </div>
+             </div>
+             
+             <button onClick={() => { setTool('eraser'); playSfx('click'); }} className={`w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 transition-all ${tool === 'eraser' ? 'bg-white text-zinc-900 shadow-xl scale-110' : 'bg-white/5 text-white opacity-40 hover:opacity-100'}`}><Eraser size={20}/></button>
+             <button onClick={undo} disabled={undoStack.length <= 1} className="w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/5 text-white disabled:opacity-30"><RotateCcw size={18}/></button>
+             <button onPointerDown={() => setTrashHold(Date.now())} onPointerUp={() => { if(Date.now() - trashHold > 1200) clearCanvas(); setTrashHold(0); }} onPointerLeave={() => setTrashHold(0)} className="w-full aspect-square bg-white/5 rounded-2xl flex items-center justify-center text-zinc-500 shrink-0 border border-white/10 relative overflow-hidden active:text-red-500 transition-colors">
+              <Trash2 size={18} />
+              {trashHold > 0 && <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1.2 }} className="absolute bottom-0 left-0 h-1 bg-red-600 shadow-[0_0_10px_#ef4444]" />}
+             </button>
+             <button onClick={handleDownload} className="w-full aspect-square bg-[#0055ff] text-white rounded-2xl flex items-center justify-center shrink-0"><Download size={20} /></button>
           </div>
         </motion.div>
       )}
 
+      {/* MODALS */}
       <AnimatePresence>
         {showExitConfirm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-10000 bg-black/80 backdrop-blur-md flex items-center justify-center p-6 text-center">

@@ -7,9 +7,9 @@ import ColoringZone, { Template } from '@/components/ColoringZone';
 
 const TEMPLATES: Template[] = [
   { id: 'lego', title: 'Zabawki', brand: 'Sklep Urwis', difficulty: 'Normalny', thumb: '/coloring/thumb-lego.webp', src: '/coloring/urwis-lego.webp' },
-  { id: 'urwis', title: 'Mój Urwis', brand: 'Superbohater', difficulty: 'Łatwy', thumb: '/coloring/thumb-urwis.webp', src: '/coloring/template-urwis.webp' },
+  { id: 'urwis', title: 'Mój Urwis', brand: 'Superbohater', difficulty: 'Łatwy', thumb: '/coloring/thumb-urwis.webp', src: '/coloring/urwis-urwis.webp' },
   { id: 'kulki', title: 'Sala Lecę w Kulki', brand: 'Białobrzegi', difficulty: 'Łatwy', thumb: '/coloring/thumb-projektor.webp', src: '/coloring/urwis-projektor.webp' },
-  { id: 'urodziny', title: 'Przyjęcie Marzeń', brand: 'Lecę w Kulki', difficulty: 'Normalny', thumb: '/coloring/thumb-urodziny.webp', src: '/coloring/urwis-urodziny.webp' },
+  { id: 'urodziny', title: 'Przyjęcie Marzeń', brand: 'Lecę w Kulki', difficulty: 'Trudny', thumb: '/coloring/thumb-urodziny.webp', src: '/coloring/urwis-urodziny.webp' },
 ];
 
 export default function ClientLobby() {
@@ -102,7 +102,7 @@ export default function ClientLobby() {
                     </li>
                     <li className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 text-white mt-1"><PlusSquare size={18} /></div>
-                      <p className="leading-tight">Przewiń menu w dół i wybierz <strong className="text-white">Do ekranu głównego</strong>.</p>
+                      <p className="leading-tight">Kliknij zobacz więcej, przewiń menu w dół i wybierz <strong className="text-white">Do ekranu głównego</strong>.</p>
                     </li>
                   </ul>
                 ) : (

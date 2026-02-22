@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { Renderer, Transform, Vec3, Color, Polyline } from 'ogl';
 import { usePathname } from 'next/navigation';
+import { useGpuAcceleration } from '@/lib/useGpu';
 
 interface RibbonsProps {
   colors?: string[];
@@ -110,9 +111,6 @@ const Ribbons: React.FC<RibbonsProps> = ({
 
     function resize() {
       if (!container) return;
-      // 🚀 OPTYMALIZACJA SEO/WEBGL: Zabezpieczenie przed Googlebotem i Lighthouse!
-      // Ograniczamy maksymalny rozmiar canvasa, żeby bot testujący stronę 
-      // nie zabił GPU rozciągając okno do 10000px w dół.
       const width = Math.min(window.innerWidth, 2560);
       const height = Math.min(window.innerHeight, 1440);
       
@@ -151,7 +149,6 @@ const Ribbons: React.FC<RibbonsProps> = ({
 
     resize();
 
-    // --- ŚLEDZENIE MYSZY WZGLĘDEM OKNA (VIEWPORT) ---
     const mouse = new Vec3();
     function updateMouse(e: MouseEvent | TouchEvent) {
       let x: number, y: number;
@@ -208,24 +205,32 @@ const Ribbons: React.FC<RibbonsProps> = ({
     };
   }, [colors, baseSpring, baseFriction, baseThickness, offsetFactor, maxAge, pointCount, speedMultiplier, enableFade, enableShaderEffect, effectAmplitude]);
 
-  // Używamy absolute wewnątrz fixed
   return <div ref={containerRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
 };
 
 // --- WRAPPER Z DYNAMICZNYMI KOLORAMI ---
-export function RibbonsBg({ colors }: RibbonsProps) {
+export function RibbonsBg({ colors: overrideColors }: RibbonsProps) {
+  // 1. ZASADA HOOKÓW: Wywołujemy wszystkie hooki na samej górze
+  const hasGpu = useGpuAcceleration();
   const pathname = usePathname();
 
+  // 2. Logika wyboru kolorów z uwzględnieniem propsa 'colors' (override)
   const activeColors = useMemo(() => {
+    if (overrideColors && overrideColors.length > 0) {
+      return overrideColors;
+    }
     if (pathname?.includes('salazabaw')) {
       return ['#ffc2d1', '#a2d2ff']; 
     }
     return ['#BF2024', '#0055ff'];
-  }, [pathname]);
+  }, [pathname, overrideColors]);
+
+  // 3. DOPIERO PO HOOKACH przerywamy renderowanie, jeśli brak sprzętowego przyspieszenia
+  if (!hasGpu) return null;
 
   return (
-    // 🚀 Zmiana na w-screen i h-screen upewnia nas, że kontener nigdy nie przekroczy rozmiaru monitora/telefonu
-    <div className="fixed top-0 left-0 w-screen h-screen overflow-hidden pointer-events-none z-0 bg-white">
+    // Zmiana na "inset-0" - najczystszy sposób na div pełnoekranowy bez ryzyka scrollbara
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 bg-white">
       <Ribbons
         key={pathname}
         colors={activeColors}

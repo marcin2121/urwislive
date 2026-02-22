@@ -3,16 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Palette, Paintbrush, Sparkles, ArrowRight, MousePointerClick } from 'lucide-react';
+import { Palette, Paintbrush, ArrowRight, MousePointerClick } from 'lucide-react';
 
 export default function ColoringBanner() {
   return (
-    <section className="w-full max-w-7xl mx-auto px-6 my-16 font-sans">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 my-16 font-sans">
       <Link href="/kolorowanki" className="block group">
         <motion.div 
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="relative overflow-hidden rounded-[3rem] bg-zinc-900 shadow-2xl flex flex-col md:flex-row items-center justify-between p-8 md:p-12 lg:p-16 border border-zinc-800 transition-all duration-500 hover:shadow-blue-900/20"
+          // Na telefonie trochę mniejszy padding p-6 (zamiast p-8), aby zyskać miejsce dla tekstu
+          className="relative overflow-hidden rounded-[2.5rem] md:rounded-[3rem] bg-zinc-900 shadow-2xl flex flex-col md:flex-row items-center justify-between p-6 sm:p-8 md:p-12 lg:p-16 border border-zinc-800 transition-all duration-500 hover:shadow-blue-900/20"
         >
           
           {/* PŁYWAJĄCE TŁO (KOLORY) */}
@@ -38,25 +39,26 @@ export default function ColoringBanner() {
           </div>
 
           {/* LEWA STRONA - TEKST */}
-          <div className="relative z-10 text-center md:text-left mb-12 md:mb-0 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-6 shadow-lg">
-              <MousePointerClick size={14} className="text-yellow-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Darmowa Zabawa Online</span>
+          <div className="relative z-10 text-center md:text-left mb-10 md:mb-0 max-w-2xl w-full">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-6 shadow-lg">
+              <MousePointerClick size={14} className="text-yellow-400 shrink-0" />
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-white">Darmowa Zabawa Online</span>
             </div>
             
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-black uppercase italic tracking-tighter text-white leading-[0.85] mb-6 drop-shadow-xl">
+            {/* Zmiana rozmiarów czcionek, break-words zapewnia, że "Kolorowanka" nie wysadzi układu na malutkich ekranach (np. iPhone SE) */}
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase italic tracking-tighter text-white leading-[0.9] mb-5 drop-shadow-xl break-words">
               Interaktywna <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-blue-500">Kolorowanka</span>
             </h2>
             
-            <p className="text-sm md:text-base font-bold text-zinc-300 uppercase tracking-wide leading-relaxed drop-shadow-md">
+            <p className="text-xs sm:text-sm md:text-base font-bold text-zinc-300 uppercase tracking-wide leading-relaxed drop-shadow-md">
               Chwyć za wirtualny pędzel, wybierz obrazek i stwórz własne dzieło sztuki bezpośrednio na ekranie. Gotowy rysunek pobierzesz na pamiątkę!
             </p>
           </div>
 
           {/* PRAWA STRONA - PRZYCISK I DEKORACJE */}
-          <div className="relative z-10 shrink-0 w-full md:w-auto flex justify-center md:justify-end mt-4 md:mt-0">
-            <div className="relative">
+          <div className="relative z-10 shrink-0 w-full md:w-auto flex justify-center md:justify-end mt-2 md:mt-0">
+            <div className="relative w-full sm:w-auto">
               
               {/* Animowana Paleta */}
               <motion.div 
@@ -76,10 +78,11 @@ export default function ColoringBanner() {
                 <Paintbrush size={32} />
               </motion.div>
 
-              <button className="w-full md:w-auto px-8 py-5 md:py-6 bg-white text-zinc-900 rounded-[2rem] font-black uppercase italic tracking-widest text-sm flex items-center justify-center gap-4 group-hover:bg-[#0055ff] group-hover:text-white transition-colors duration-300 shadow-2xl relative overflow-hidden">
+              {/* Zmniejszony padding przycisku dla mobilnych urządzeń */}
+              <button className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 md:py-6 bg-white text-zinc-900 rounded-[2rem] font-black uppercase italic tracking-widest text-xs sm:text-sm flex items-center justify-center gap-3 sm:gap-4 group-hover:bg-[#0055ff] group-hover:text-white transition-colors duration-300 shadow-2xl relative overflow-hidden">
                 <span className="relative z-10">Zacznij Malować</span>
-                <div className="relative z-10 w-10 h-10 rounded-full bg-zinc-100 group-hover:bg-white/20 flex items-center justify-center transition-colors">
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                <div className="relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-100 group-hover:bg-white/20 flex items-center justify-center transition-colors shrink-0">
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
             </div>
