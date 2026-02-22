@@ -79,7 +79,7 @@ export default function RegulaminPage() {
           >
             <p>Nagradzamy Twoje zakupy stacjonarne punktami, które wymienisz na zabawę:</p>
             <ul className="list-disc ml-6 mt-4 space-y-2">
-              <li><strong>10 zł wydane na Reymonta 38A = 1 Złoty Urwis.</strong></li>
+              <li><strong>10 zł wydane w Sklepie Urwis na Reymonta 38A = 1 Złoty Urwis.</strong></li>
               <li>Złote Urwisy wymienisz w Sali Zabaw <strong>Lecę w Kulki</strong> (ul. Targowicka 4) na wejściówki, kawę lub żetony.</li>
               <li>1 Złoty Urwis ma wartość 1 zł rabatu. Złote Urwisy nie są wymienialne na gotówkę.</li>
             </ul>
