@@ -29,7 +29,7 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.sklep-urwis.pl'),
   title: {
-    default: "Sklep Urwis Białobrzegi | LEGO, Zabawki i Art. Szkolne",
+    default: "Sklep Urwis Białobrzegi | LEGO, Zabawki i Artykuły Szkolne",
     template: "%s | Sklep Urwis Białobrzegi"
   },
   description: "Największy w Białobrzegach wybór LEGO, zabawek i artykułów szkolnych. 🧸 Odwiedź nas na Reymonta 38A! Pompujemy balony helem i spełniamy dziecięce marzenia.",

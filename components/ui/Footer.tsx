@@ -3,12 +3,11 @@
 import { motion } from 'framer-motion'
 import { 
   MapPin, Phone, Mail, Facebook, 
-  Instagram, ArrowRight, Store, Gamepad2, Globe 
+  Instagram, ArrowRight, Store, Gamepad2, Globe, ShieldCheck 
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-// 🚀 POMOCNICZA FUNKCJA DO ANALITYKI W STOPCE
 const trackFooterEvent = (eventName: string, params: object = {}) => {
   if (typeof window !== 'undefined' && (window as any).gtag) {
     (window as any).gtag('event', eventName, params);
@@ -27,6 +26,7 @@ export default function Footer() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
             
+            {/* BRAND SECTION */}
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <Image 
@@ -36,13 +36,13 @@ export default function Footer() {
                   height={40} 
                   className="object-contain"
                 />
-                <div className="text-3xl font-black tracking-tighter italic leading-none">
-                  <span className="text-[#BF2024]">SKLEP</span>
-                  <span className="text-[#0055ff]"> URWIS</span>
+                <div className="text-3xl font-black tracking-tighter italic leading-none uppercase">
+                  <span className="text-[#BF2024]">Sklep</span>
+                  <span className="text-[#0055ff]"> Urwis</span>
                 </div>
               </div>
               <p className="text-zinc-700 font-bold text-sm leading-relaxed uppercase italic">
-                Twoje lokalne centrum zabawy i kreatywności. Od najlepszych zabawek po pełną wyprawkę szkolną i biurową. Działamy z pasją od 2007 roku.
+                Lokalne centrum kreatywności w Białobrzegach. Od klocków LEGO po kompletną wyprawkę szkolną. Pasja i doradztwo od 2007 roku.
               </p>
               <div className="flex gap-4">
                 <SocialIcon href="https://facebook.com/sklepurwis.bialobrzegi" icon={<Facebook size={20} />} ariaLabel="Profil Facebook" />
@@ -50,24 +50,26 @@ export default function Footer() {
               </div>
             </div>
 
+            {/* SKLEP URWIS INFO */}
             <div className="space-y-6">
               <div className="flex items-center gap-2 text-[#BF2024] font-black uppercase tracking-widest text-xs italic">
-                <Store size={16} /> SKLEP URWIS
+                <Store size={16} /> Sklep Urwis
               </div>
               <ul className="flex flex-col gap-5">
-                <FooterLink href="https://maps.app.goo.gl/waDKoEToDzETMnCv9" icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="Białobrzegi 26-800" />
+                <FooterLink href="https://maps.app.goo.gl/YourGoogleMapsLink1" icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="Białobrzegi 26-800" />
                 <FooterLink href="tel:+48604208183" icon={<Phone size={18} />} label="+48 604 208 183" />
                 <FooterLink href="mailto:kontakt@sklep-urwis.pl" icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" />
               </ul>
             </div>
 
+            {/* LECĘ W KULKI INFO */}
             <div className="space-y-6">
               <div className="flex items-center gap-2 text-[#0055ff] font-black uppercase tracking-widest text-xs italic">
                 <Gamepad2 size={16} /> Lecę w Kulki
               </div>
               <ul className="flex flex-col gap-5">
                 <FooterLink 
-                  href="https://maps.app.goo.gl/xyeqFtwUAvd2VN898" 
+                  href="https://maps.app.goo.gl/YourGoogleMapsLink2" 
                   icon={<MapPin size={18} className="text-[#0055ff]" />} 
                   label="ul. Targowicka 4" 
                   sublabel="Białobrzegi 26-800" 
@@ -86,6 +88,7 @@ export default function Footer() {
               </ul>
             </div>
 
+            {/* QUICK LINKS */}
             <div className="space-y-6">
               <div className="text-zinc-900 font-black uppercase tracking-widest text-xs italic">
                 Szybkie Linki
@@ -100,21 +103,33 @@ export default function Footer() {
 
           </div>
 
-          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic text-center md:text-left">
-            <div className="space-y-2">
-              <div>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
-              <div className="text-zinc-500 font-semibold">NIP: 7981093937 | REGON: 671959384</div>
+          {/* 🛡️ NOTA PRAWNA I COPYRIGHT (Zgodnie z ustaleniami LEGO) */}
+          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col gap-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 italic">
+              <div className="space-y-2">
+                <div>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
+                <div className="text-zinc-400 font-semibold">NIP: 7981093937 | REGON: 671959384</div>
+              </div>
+              <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
+                <span> MADE WITH ❤️ IN BIAŁOBRZEGI </span>            
+                <a 
+                  href="#" 
+                  onClick={() => trackFooterEvent('click_creator', { location: 'footer' })}
+                  className="hover:text-zinc-900 transition-colors"
+                >
+                    DESIGN & CODE BY MARCIN MOLENDA
+                </a>
+              </div>
             </div>
-            <div className="flex flex-col items-center md:items-end gap-2">
-              <span> MADE WITH ❤️ IN BIAŁOBRZEGI </span>            
-              <a 
-                href="#" 
-                onClick={() => trackFooterEvent('click_creator', { location: 'footer' })}
-                className="hover:text-zinc-900 transition-colors"
-              >
-                  DESIGN & CODE BY MARCIN MOLENDA
-              </a>
-            </div>
+
+       {/* 🛡️ ZBIORCZA NOTA PRAWNA */}
+<div className="bg-white/10 p-4 rounded-2xl border border-white/10 text-[9px] leading-relaxed text-zinc-500 font-bold uppercase tracking-wider">
+  <p>
+    Wszystkie nazwy marek i znaki towarowe, takie jak LEGO, Oxford, Stabilo, Herlitz, Rebel, Trefl oraz inne wymienione w serwisie, 
+    są własnością ich prawnych właścicieli. Sklep Urwis jest niezależnym, autoryzowanym sprzedawcą tych marek, 
+    a ich nazwy zostały użyte wyłącznie w celach informacyjnych o dostępnym asortymencie.
+  </p>
+</div>
           </div>
           
         </div>
