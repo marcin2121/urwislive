@@ -53,16 +53,15 @@ export default function StoreFrontContent() {
   const hasGpu = useGpuAcceleration();
 
   return (
-    // 🚀 MAGIA OPTYMALIZACJI: Jeśli brak GPU, MotionConfig wyłącza płynne animacje dla wszystkich <motion.div> wewnątrz!
     <MotionConfig reducedMotion={hasGpu ? "user" : "always"}>
       <UrwisIntro>
         <div className="min-h-screen bg-transparent text-zinc-900">
           
-          {/* 🟢 TŁO: Particles (Renderowane TYLKO gdy JEST GPU) */}
+          {/* 🟢 TŁO: Particles (Tylko gdy jest GPU) */}
           {hasGpu && (
             <div className="fixed inset-0 z-0 pointer-events-none hidden md:block">
               <Particles
-                particleCount={80}
+                particleCount={60}
                 particleColors={["#BF2024", "#0055ff"]}
                 alphaParticles
                 particleBaseSize={100}
@@ -72,22 +71,23 @@ export default function StoreFrontContent() {
           )}
 
           <div className="relative z-10">
-
-            {/* DYSKRETNY KOMUNIKAT O TRYBIE WYDAJNOŚCI (Opcjonalny) */}
+            
+            {/* BANER WYDAJNOŚCI - Zoptymalizowany pod Accessibility i nowe klasy Tailwind */}
             {!hasGpu && (
-              <div className="w-full bg-zinc-900 text-zinc-400 text-[10px] uppercase font-black tracking-widest text-center py-1.5 z-50">
-                Uruchomiono w trybie wysokiej wydajności (Brak Akceleracji GPU)
+              <div className="w-full bg-zinc-900 text-zinc-400 text-[10px] uppercase font-black tracking-widest text-center py-2 z-50 border-b border-white/5">
+                Uruchomiono w trybie wysokiej wydajności
               </div>
             )}
 
-            {/* SEKCJA HERO */}
-            <Hero />
+            {/* SEKCJA HERO: Upewnij się, że w środku Hero obrazek ma 'priority' */}
+            <header>
+              <Hero />
+            </header>
 
-            {/* TWOJA SEKCJA DUAL BRAND (Dodana pod Hero) */}
             <DualBrandSection />
 
-            {/* 🎯 TRZY FILARY: Szybka nawigacja po najważniejszych działach Sklepu na Reymonta */}
-            <section className="py-12 px-6">
+            {/* 🎯 TRZY FILARY */}
+            <section className="py-12 px-6" aria-label="Główne działy sklepu">
               <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
                 <QuickCard 
                   icon={ShoppingCart} 
@@ -110,17 +110,15 @@ export default function StoreFrontContent() {
               </div>
             </section>
 
-            {/* 🟡 LOYALTY: Łącznik ze światem Lecę w Kulki (Targowicka 4) */}
             <LoyaltySection />
-
-            {/* Baner kolorowanek */}
+            
             <ColoringBanner />
 
             {/* GALERIA ASORTYMENTU */}
-            <section className="py-20">
+            <section className="py-20" aria-labelledby="gallery-title">
               <div className="container mx-auto px-6 mb-12">
-                <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
-                  Twoje Centrum <span className="text-[#BF2024]">Zabawy</span>
+                <h2 id="gallery-title" className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
+                  Twoje Centrum <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">Zabawy</span>
                 </h2>
                 <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm mt-2">
                   Odkryj najlepsze marki w Białobrzegach
@@ -133,8 +131,8 @@ export default function StoreFrontContent() {
 
             {/* SEKACJE DODATKOWE */}
             <div className="container mx-auto px-4 py-24 space-y-32">
-              <AcademyPromo />
-              <AboutSection />
+              <section><AcademyPromo /></section>
+              <section><AboutSection /></section>
             </div>
           </div>
         </div>
@@ -143,10 +141,6 @@ export default function StoreFrontContent() {
   );
 }
 
-/**
- * KOMPONENT POMOCNICZY: QuickCard
- * Naprawione typowanie IconComponent zapobiega błędom TypeScript (TS2769)
- */
 interface QuickCardProps {
   icon: LucideIcon;
   title: string;
@@ -156,7 +150,7 @@ interface QuickCardProps {
 
 function QuickCard({ icon: Icon, title, link, colorClass }: QuickCardProps) {
   return (
-    <Link href={link}>
+    <Link href={link} aria-label={`Przejdź do sekcji: ${title}`}>
       <motion.div 
         whileHover={{ y: -8, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
@@ -164,14 +158,14 @@ function QuickCard({ icon: Icon, title, link, colorClass }: QuickCardProps) {
       >
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-            <Icon size={30} className={`${colorClass} transition-colors`} strokeWidth={2.5} />
+            <Icon size={30} className={`${colorClass} transition-colors`} strokeWidth={2.5} aria-hidden="true" />
           </div>
           <h3 className="text-xl font-black uppercase italic tracking-tight text-zinc-900 leading-none">
             {title}
           </h3>
         </div>
         <div className="w-10 h-10 rounded-full bg-zinc-900/5 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all">
-          <ChevronRight size={20} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+          <ChevronRight size={20} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
         </div>
       </motion.div>
     </Link>

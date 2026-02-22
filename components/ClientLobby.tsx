@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image'; // 🚀 DODANY IMPORT NEXT/IMAGE
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Trophy, Heart, Smartphone, Share, PlusSquare, MoreVertical, Download } from 'lucide-react';
 import ColoringZone, { Template } from '@/components/ColoringZone';
@@ -166,17 +167,20 @@ export default function ClientLobby() {
               transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
               className="bg-white rounded-[3.5rem] p-5 shadow-2xl border border-zinc-100 group hover:shadow-sky-100 transition-all duration-500 hover:-translate-y-2 flex flex-col"
             >
+              {/* 🚀 ZOPTYMALIZOWANY OBRAZEK */}
               <div className="relative aspect-video rounded-[2.5rem] overflow-hidden mb-6 bg-zinc-100 shrink-0">
-                <img 
-                  src={game.thumb} 
-                  alt={`Kolorowanka online: ${game.title}`} // <-- Lepszy ALT dla Google Images
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 origin-center" 
-                />
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase text-zinc-900 border border-black/5 shadow-sm">
-                  {game.difficulty}
-                </div>
-              </div>
+  <Image 
+    src={game.thumb || ''} // 🚀 Naprawione: dodany fallback dla TypeScripta
+    alt={`Kolorowanka online: ${game.title}`} 
+    fill
+    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+    className="object-cover group-hover:scale-110 transition-transform duration-700 origin-center" 
+  />
+  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase text-zinc-900 border border-black/5 shadow-sm">
+    {game.difficulty}
+  </div>
+</div>
+
               <div className="px-2 mb-6 flex-1">
                 <h3 className="text-2xl font-black uppercase italic text-zinc-900 leading-none mb-1 tracking-tighter line-clamp-2">{game.title}</h3>
                 <span className="text-[10px] font-black text-[#0055ff] uppercase tracking-widest">{game.brand}</span>

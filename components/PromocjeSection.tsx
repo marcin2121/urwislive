@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image' // 🚀 IMPORT DLA PERFORMANCE
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Tag, Timer, Sparkles, ChevronRight, Percent, Loader2, Flame, Clock } from 'lucide-react'
 import Link from 'next/link'
@@ -59,7 +60,7 @@ const CountdownTimer = ({ expiresAt }: { expiresAt: string }) => {
 
   return (
     <div className="mb-6 p-4 bg-orange-50/50 border border-orange-100 rounded-2xl relative overflow-hidden" role="timer" aria-label="Czas do końca promocji">
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-100/20 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-r from-orange-100/20 to-transparent pointer-events-none" />
       <div className="flex items-center gap-2 mb-2 text-orange-500 relative z-10">
         <Flame size={16} className="animate-pulse" aria-hidden="true" />
         <span className="text-[10px] font-black uppercase tracking-widest">Gorący Strzał - Koniec za:</span>
@@ -138,7 +139,7 @@ export default function PromocjeSection() {
           <div className="space-y-4 text-center lg:text-left">
             <Link 
               href="/oferta" 
-              aria-label="Wróć do oferty głównej"
+              aria-label="Wróć do głównej oferty sklepu"
               className="inline-flex items-center gap-2 text-zinc-500 hover:text-[#BF2024] font-black text-[12px] uppercase tracking-[0.2em] transition-all mb-4"
             >
               <ArrowLeft size={14} strokeWidth={3} aria-hidden="true" /> Powrót do oferty
@@ -158,9 +159,9 @@ export default function PromocjeSection() {
             className="bg-zinc-900 text-white p-8 rounded-[3rem] shadow-2xl relative overflow-hidden group max-w-md mx-auto lg:mx-0 border border-white/10"
           >
             <div className="absolute inset-0 bg-linear-to-r from-[#BF2024]/40 to-[#0055ff]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <p className="font-black text-2xl uppercase tracking-tighter leading-none relative z-10">
+            <p className="font-black text-2xl uppercase tracking-tighter leading-none relative z-10 italic">
               ŁAP JE TERAZ! <br />
-              <span className="text-sm font-bold opacity-60 tracking-widest uppercase">Ważne do wyczerpania zapasów 🔥</span>
+              <span className="text-sm font-bold opacity-60 tracking-widest uppercase not-italic">Ważne do wyczerpania zapasów 🔥</span>
             </p>
           </motion.div>
         </div>
@@ -192,14 +193,17 @@ export default function PromocjeSection() {
                     </div>
                   )}
 
+                  {/* 🚀 ZOPTYMALIZOWANE ZDJĘCIE PRODUKTU */}
                   <div className="aspect-square relative overflow-hidden bg-white/50 m-4 rounded-[2.5rem] border border-white/60 shadow-sm shrink-0">
-                    <div className="absolute inset-0 bg-linear-to-t from-zinc-900/10 to-transparent z-10" />
+                    <div className="absolute inset-0 bg-linear-to-t from-zinc-900/10 to-transparent z-10 pointer-events-none" />
                     {item.image_url ? (
-                      <img 
+                      <Image 
                         src={item.image_url} 
                         alt={`Promocja na: ${item.title}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        loading="lazy"
+                        fill
+                        priority={i < 3} // Ładujemy pierwsze 3 produkty natychmiast (LCP)
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-zinc-400 group-hover:scale-110 transition-transform duration-700">
@@ -257,12 +261,12 @@ export default function PromocjeSection() {
               <motion.section 
                 key="info-card"
                 whileHover={{ scale: 0.98 }}
-                className="flex flex-col items-center justify-center p-12 rounded-[3.5rem] border-4 border-dashed border-white/50 bg-white/5 backdrop-blur-md text-center group h-full"
+                className="flex flex-col items-center justify-center p-12 rounded-[3.5rem] border-4 border-dashed border-zinc-200 bg-white/5 backdrop-blur-md text-center group h-full min-h-[400px]"
               >
-                <div className="w-24 h-24 bg-white/40 rounded-full flex items-center justify-center mb-8 shadow-xl group-hover:rotate-12 transition-transform">
+                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 shadow-xl group-hover:rotate-12 transition-transform">
                   <Percent size={48} className="text-[#0055ff]" strokeWidth={3} aria-hidden="true" />
                 </div>
-                <h3 className="text-3xl font-black font-heading mb-4 text-zinc-900 uppercase leading-none">
+                <h3 className="text-3xl font-black font-heading mb-4 text-zinc-900 uppercase leading-none italic">
                   TO NIE <br /> WSZYSTKO!
                 </h3>
                 <p className="text-zinc-600 font-bold text-sm uppercase leading-relaxed tracking-tight">

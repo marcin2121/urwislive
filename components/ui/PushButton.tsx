@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BellRing, Bell, Download, Check, Settings2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,13 +11,14 @@ type PushButtonState = 'UNSUPPORTED' | 'INSTALL_PWA' | 'NOT_SUBSCRIBED' | 'SUBSC
 
 const urlBase64ToUint8Array = (base64String: string) => {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   return new Uint8Array([...rawData].map((char) => char.charCodeAt(0)));
 };
 
 export default function PushButton() {
   const supabase = createClient();
+  const containerRef = useRef<HTMLDivElement>(null); // 🚀 REF DO WYKRYWANIA KLIKNIĘĆ POZA
   const [buttonState, setButtonState] = useState<PushButtonState>('UNSUPPORTED');
   const [showSettings, setShowSettings] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState<string[]>(['wszystkie']);
@@ -71,21 +72,35 @@ export default function PushButton() {
     }
   }, [supabase]);
 
+  // 🚀 LOGIKA ZAMYKANIA PO KLIKNIĘCIU POZA KONTENEREM
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowSettings(false);
+      }
+    };
+
+    if (showSettings) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSettings]);
+
   useEffect(() => {
     checkStatus();
 
-    // 🚀 1. Obsługa parametru ?settings=open (Deep Linking z powiadomienia)
     const params = new URLSearchParams(window.location.search);
     if (params.get('settings') === 'open') {
       setTimeout(() => {
         setShowSettings(true);
         trackPushEvent('auto_open_from_url');
-        // Usuwamy parametr z URL bez odświeżania strony
         window.history.replaceState({}, '', window.location.pathname);
       }, 1000);
     }
 
-    // 🚀 2. Nasłuchiwanie na sygnał od Urwisa
     window.addEventListener('push-permission-changed', checkStatus);
     return () => window.removeEventListener('push-permission-changed', checkStatus);
   }, [checkStatus]);
@@ -146,7 +161,7 @@ export default function PushButton() {
         break;
       case 'INSTALL_PWA':
         toast.info('Dodaj do ekranu początkowego, aby włączyć powiadomienia.', {
-          icon: <Download className="w-4 h-4 text-blue-500" />
+          icon: <Download className="w-4 h-4 text-blue-500" aria-hidden="true" />
         });
         break;
       case 'NOT_SUBSCRIBED':
@@ -174,7 +189,6 @@ export default function PushButton() {
             setShowSettings(true); 
             window.dispatchEvent(new Event('push-permission-changed'));
             toast.success('Urwis melduje się na posterunku!');
-            
           }
         } catch (error) {
           toast.error("Błąd subskrypcji.");
@@ -190,15 +204,14 @@ export default function PushButton() {
   const needsPwa = buttonState === 'INSTALL_PWA';
   const canSubscribe = buttonState === 'NOT_SUBSCRIBED';
 
-  // DYNAMICZNY ARIA-LABEL W ZALEŻNOŚCI OD STANU
   const getAriaLabel = () => {
-    if (isSubscribed) return "Ustawienia powiadomień";
-    if (needsPwa) return "Powiadomienia wymagają instalacji aplikacji";
-    return "Włącz powiadomienia";
+    if (isSubscribed) return "Otwórz ustawienia powiadomień";
+    if (needsPwa) return "Powiadomienia wymagają instalacji PWA";
+    return "Włącz powiadomienia o promocjach";
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <motion.button
         onClick={handleAction}
         aria-label={getAriaLabel()}
@@ -227,7 +240,7 @@ export default function PushButton() {
             initial={{ opacity: 0, y: 12, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.95 }}
-            className="absolute top-full right-0 mt-4 w-64 bg-white/98 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-zinc-100 p-5 z-[110]"
+            className="absolute top-full right-0 mt-4 w-64 bg-white/98 backdrop-blur-xl rounded-4xl shadow-2xl border border-zinc-100 p-5 z-[110]"
             role="menu"
             aria-orientation="vertical"
             aria-label="Ustawienia kategorii powiadomień"
@@ -237,7 +250,7 @@ export default function PushButton() {
                 <Settings2 size={14} aria-hidden="true" />
                 <span className="text-[10px] font-black uppercase tracking-widest">Twoje powiadomienia</span>
               </div>
-              {isUpdating && <Loader2 size={14} className="animate-spin text-blue-500" aria-label="Zapisywanie zmian" />}
+              {isUpdating && <Loader2 size={14} className="animate-spin text-blue-500" aria-label="Zapisywanie zmian..." />}
             </div>
             
             <div className="space-y-2">
@@ -250,7 +263,7 @@ export default function PushButton() {
                     onClick={() => toggleTopic(cat.id)}
                     role="menuitemcheckbox"
                     aria-checked={isSelected}
-                    aria-label={`Przełącz kategorię: ${cat.label}`}
+                    aria-label={`Powiadomienia dla kategorii: ${cat.label}`}
                     className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all ${
                       isSelected 
                       ? 'bg-blue-600 text-white shadow-md' 

@@ -7,7 +7,6 @@ import MagicBento from '@/components/ui/MagicBento'
 import Particles from "@/components/Particles"
 
 export default function AboutSection() {
-  // Funkcja do śledzenia zdarzeń GTAG
   const trackAboutInteraction = (area: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'about_interaction', {
@@ -36,45 +35,48 @@ export default function AboutSection() {
         {/* --- HERO SECTION --- */}
         <section className="mb-32">
           <div className="max-w-4xl">
+            {/* 🚀 POPRAWKA KONTRASTU: text-zinc-600 zamiast zinc-500 */}
             <motion.span 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-6 py-2 bg-white/40 backdrop-blur-md text-zinc-500 rounded-full text-[12px] font-black uppercase tracking-[0.3em] mb-8 border border-white/50"
+              className="inline-flex items-center gap-2 px-6 py-2 bg-white/40 backdrop-blur-md text-zinc-600 rounded-full text-[12px] font-black uppercase tracking-[0.3em] mb-8 border border-white/50"
             >
               <Heart size={14} className="text-[#BF2024]" aria-hidden="true" /> Białobrzeska historia pasji
             </motion.span>
             
-            <h1 className="text-7xl md:text-9xl font-black text-zinc-900 leading-[0.85] tracking-tight uppercase mb-12">
+            <h1 className="text-7xl md:text-9xl font-black text-zinc-900 leading-[0.85] tracking-tight uppercase mb-12 italic">
               WIĘCEJ NIŻ <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">
                 TYLKO SKLEP
               </span>
             </h1>
 
-            <p className="text-2xl md:text-4xl text-zinc-800 font-black leading-[1.1] uppercase tracking-tighter max-w-3xl">
+            <p className="text-2xl md:text-4xl text-zinc-900 font-black leading-[1.1] uppercase tracking-tighter max-w-3xl">
               Urwis to <span className="text-[#BF2024]">energia Białobrzegów</span>, najlepsze artykuły szkolne i biurowe oraz bezkompromisowa <span className="text-[#0055ff]">radość odkrywania</span>.
             </p>
           </div>
         </section>
 
         {/* --- 3 KOLUMNY MAGIC BENTO --- */}
-        <section className="mb-32">
+        <section className="mb-32" aria-label="Nasze filary">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
             
-            {/* 1. SKLEP URWIS */}
+            {/* 1. SKLEP URWIS - ZMIANA H3 -> H2 (Poprawa hierarchii SEO) */}
             <MagicBento 
               glowColor="191, 32, 36" 
               enableTilt={false} 
               enableMagnetism={true}
-              className="rounded-[3.5rem] bg-white/30 backdrop-blur-3xl border-2 border-white/70 shadow-2xl"
+              className="rounded-4xl bg-white/30 backdrop-blur-3xl border-2 border-white/70 shadow-2xl"
             >
               <div className="p-10 flex flex-col justify-between h-full min-h-[500px]">
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-[#BF2024] rounded-3xl flex items-center justify-center text-white mb-8 shadow-xl shadow-red-500/20">
                     <Store size={32} strokeWidth={2.5} aria-hidden="true" />
                   </div>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter mb-6">SKLEP <br /> URWIS</h3>
-                  <p className="text-lg text-zinc-600 font-bold uppercase leading-snug opacity-80">
+                  {/* 🚀 FIX: H2 zamiast H3 dla zachowania kolejności */}
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 italic text-zinc-900 leading-[0.9]">SKLEP <br /> URWIS</h2>
+                  {/* 🚀 POPRAWKA KONTRASTU: text-zinc-800 zamiast zinc-600 */}
+                  <p className="text-lg text-zinc-800 font-bold uppercase leading-snug">
                     Najlepsze zabawki oraz pełna gama artykułów szkolnych i biurowych w Białobrzegach.
                   </p>
                 </div>
@@ -89,20 +91,20 @@ export default function AboutSection() {
               </div>
             </MagicBento>
 
-            {/* 2. LECĘ W KULKI */}
+            {/* 2. LECĘ W KULKI - ZMIANA H3 -> H2 */}
             <MagicBento 
               glowColor="0, 85, 255" 
               enableTilt={false} 
               enableMagnetism={true}
-              className="rounded-[3.5rem] bg-white/30 backdrop-blur-3xl border-2 border-white/70 shadow-2xl"
+              className="rounded-4xl bg-white/30 backdrop-blur-3xl border-2 border-white/70 shadow-2xl"
             >
               <div className="p-10 flex flex-col justify-between h-full min-h-[500px]">
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-[#0055ff] rounded-3xl flex items-center justify-center text-white mb-8 shadow-xl shadow-blue-500/20">
                     <Coffee size={32} strokeWidth={2.5} aria-hidden="true" />
                   </div>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter mb-6 text-zinc-900">LECĘ <br /> W KULKI</h3>
-                  <p className="text-lg text-zinc-600 font-bold uppercase leading-snug opacity-80">
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 text-zinc-900 italic leading-[0.9]">LECĘ <br /> W KULKI</h2>
+                  <p className="text-lg text-zinc-800 font-bold uppercase leading-snug">
                     Kawiarnia i sala zabaw dla dzieci. Idealne miejsce na kawę dla rodzica i szaleństwo dla urwisa.
                   </p>
                 </div>
@@ -117,24 +119,24 @@ export default function AboutSection() {
               </div>
             </MagicBento>
 
-            {/* 3. AKADEMIA URWISA */}
+            {/* 3. AKADEMIA URWISA - ZMIANA H3 -> H2 */}
             <MagicBento 
               glowColor="245, 158, 11" 
               enableTilt={false} 
               enableMagnetism={true}
-              className="rounded-[3.5rem] bg-white/30 backdrop-blur-3xl border-2 border-white/70 shadow-2xl"
+              className="rounded-4xl bg-white/30 backdrop-blur-3xl border-2 border-white/70 shadow-2xl"
             >
               <div className="p-10 flex flex-col justify-between h-full min-h-[500px]">
                 <div className="relative z-10">
                   <div className="w-16 h-16 bg-amber-400 rounded-3xl flex items-center justify-center text-amber-950 mb-8 shadow-xl shadow-amber-500/20">
                     <GraduationCap size={32} strokeWidth={2.5} aria-hidden="true" />
                   </div>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter mb-6">AKADEMIA <br /> URWISA</h3>
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 italic text-zinc-900 leading-[0.9]">AKADEMIA <br /> URWISA</h2>
                   <div className="space-y-4">
                     <p className="text-xl text-amber-600 font-black uppercase tracking-tight leading-none">
                       NAUKA PRZEZ ZABAWĘ!
                     </p>
-                    <p className="text-lg text-zinc-600 font-bold uppercase leading-tight">
+                    <p className="text-lg text-zinc-800 font-bold uppercase leading-tight">
                       Wspieramy rozwój dzieci w Białobrzegach poprzez kreatywne zadania i system nagród.
                     </p>
                   </div>
@@ -143,7 +145,7 @@ export default function AboutSection() {
                   href="https://akademiaurwisa.pl" 
                   target="_blank" 
                   onClick={() => trackAboutInteraction('academy_click')}
-                  aria-label="Rozpocznij przygodę w Akademii Urwisa"
+                  aria-label="Rozpocznij przygodę w Akademii Urwisa (otwiera się w nowej karcie)"
                   className="relative z-10 flex items-center gap-3 font-black uppercase text-[11px] tracking-widest text-amber-600 mt-10 hover:gap-5 transition-all"
                 >
                   ROZPOCZNIJ QUEST <ChevronRight size={16} strokeWidth={3} />
@@ -156,13 +158,14 @@ export default function AboutSection() {
 
         {/* --- KONTAKT CTA --- */}
         <div className="text-center space-y-12 pb-12">
-          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900">
+          {/* 🚀 Nagłówek H2 jest tutaj poprawny, bo jest kolejną sekcją główną */}
+          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 italic">
             WPADNIESZ <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">DO NAS?</span>
           </h2>
           <Link 
             href="/kontakt" 
             onClick={() => trackAboutInteraction('footer_cta_click')}
-            aria-label="Przejdź do strony kontaktowej"
+            aria-label="Przejdź do strony kontaktowej i odwiedź nas w Białobrzegach"
             className="group relative inline-flex items-center gap-4 px-16 py-8 bg-zinc-900 text-white rounded-full font-black text-2xl uppercase tracking-tighter hover:scale-105 transition-all shadow-2xl overflow-hidden"
           >
             <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image'; // 🚀 IMPORT DLA OPTYMALIZACJI
 import { motion, AnimatePresence } from 'framer-motion';
 
-// ← WAŻNE: To musi być "export default function"
 export default function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -30,7 +30,6 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
     return () => clearInterval(timer);
   }, [onComplete]);
 
-  // Teksty dopasowane do klimatu sklepu i sali zabaw
   const messages = [
     "Budzimy Urwisa...",
     "Rozkładamy klocki LEGO...",
@@ -45,17 +44,20 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
       {!isComplete && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }} // Lekki efekt zoomu przy znikaniu ekranu
+          exit={{ opacity: 0, scale: 1.05 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
           className="fixed inset-0 bg-zinc-50 z-[9999] flex items-center justify-center overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Ekran ładowania Sklepu Urwis"
         >
-          {/* TŁO: Subtelne, pulsujące plamy w barwach Urwisa */}
+          {/* TŁO DEKORACYJNE */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#BF2024]/5 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#0055ff]/5 rounded-full blur-[80px] pointer-events-none translate-x-20 -translate-y-20" />
 
           <div className="text-center space-y-10 max-w-md mx-auto px-6 relative z-10 w-full">
 
-            {/* LOGO URWISA z efektem "oddychania" i lewitacji */}
+            {/* LOGO URWISA - ZOPTYMALIZOWANE */}
             <div className="relative w-48 h-48 mx-auto">
               <motion.div
                 className="absolute inset-0 bg-[#0055ff]/20 rounded-full blur-2xl"
@@ -73,16 +75,19 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
                 transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
                 className="relative z-10 w-full h-full flex items-center justify-center drop-shadow-2xl"
               >
-                {/* Zdjęcie Logo (to samo co w panelu Admina) */}
-                <img 
+                {/* 🚀 ZOPTYMALIZOWANE LOGO */}
+                <Image 
                   src="/logo.png" 
-                  alt="Urwis" 
-                  className="w-40 h-40 object-contain drop-shadow-lg" 
+                  alt="Logo Sklepu Urwis" 
+                  width={160} 
+                  height={160} 
+                  priority // Wysoki priorytet ładowania
+                  className="object-contain drop-shadow-lg" 
                 />
               </motion.div>
             </div>
 
-            {/* TYPOGRAFIA (Dopasowana do nagłówków na Twojej stronie) */}
+            {/* TYPOGRAFIA */}
             <div className="space-y-3">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter text-zinc-900 leading-none">
                 Wczytuję <br/>
@@ -103,17 +108,23 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
               </AnimatePresence>
             </div>
 
-            {/* PASEK POSTĘPU w barwach brandowych */}
+            {/* PASEK POSTĘPU - DOSTĘPNY (Accessibility) */}
             <div className="space-y-3 pt-4">
-              <div className="relative w-full h-3 bg-zinc-200 rounded-full overflow-hidden shadow-inner">
-                {/* Pasek właściwy (Gradient od niebieskiego do czerwonego) */}
+              <div 
+                className="relative w-full h-3 bg-zinc-200 rounded-full overflow-hidden shadow-inner"
+                role="progressbar"
+                aria-valuenow={progress}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                {/* Pasek właściwy */}
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-linear-to-r from-[#0055ff] to-[#BF2024] rounded-full"
                   style={{ width: `${progress}%` }}
                   transition={{ duration: 0.1 }}
                 />
 
-                {/* Efekt białego "błysku" przelatującego przez pasek */}
+                {/* Efekt błysku */}
                 <motion.div
                   className="absolute inset-0 bg-linear-to-r from-transparent via-white/40 to-transparent"
                   initial={{ x: '-100%' }}
@@ -135,8 +146,8 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
               </div>
             </div>
 
-            {/* IKONKI ZABAWEK NA DOLE */}
-            <div className="flex justify-center gap-6 pt-4 text-3xl opacity-80">
+            {/* IKONKI ZABAWEK */}
+            <div className="flex justify-center gap-6 pt-4 text-3xl opacity-80" aria-hidden="true">
               {['🧩', '🎈', '🎨', '🎮'].map((icon, i) => (
                 <motion.div
                   key={i}
