@@ -20,7 +20,8 @@ import {
   BadgePercent,
   Info,
   Coins,
-  Wallet
+  Wallet,
+  Palette
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -41,8 +42,9 @@ const FULL_HOURS_LIST = [
 
 const NAV_ITEMS = [
   { name: "O nas", href: "/o-nas", icon: Info },
-  { name: "Oferta Sklepu", href: "/oferta", icon: ShoppingBag },
+  { name: "Oferta", href: "/oferta", icon: ShoppingBag },
   { name: "Promocje", href: "/oferta/promocje", icon: BadgePercent },
+  { name: "Kolorowanki", href: "/kolorowanki", icon: Palette }, 
   { name: "Kontakt", href: "/kontakt", icon: Phone },
   { name: "Sala Zabaw", href: "/salazabaw", icon: Coffee },
 ];
@@ -103,7 +105,6 @@ export default function Navbar() {
       let label = "ZAMKNIĘTE";
       let subLabel = "";
 
-      // 🚀 NAPRAWIONA LOGIKA GODZIN
       if (day >= 1 && day <= 5) {
         if (currentTime >= 8 && currentTime < 18) {
           isOpen = true; label = "OTWARTE"; subLabel = "do 18:00";
@@ -116,7 +117,7 @@ export default function Navbar() {
         if (currentTime >= 8 && currentTime < 15) {
           isOpen = true; label = "OTWARTE"; subLabel = "do 15:00";
         } else if (currentTime < 8) {
-          subLabel = "do 08:00"; // Tutaj był błąd wywalający "W poniedziałek" nad ranem!
+          subLabel = "do 08:00";
         } else {
           subLabel = "W poniedziałek";
         }
@@ -209,7 +210,15 @@ export default function Navbar() {
                 key={item.name} 
                 href={item.href} 
                 onClick={() => trackEvent('nav_link_click', { name: item.name })}
-                className={`px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${pathname === item.href ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'}`}>
+                className={`px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
+                  item.name === "Kolorowanki" 
+                    ? 'bg-gradient-to-r from-red-500 to-blue-500 text-white shadow-md hover:scale-105'
+                    : pathname === item.href 
+                      ? 'bg-white text-zinc-900 shadow-sm' 
+                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'
+                }`}
+              >
+                {item.name === "Kolorowanki" && <Palette size={14} />}
                 {item.name}
               </Link>
             ))}
@@ -217,7 +226,6 @@ export default function Navbar() {
 
           <div className="flex items-center gap-1 md:gap-3 shrink-0">
             
-            {/* 🪙 PORTFEL: bg-zinc-50 + shadow-sm, idealnie równy z Powiadomieniami */}
             <Link 
               href="/karta" 
               onClick={() => trackEvent('nav_wallet_click')}
@@ -238,7 +246,6 @@ export default function Navbar() {
               )}
             </Link>
 
-            {/* 🔔 POWIADOMIENIA */}
             <div className="shrink-0 flex items-center justify-center transform scale-90 origin-center">
               <PushButton key={`nav-push-${pushKey}`} />
             </div>
@@ -310,7 +317,8 @@ export default function Navbar() {
                 </Link>
 
                 <nav className="flex flex-col gap-1">
-                  {NAV_ITEMS.map((item) => (
+                  {/* TUTAJ ZMIANA: Wykluczamy Kolorowanki ze zwykłej listy w mobile! */}
+                  {NAV_ITEMS.filter(item => item.name !== "Kolorowanki").map((item) => (
                     <Link 
                       key={item.name} 
                       href={item.href} 
@@ -318,9 +326,10 @@ export default function Navbar() {
                         setMobileMenuOpen(false); 
                         trackEvent('mobile_nav_click', { name: item.name }); 
                       }} 
-                      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-zinc-50 text-lg font-black italic uppercase tracking-tighter text-zinc-800"
+                      className="flex items-center gap-4 p-4 rounded-2xl text-lg font-black italic uppercase tracking-tighter hover:bg-zinc-50 text-zinc-800"
                     >
-                      <item.icon size={20} className="text-zinc-400" />{item.name}
+                      <item.icon size={20} className="text-zinc-400" />
+                      {item.name}
                     </Link>
                   ))}
                 </nav>
@@ -328,6 +337,28 @@ export default function Navbar() {
                 <hr className="border-zinc-100 my-2" />
 
                 <div className="flex flex-col gap-3">
+                  
+                  {/* BANER KOLOROWANKI W MOBILE */}
+                  <Link 
+                    href="/kolorowanki" 
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      trackEvent('mobile_cta_kolorowanki');
+                    }} 
+                    className="flex flex-col relative overflow-hidden p-6 rounded-[2rem] bg-zinc-900 text-white border border-zinc-800 shadow-xl"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#BF2024]/40 to-[#0055ff]/40 opacity-80" />
+                    <div className="relative flex items-center justify-between z-10 mb-2">
+                       <div className="flex items-center gap-3">
+                         <Palette size={24} className="text-yellow-400" />
+                         <div className="font-black italic uppercase tracking-tighter text-xl">Studio Kreatywne</div>
+                       </div>
+                    </div>
+                    <p className="relative z-10 text-[10px] font-bold uppercase text-zinc-300 opacity-90 leading-tight">
+                      Twórzcie, bawcie się i zapisujcie najpiękniejsze wspólne chwile. Idealny sposób na kreatywne popołudnie!
+                    </p>
+                  </Link>
+
                   <Link 
                     href="/salazabaw" 
                     onClick={() => {
@@ -336,7 +367,7 @@ export default function Navbar() {
                     }} 
                     className="flex items-center gap-4 p-6 rounded-[2rem] bg-blue-50 text-blue-700 border border-blue-100"
                   >
-                     <Coffee size={24} /><div className="font-black italic uppercase tracking-tighter text-[18px]">Lecę w Kulki</div>
+                      <Coffee size={24} /><div className="font-black italic uppercase tracking-tighter text-[18px]">Lecę w Kulki</div>
                   </Link>
 
                   <Link 

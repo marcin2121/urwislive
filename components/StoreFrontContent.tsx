@@ -20,7 +20,7 @@ import AboutSection from "@/components/AboutSection";
 import PoznajUrwisa from "@/components/PoznajUrwisa";
 import UrwisIntro from "@/components/Intro";
 import LoyaltySection from "@/components/LoyaltySection";
-
+import ColoringBanner from "@/components/ColoringBanner";
 // DYNAMICZNE IMPORTY (SSR: FALSE dla stabilności animacji i cząsteczek)
 const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), { ssr: false });
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
@@ -62,7 +62,7 @@ export default function StoreFrontContent() {
         </div>
 
         <div className="relative z-10">
-          {/* SEKACJA HERO */}
+          {/* SEKCJA HERO */}
           <Hero />
 
           {/* TWOJA SEKCJA DUAL BRAND (Dodana pod Hero) */}
@@ -94,7 +94,8 @@ export default function StoreFrontContent() {
 
           {/* 🟡 LOYALTY: Łącznik ze światem Lecę w Kulki (Targowicka 4) */}
           <LoyaltySection />
-
+           {/* Baner kolorowanek */}
+          <ColoringBanner />
           {/* GALERIA ASORTYMENTU */}
           <section className="py-20">
             <div className="container mx-auto px-6 mb-12">
