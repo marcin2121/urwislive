@@ -79,7 +79,7 @@ export default function ColoringBanner() {
               </motion.div>
 
               {/* Zmniejszony padding przycisku dla mobilnych urządzeń */}
-              <button className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 md:py-6 bg-white text-zinc-900 rounded-[2rem] font-black uppercase italic tracking-widest text-xs sm:text-sm flex items-center justify-center gap-3 sm:gap-4 group-hover:bg-[#0055ff] group-hover:text-white transition-colors duration-300 shadow-2xl relative overflow-hidden">
+              <button className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 md:py-6 bg-white text-zinc-900 rounded-[2rem] font-black uppercase italic tracking-widest text-xs sm:text-sm flex items-center justify-center gap-3 sm:gap-4 group-hover:bg-[#0055ff] group-hover:text-white transition-colors duration-300 shadow-2xl relative overflow-hidden" aria-label='Przejdź do kolorowanki'>
                 <span className="relative z-10">Zacznij Malować</span>
                 <div className="relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-100 group-hover:bg-white/20 flex items-center justify-center transition-colors shrink-0">
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

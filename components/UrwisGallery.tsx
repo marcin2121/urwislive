@@ -280,8 +280,8 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
               
               {!isZoomed && visibleItems.length > 1 && (
                 <>
-                  <button className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 text-white/50 hover:text-white transition-colors" onClick={handlePrevClick}><ChevronLeft size={60} /></button>
-                  <button className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 text-white/50 hover:text-white transition-colors" onClick={handleNextClick}><ChevronRight size={60} /></button>
+                  <button className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 z-50 p-4 text-white/50 hover:text-white transition-colors"aria-label='Poprzednie zdjęcie' onClick={handlePrevClick}><ChevronLeft size={60} /></button>
+                  <button className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 z-50 p-4 text-white/50 hover:text-white transition-colors" aria-label='Następne zdjęcie' onClick={handleNextClick}><ChevronRight size={60} /></button>
                 </>
               )}
 
