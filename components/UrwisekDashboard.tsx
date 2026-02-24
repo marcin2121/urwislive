@@ -28,80 +28,97 @@ export interface PetState {
 }
 
 export default function UrwisekDashboard({ initialState }: { initialState: PetState }) {
-    const [state, setState] = useState<PetState>(initialState)
+    const [state, setState] = useState<PetState>(() => ({
+      ...initialState,
+      // Zabezpiecz przed undefined z serwera przy inicjalizacji
+      hunger: Number(initialState.hunger) || 0,
+      hygiene: Number(initialState.hygiene) || 0,
+      happiness: Number(initialState.happiness) || 0,
+    }))
     const [isPending, startTransition] = useTransition()
-    
     const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding'>('none')
     const [rewardMessage, setRewardMessage] = useState<string | null>(null)
-    const [showSmile, setShowSmile] = useState(false) // Nowy stan uśmiechu tutaj
+    const [showSmile, setShowSmile] = useState(false)
     const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
   
-    // 1. INTELIGENTNA SYNCHRONIZACJA
-    useEffect(() => {
-        if (initialState.lastInteraction !== state.lastInteraction || initialState.level !== state.level) {
-          setState(prev => ({
-            ...prev,
-            // Ekonomia i meta – zawsze z serwera
-            level: initialState.level,
-            urwisCoins: initialState.urwisCoins,
-            goldenUrwis: initialState.goldenUrwis,
-            points_earned: initialState.points_earned,
-            lastInteraction: initialState.lastInteraction,
-            // Statystyki – tylko jeśli serwer ma WYŻSZE wartości (wynik akcji feed/wash/play)
-            hunger: Math.max(prev.hunger, initialState.hunger),
-            hygiene: Math.max(prev.hygiene, initialState.hygiene),
-            happiness: Math.max(prev.happiness, initialState.happiness),
-          }))
-        }
-      }, [initialState.lastInteraction, initialState.level])
-    // 2. DECAY LOKALNY (Płynność)
+    // ✅ DECAY LOKALNY – jedyne źródło prawdy dla hunger/hygiene/happiness w sesji
     useEffect(() => {
       const timer = setInterval(() => {
         setState(prev => ({
           ...prev,
           hunger: calculateDecay(prev.hunger, 1),
           hygiene: calculateDecay(prev.hygiene, 1),
-          happiness: calculateDecay(prev.happiness, 1)
+          happiness: calculateDecay(prev.happiness, 1),
         }))
       }, 1000)
       return () => clearInterval(timer)
     }, [])
   
-    // 3. OBSŁUGA AKCJI
+    // ✅ SYNC TYLKO META-POLA (nie nadpisuj statystyk!)
+    // Odpala się TYLKO gdy serwer zwróci nową sesję (np. otwarcie drugiej zakładki)
+    const lastSyncedInteraction = useRef(initialState.lastInteraction)
+    useEffect(() => {
+      if (initialState.lastInteraction !== lastSyncedInteraction.current) {
+        lastSyncedInteraction.current = initialState.lastInteraction
+        setState(prev => ({
+          ...prev,
+          // Tylko pola ekonomiczne – statystyki zostawiamy lokalne
+          level: initialState.level,
+          urwisCoins: initialState.urwisCoins,
+          goldenUrwis: initialState.goldenUrwis,
+          points_earned: initialState.points_earned,
+          lastInteraction: initialState.lastInteraction,
+          playerName: initialState.playerName,
+          petName: initialState.petName,
+        }))
+      }
+    }, [initialState.lastInteraction])
+  
     const handleAction = async (type: 'feed' | 'wash' | 'play') => {
-      startTransition(async () => {
-        const res = await interactWithUrwis(type)
-        
-        if (res.success && res.reward) {
-          if (res.newState) {
-            setState(prev => ({ ...prev, ...res.newState }));
+        startTransition(async () => {
+          const res = await interactWithUrwis(type)
+      
+          if (res.success && res.reward) {
+            if (res.newState) {
+              setState(prev => ({
+                ...prev,
+                // ?? zamiast || – 0 jest poprawną wartością statystyki!
+                hunger: res.newState!.hunger ?? prev.hunger,
+                hygiene: res.newState!.hygiene ?? prev.hygiene,
+                happiness: res.newState!.happiness ?? prev.happiness,
+                urwisCoins: res.newState!.urwisCoins,
+                level: res.newState!.level,
+                points_earned: res.newState!.points_earned,
+                goldenUrwis: res.newState!.goldenUrwis,
+                lastInteraction: res.newState!.lastInteraction,
+              }))
+              // Aktualizuj ref, żeby sync efekt nie nadpisał po revalidatePath
+              lastSyncedInteraction.current = res.newState!.lastInteraction
+            }
+            setShowSmile(true)
+            const coinLabel = res.reward.coins >= 0 ? `+${res.reward.coins}` : `${res.reward.coins}`
+            setRewardMessage(`${coinLabel} 🪙 i +${res.reward.exp} EXP`)
+            setActiveMode('none')
+      
+            setTimeout(() => {
+              setShowSmile(false)
+              setRewardMessage(null)
+              setLevelUpData(null)
+            }, 4000)
+      
+            if (res.leveledUp) {
+              setLevelUpData({ show: true, lvl: res.newState?.level || state.level + 1 })
+            }
+          } else if (res.error) {
+            alert(res.error)
+            setActiveMode('none')
           }
-          
-          // Logika uśmiechu
-          setShowSmile(true)
-          const coinLabel = res.reward.coins >= 0 ? `+${res.reward.coins}` : `${res.reward.coins}`
-          setRewardMessage(`${coinLabel} 🪙 i +${res.reward.exp} EXP`)
-          
-          setActiveMode('none')
-  
-          // Czyścimy uśmiech i wiadomość po 4 sekundach
-          setTimeout(() => {
-            setShowSmile(false)
-            setRewardMessage(null)
-            setLevelUpData(null)
-          }, 4000)
-  
-          if (res.leveledUp) {
-            setLevelUpData({ show: true, lvl: res.newState?.level || state.level + 1 })
-          }
-        } else if (res.error) {
-          alert(res.error)
-          setActiveMode('none')
-        }
-      })
-    }
+        })
+      }
+      
   
     return (
+  
       <div className="...">
         {/* ... AnimatePresence dla LevelUp itp. ... */}
         <StatsSection state={state} />

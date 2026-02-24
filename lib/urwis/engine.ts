@@ -13,23 +13,19 @@ export function getXPForLevel(level: number): number {
  * Wykorzystuje bezpieczną matematykę, aby uniknąć błędów NaN i skoków.
  */
 export function calculateDecay(val: number, secondsPassed: number): number {
+    // BUG: isNaN(val) ? 100 — domyślne 100 powoduje skoki!
+    // FIX: jeśli wartość jest niepoprawna, traktuj jako 0
     const startVal = (val == null || isNaN(Number(val))) ? 0 : Number(val);
     const secs = (isNaN(secondsPassed) || secondsPassed < 0) ? 0 : secondsPassed;
-
-  if (secs === 0) return startVal;
-
-  // Ograniczamy spadek do max 48h (zabezpieczenie przed błędami daty)
-  const safeSeconds = Math.min(secs, 172800);
+    if (secs === 0) return startVal;
   
-  const rates = URWIS_CONFIG.DECAY_RATES;
-  let rate = rates.PHASE_5;
-
-  // Wybieramy stawkę na podstawie aktualnego poziomu paska
-  if (startVal > 80) rate = rates.PHASE_1;
-  else if (startVal > 60) rate = rates.PHASE_2;
-  else if (startVal > 45) rate = rates.PHASE_3;
-  else if (startVal > 30) rate = rates.PHASE_4;
-
-  const result = startVal - (rate * safeSeconds);
-  return Math.max(0, result);
-}
+    const safeSeconds = Math.min(secs, 172800);
+    const rates = URWIS_CONFIG.DECAY_RATES;
+    let rate = rates.PHASE_5;
+    if (startVal > 80) rate = rates.PHASE_1;
+    else if (startVal > 60) rate = rates.PHASE_2;
+    else if (startVal > 45) rate = rates.PHASE_3;
+    else if (startVal > 30) rate = rates.PHASE_4;
+  
+    return Math.max(0, startVal - (rate * safeSeconds));
+  }

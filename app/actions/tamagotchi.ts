@@ -87,10 +87,8 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
     return { error: `Błąd zapisu: ${updateError.message}` }
   }
 
-  revalidatePath('/urwisek')
-
-  return { 
-    success: true, 
+  return {
+    success: true,
     leveledUp,
     reward: { coins: coinDelta, exp: expToAdd, isDailyBonus: isFirstThisActionToday },
     newState: {
@@ -101,8 +99,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
       level: updates.level,
       points_earned: updates.points_earned,
       goldenUrwis: updates.golden_urwis,
-      // DODAJEMY TO POLE - Klucz do braku skakania!
-      lastInteraction: updates.last_interaction 
+      lastInteraction: updates.last_interaction
     }
   }
 }
