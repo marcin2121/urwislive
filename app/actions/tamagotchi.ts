@@ -68,25 +68,27 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
 
   // 6. ZAPIS DO BAZY (DOKŁADNE POLA)
   const updates = {
-    urwis_coins: Math.max(0, (pet.urwis_coins || 0) + coinDelta),
-    golden_urwis: (pet.golden_urwis || 0) + goldenUrwisAdd,
-    points_earned: newTotalExp,
-    level: newLvl,
+    urwis_coins: Math.floor(Math.max(0, (pet.urwis_coins || 0) + coinDelta)),
+    golden_urwis: Math.floor((pet.golden_urwis || 0) + goldenUrwisAdd),
+    points_earned: Math.floor(newTotalExp),
+    level: Math.floor(newLvl),
     last_interaction: now.toISOString(),
     [dateField]: now.toISOString(),
-    hunger_level: actionType === 'feed' ? Math.min(100, currentHunger + 20) : currentHunger,
-    hygiene_level: actionType === 'wash' ? Math.min(100, currentHygiene + 20) : currentHygiene,
-    happiness_level: actionType === 'play' ? Math.min(100, currentHappiness + 20) : currentHappiness,
+    // Używamy Math.round(), aby do bazy trafiały liczby całkowite (INTEGER)
+    hunger_level: Math.round(actionType === 'feed' ? Math.min(100, currentHunger + 20) : currentHunger),
+    hygiene_level: Math.round(actionType === 'wash' ? Math.min(100, currentHygiene + 20) : currentHygiene),
+    happiness_level: Math.round(actionType === 'play' ? Math.min(100, currentHappiness + 20) : currentHappiness),
   }
 
   const { error: updateError } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id);
 
   if (updateError) {
-    console.error('BŁĄD SUPABASE:', updateError); // To zobaczysz w terminalu
+    console.error('BŁĄD SUPABASE:', updateError);
     return { error: `Błąd zapisu: ${updateError.message}` }
   }
 
   revalidatePath('/urwisek')
+  
   return { 
     success: true, 
     leveledUp,

@@ -21,9 +21,9 @@ export default async function UrwisekPage() {
       // Przeliczamy statystyki raz na serwerze
       pet = {
         ...data,
-        hunger_level: calculateDecay(data.hunger_level, secondsPassed),
-        hygiene_level: calculateDecay(data.hygiene_level, secondsPassed),
-        happiness_level: calculateDecay(data.happiness_level, secondsPassed),
+        hunger_level: Math.round(calculateDecay(data.hunger_level, secondsPassed)),
+        hygiene_level: Math.round(calculateDecay(data.hygiene_level, secondsPassed)),
+        happiness_level: Math.round(calculateDecay(data.happiness_level, secondsPassed)),
       }
     }
   }
