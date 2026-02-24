@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, X } from 'lucide-react'
@@ -9,63 +9,54 @@ import { Sparkles, X } from 'lucide-react'
 import WashingGame from './games/WashingGame'
 import FeedingGame from './games/FeedingGame'
 
-export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage }: any) {
-  // Stan uśmiechu po zakończeniu akcji (wyzwalany przez rewardMessage)
-  const [showSmile, setShowSmile] = useState(false);
-
-  useEffect(() => {
-    if (rewardMessage) {
-      setShowSmile(true);
-      // Uśmiech znika po 4 sekundach
-      const timer = setTimeout(() => setShowSmile(false), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [rewardMessage]);
-
-  // Funkcja pomocnicza do wyboru obrazka
+export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage, showSmile }: any) {
+  
   const getPetImageSrc = () => {
-    if (showSmile) return "/urwisek/usmiech.webp"; // Priorytet 1: Sukces
-    if (activeMode === 'washing') return "/urwisek/mycie.webp"; // Priorytet 2: Mycie
-    if (activeMode === 'feeding') return "/urwisek/jedzenie.webp"; // Priorytet 3: Jedzenie (NOWY PLIK)
-    return "/urwisek/urwisek.webp"; // Priorytet 4: Stan zwykły
+    if (showSmile) return "/urwisek/usmiech.webp";
+    if (activeMode === 'washing') return "/urwisek/mycie.webp";
+    if (activeMode === 'feeding') return "/urwisek/jedzenie.webp";
+    return "/urwisek/urwisek.webp";
   };
 
   return (
     <div className="flex-1 flex items-center justify-center relative mt-4 mb-4">
-      
-      {/* Komunikat nagrody (dymek nad głową) */}
       <AnimatePresence>
         {rewardMessage && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="absolute top-0 z-50 bg-[#0055ff] text-white px-4 py-2 rounded-2xl font-black text-xs shadow-xl text-center">
-            {rewardMessage}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-0 z-50 bg-[#0055ff] text-white px-4 py-2 rounded-2xl font-black text-xs shadow-xl text-center"
+          > 
+            {rewardMessage} 
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="relative w-64 h-64 flex items-center justify-center">
-        
-        {/* GŁÓWNY OBRAZEK URWISKA */}
         <Image 
           src={getPetImageSrc()} 
           alt="Urwisek" 
-          width={256} 
-          height={256} 
+          width={256} height={256} 
           className="object-contain drop-shadow-2xl transition-all duration-300" 
-          priority
+          priority 
         />
 
         {/* Efekt błysku przy uśmiechu */}
         <AnimatePresence>
           {showSmile && (
-            <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1.3, opacity: 0.5 }} exit={{ opacity: 0 }} className="absolute z-20">
+            <motion.div 
+              initial={{ scale: 0, opacity: 0 }} 
+              animate={{ scale: 1.3, opacity: 0.5 }} 
+              exit={{ opacity: 0 }} 
+              className="absolute z-20"
+            >
               <Sparkles className="w-48 h-48 text-yellow-400" />
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* WARSTWY MINIGIER */}
-        {/* Te komponenty są przezroczyste i nakładają się na obrazek */}
-        
         {activeMode === 'washing' && (
           <WashingGame onComplete={() => onActionComplete('wash')} />
         )}

@@ -74,7 +74,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
     level: Math.floor(newLvl),
     last_interaction: now.toISOString(),
     [dateField]: now.toISOString(),
-    // Używamy Math.round(), aby do bazy trafiały liczby całkowite (INTEGER)
+    // Zaokrąglamy statystyki do liczb całkowitych dla Supabase
     hunger_level: Math.round(actionType === 'feed' ? Math.min(100, currentHunger + 20) : currentHunger),
     hygiene_level: Math.round(actionType === 'wash' ? Math.min(100, currentHygiene + 20) : currentHygiene),
     happiness_level: Math.round(actionType === 'play' ? Math.min(100, currentHappiness + 20) : currentHappiness),
@@ -88,7 +88,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
   }
 
   revalidatePath('/urwisek')
-  
+
   return { 
     success: true, 
     leveledUp,
@@ -100,7 +100,9 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
       urwisCoins: updates.urwis_coins,
       level: updates.level,
       points_earned: updates.points_earned,
-      goldenUrwis: updates.golden_urwis
+      goldenUrwis: updates.golden_urwis,
+      // DODAJEMY TO POLE - Klucz do braku skakania!
+      lastInteraction: updates.last_interaction 
     }
   }
 }
