@@ -3,71 +3,41 @@ import UrwisekAuth from '@/components/UrwisekAuth'
 import UrwisekLobby from '@/components/UrwisekLobby' 
 import DeviceCheckWrapper from '@/components/DeviceCheckWrapper'
 import UrwisekDashboard from '@/components/UrwisekDashboard'
-
-export const metadata = {
-  title: 'Urwisek | Gra PWA - Sklep Urwis Białobrzegi',
-  description: 'Opiekuj się Urwiskiem i wymieniaj Złote Urwisy na nagrody na ul. Reymonta 38A.',
-}
-
-// Funkcja obliczająca spadek statystyk na serwerze
-function calculateServerDecay(val: number, secondsPassed: number) {
-  let currentVal = val;
-  // Symulujemy spadek sekunda po sekundzie, aby zachować logikę faz
-  for (let i = 0; i < secondsPassed; i++) {
-    let decay = 0.00034; // Faza 5 (30% -> 0% w 24h)
-    if (currentVal > 80) decay = 0.0222;      // 100% -> 80% (15 min)
-    else if (currentVal > 60) decay = 0.0055; // 80% -> 60% (1h)
-    else if (currentVal > 45) decay = 0.0015; // 60% -> 45% (2h 45m)
-    else if (currentVal > 30) decay = 0.0010; // 45% -> 30% (4h)
-    
-    currentVal = Math.max(0, currentVal - decay);
-    // Jeśli spadnie do 0, nie ma sensu liczyć dalej
-    if (currentVal <= 0) break;
-  }
-  return currentVal;
-}
+import { calculateDecay } from '@/lib/urwis/engine'
 
 export default async function UrwisekPage() {
   const supabase = await createClient()
-  
-  // 1. Sprawdzamy czy użytkownik ma założone KONTO
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 2. Jeśli ma konto, pobieramy dane jego URWISKA
   let pet = null
   if (user) {
-    const { data } = await supabase
-      .from('urwis_pet')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
+    const { data } = await supabase.from('urwis_pet').select('*').eq('user_id', user.id).single()
     
     if (data) {
-      // OBLICZAMY UPŁYW CZASU
-      const now = new Date();
-      const lastUpdate = new Date(data.last_interaction);
-      const secondsPassed = Math.floor((now.getTime() - lastUpdate.getTime()) / 1000);
+      const now = Date.now();
+      const lastUpdate = data.last_interaction ? new Date(data.last_interaction).getTime() : now;
+      const secondsPassed = Math.max(0, Math.floor((now - lastUpdate) / 1000));
 
-      // Nakładamy spadek na statystyki przed wysłaniem ich do przeglądarki
+      // Przeliczamy statystyki raz na serwerze
       pet = {
         ...data,
-        hunger_level: calculateServerDecay(data.hunger_level, secondsPassed),
-        hygiene_level: calculateServerDecay(data.hygiene_level, secondsPassed),
-        happiness_level: calculateServerDecay(data.happiness_level, secondsPassed),
+        hunger_level: calculateDecay(data.hunger_level, secondsPassed),
+        hygiene_level: calculateDecay(data.hygiene_level, secondsPassed),
+        happiness_level: calculateDecay(data.happiness_level, secondsPassed),
       }
     }
   }
 
   return (
     <DeviceCheckWrapper>
-      <main className="min-h-screen relative z-50 flex flex-col items-center justify-center p-4 bg-white">
-        <div className="w-full max-w-md relative z-20 text-gray-900">
-          
+      <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
+        <div className="w-full max-w-md relative text-gray-900">
           {!user ? (
             <UrwisekAuth />
           ) : !pet ? (
             <UrwisekLobby />
           ) : (
+            /* WAŻNE: Nie dodawaj tutaj atrybutu key! */
             <UrwisekDashboard 
               initialState={{
                 playerName: pet.player_name,
@@ -83,7 +53,6 @@ export default async function UrwisekPage() {
               }} 
             />
           )}
-
         </div>
       </main>
     </DeviceCheckWrapper>
