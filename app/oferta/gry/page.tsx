@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Urwis Białobrzegi - Twoje Centrum Gier i Puzzli",
     description: "Odkryj świat planszówek Rebel, Galakta i puzzli Ravensburger. Najlepszy wybór w okolicy, profesjonalne doradztwo i super zabawa!",
-    url: 'https://sklep-urwis.pl/oferta/gry',
+    url: 'https://www.sklep-urwis.pl/oferta/gry',
     type: 'website',
   }
 };

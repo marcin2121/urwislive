@@ -43,12 +43,11 @@ export const metadata: Metadata = {
   // 🚀 FIX: Ikony dla Google Search (wielokrotność 48px)
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' }, // Kluczowe dla Google!
+      { url: '/favicon.ico?v=2', sizes: 'any' },
+      { url: '/android-chrome-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' },
     ],
   },
   

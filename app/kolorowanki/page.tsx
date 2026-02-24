@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Interaktywne Kolorowanki dla Dzieci | Studio Urwisa',
     description: 'Wirtualny pędzel, mnóstwo kolorów i świetna zabawa. Wejdź i stwórz własne dzieło sztuki zupełnie za darmo!',
-    url: 'https://sklep-urwis.pl/kolorowanki',
+    url: 'https://www.sklep-urwis.pl/kolorowanki',
     siteName: 'Sklep Urwis',
     locale: 'pl_PL',
     type: 'website',

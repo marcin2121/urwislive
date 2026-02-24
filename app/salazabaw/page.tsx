@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Lecę w Kulki - Twoje Centrum Zabawy w Białobrzegach",
     description: "Zapewnij dziecku niezapomnianą przygodę, a sobie chwilę relaksu. Najbezpieczniejsza sala zabaw w regionie zaprasza!",
-    url: 'https://sklep-urwis.pl/salazabaw',
+    url: 'https://www.sklep-urwis.pl/salazabaw',
     type: 'website',
   }
 };

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Gorące Okazje w Sklepie Urwis - Białobrzegi",
     description: "Zabawki, klocki i artykuły biurowe w najniższych cenach. Nie czekaj, aż okazja ucieknie!",
-    url: 'https://sklep-urwis.pl/oferta/promocje',
+    url: 'https://www.sklep-urwis.pl/oferta/promocje',
     type: 'website',
   }
 };

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Balony i Dekoracje Imprezowe w Sklepie Urwis - Białobrzegi",
     description: "Planujesz urodziny lub chrzciny? Mamy wszystko: balony z helem, talerzyki, świeczki i przebrania. Odwiedź nas przy ul. Reymonta 38A!",
-    url: 'https://sklep-urwis.pl/oferta/imprezy',
+    url: 'https://www.sklep-urwis.pl/oferta/imprezy',
     type: 'website',
   }
 };

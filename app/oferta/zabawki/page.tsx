@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Urwis Białobrzegi - Tu Mieszkają Twoje Ulubione Zabawki",
     description: "Od klocków LEGO po przytulanki i gry. Największy wybór zabawek w Białobrzegach, profesjonalne doradztwo i najniższe ceny w regionie!",
-    url: 'https://sklep-urwis.pl/oferta/zabawki',
+    url: 'https://www.sklep-urwis.pl/oferta/zabawki',
     type: 'website',
   }
 };
