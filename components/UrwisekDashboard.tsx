@@ -24,6 +24,7 @@ export interface PetState {
   urwisCoins: number
   goldenUrwis: number
   points_earned: number
+  lastInteraction: string
 }
 
 export default function UrwisekDashboard({ initialState }: { initialState: PetState }) {
@@ -43,12 +44,10 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   // 1. INTELIGENTNA SYNCHRONIZACJA Z SERWEREM
   // Aktualizuje stan tylko wtedy, gdy dane z serwera istotnie się zmieniły (np. po karmieniu)
   useEffect(() => {
-    const currentProps = JSON.stringify(initialState)
-    if (currentProps !== lastServerUpdate.current) {
-      setState(initialState)
-      lastServerUpdate.current = currentProps
-    }
-  }, [initialState])
+    if (initialState.lastInteraction !== state.lastInteraction || initialState.level !== state.level) {
+        setState(initialState)
+      }
+    }, [initialState.lastInteraction, initialState.level])
 
   // 2. PŁYNNY DECAY LOKALNY (Co 1 sekunda)
   // Oblicza spadek statystyk w czasie rzeczywistym w przeglądarce

@@ -18,7 +18,7 @@ export default async function UrwisekPage() {
       const lastUpdate = data.last_interaction ? new Date(data.last_interaction).getTime() : now;
       const secondsPassed = Math.max(0, Math.floor((now - lastUpdate) / 1000));
 
-      // Przeliczamy statystyki raz na serwerze
+      // Przeliczamy statystyki raz na serwerze i zaokrąglamy (dla uniknięcia problemów z typem integer)
       pet = {
         ...data,
         hunger_level: Math.round(calculateDecay(data.hunger_level, secondsPassed)),
@@ -37,7 +37,6 @@ export default async function UrwisekPage() {
           ) : !pet ? (
             <UrwisekLobby />
           ) : (
-            /* WAŻNE: Nie dodawaj tutaj atrybutu key! */
             <UrwisekDashboard 
               initialState={{
                 playerName: pet.player_name,
@@ -49,7 +48,9 @@ export default async function UrwisekPage() {
                 hygiene: pet.hygiene_level,
                 urwisCoins: pet.urwis_coins,
                 goldenUrwis: pet.golden_urwis,
-                points_earned: pet.points_earned
+                points_earned: pet.points_earned,
+                // DODAJ TO POLE:
+                lastInteraction: pet.last_interaction 
               }} 
             />
           )}

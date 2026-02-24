@@ -27,12 +27,12 @@ export default function WashingGame({ onComplete }: { onComplete: () => void }) 
       {/* Hitbox buzi */}
       <div 
         className="absolute z-30 cursor-none" 
-        style={{ top: '56%', left: '42%', width: '16%', height: '12%' }}
+        style={{ top: '56%', left: '42%', width: '100%', height: '100%' }}
         onMouseEnter={() => setIsScrubbing(true)} 
         onMouseLeave={() => setIsScrubbing(false)} 
       />
       <motion.div className="absolute inset-0 z-40" onPan={handleMove} />
-      <motion.div style={{ x: cursorX, y: cursorY }} className="absolute pointer-events-none z-50 -ml-8 -mt-8">
+      <motion.div style={{ x: cursorX, y: cursorY }} className="absolute pointer-events-none z-50 -ml-8 -">
         <span className="text-6xl rotate-12 block">🪥</span>
       </motion.div>
       <div className="absolute top-0 w-full px-8">
