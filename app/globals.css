@@ -4,9 +4,9 @@
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   
-  --color-urwis-red: #dc2626;
+  --color-urwis-red: #bf2024;
   --color-urwis-red-light: #fee2e2;
-  --color-urwis-blue: #2563eb;
+  --color-urwis-blue: #0055ff;
   --color-urwis-blue-light: #dbeafe;
   --color-urwis-yellow: #fbbf24;
 }
@@ -33,12 +33,6 @@ body {
      inaczej zasłoni wstążki. Na razie wyłączamy go dla testu: */
   /* background-image: ... (wyłączone) */
 }
-
-/* Ciemny tryb może mieć tło, bo tam wstążki mogą wyglądać gorzej lub inaczej */
-.dark-base-bg {
-  background-color: #09090b; 
-}
-
 .grainient-container {
   position: relative;
   width: 100%;

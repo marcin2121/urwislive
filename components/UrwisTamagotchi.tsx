@@ -1,49 +1,22 @@
 'use client'
 
-import React, { useState, useEffect, useTransition } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import JellyButton from '@/components/ui/JellyButton'
 import { Card } from '@/components/ui/card'
-import { Heart, Utensils, Sparkles, Trophy, WifiOff } from 'lucide-react'
+import { Heart, Utensils, Sparkles, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { interactWithUrwis } from '@/app/actions/tamagotchi'
+// Wykorzystujemy istniejący styl JellyButton do interakcji
+// Gra promuje lokalizację w Białobrzegach poprzez system nagród
 
-// Definiujemy typy dla danych początkowych z bazy
-interface UrwisState {
-  hunger: number;
-  happiness: number;
-  points: number;
-}
-
-interface UrwisTamagotchiProps {
-  initialState: UrwisState;
-}
-
-export default function UrwisTamagotchi({ initialState }: UrwisTamagotchiProps) {
-  // Stan inicjowany bezpiecznymi danymi z serwera
-  const [hunger, setHunger] = useState(initialState.hunger)
-  const [happiness, setHappiness] = useState(initialState.happiness)
-  const [points, setPoints] = useState(initialState.points)
-
+export default function UrwisTamagotchi() {
+  const [hunger, setHunger] = useState(80)
+  const [happiness, setHappiness] = useState(70)
+  const [points, setPoints] = useState(0)
   const [isFeeding, setIsFeeding] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const [isOnline, setIsOnline] = useState(true)
 
-  // 1. Sprawdzanie statusu połączenia (Mobile-First / PWA)
-  useEffect(() => {
-    setIsOnline(navigator.onLine)
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
-
-  // 2. Logika spadku statystyk w czasie (wizualna - prawdziwa i tak przelicza się na serwerze)
+  // Logika spadku statystyk w czasie (wymaga internetu do synchronizacji z serwerem)
   useEffect(() => {
     const timer = setInterval(() => {
       setHunger((prev) => Math.max(0, prev - 1))
@@ -52,45 +25,21 @@ export default function UrwisTamagotchi({ initialState }: UrwisTamagotchiProps) 
     return () => clearInterval(timer)
   }, [])
 
-  // 3. Główna funkcja interakcji zintegrowana z Server Actions
-  const handleAction = (actionType: 'feed' | 'play') => {
-    if (!isOnline) {
-      alert("Brak internetu! Połącz się z siecią, aby zaopiekować się Urwisem.")
-      return
-    }
+  const handleFeed = () => {
+    setIsFeeding(true)
+    setHunger((prev) => Math.min(100, prev + 15))
+    setPoints((prev) => prev + 5)
+    setTimeout(() => setIsFeeding(false), 1000)
+  }
 
-    if (actionType === 'feed') setIsFeeding(true)
-
-    startTransition(async () => {
-      const result = await interactWithUrwis(actionType)
-      
-      if (result.error) {
-        alert(result.error) // Tu docelowo możemy wpiąć ładne toasty z shadcn/ui
-      } else if (result.success && result.newState) {
-        // Aktualizacja stanu potwierdzonymi danymi z backendu
-        setHunger(result.newState.hunger)
-        setHappiness(result.newState.happiness)
-        setPoints(result.newState.points)
-      }
-      
-      if (actionType === 'feed') {
-        setTimeout(() => setIsFeeding(false), 1000)
-      }
-    })
+  const handlePlay = () => {
+    setHappiness((prev) => Math.min(100, prev + 20))
+    setPoints((prev) => prev + 10)
   }
 
   return (
-    <Card className="p-6 max-w-md mx-auto bg-linear-to-br from-yellow-50 to-orange-100 border-4 border-orange-200 rounded-[32px] shadow-2xl relative overflow-hidden">
-      
-      {/* Ostrzeżenie Offline - nakładka */}
-      {!isOnline && (
-        <div className="absolute top-0 left-0 w-full bg-red-500 text-white text-xs font-bold py-1 px-4 flex items-center justify-center gap-2 z-50">
-          <WifiOff className="w-3 h-3" />
-          <span>Brak połączenia. Gra wstrzymana.</span>
-        </div>
-      )}
-
-      <div className={cn("flex justify-between mb-6", !isOnline && "mt-4")}>
+    <Card className="p-6 max-w-md mx-auto bg-linear-to-br from-yellow-50 to-orange-100 border-4 border-orange-200 rounded-[32px] shadow-2xl">
+      <div className="flex justify-between mb-6">
         <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
           <Trophy className="text-yellow-500 w-5 h-5" />
           <span className="font-black text-orange-600">{points} pkt</span>
@@ -109,9 +58,9 @@ export default function UrwisTamagotchi({ initialState }: UrwisTamagotchiProps) 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className={cn("relative", !isOnline && "grayscale opacity-50")}
+            className="relative"
           >
-            {/* Tutaj model 3D (urwis.glb) lub Fallback 2D */}
+            {/* Tutaj docelowo znajdzie się Twój model 3D lub ilustracja urwis-welcome.webp */}
             <motion.div
               animate={{ 
                 y: [0, -10, 0],
@@ -148,7 +97,6 @@ export default function UrwisTamagotchi({ initialState }: UrwisTamagotchiProps) 
               className="h-full bg-red-500"
               initial={{ width: 0 }}
               animate={{ width: `${hunger}%` }}
-              transition={{ type: "spring", bounce: 0 }}
             />
           </div>
         </div>
@@ -163,7 +111,6 @@ export default function UrwisTamagotchi({ initialState }: UrwisTamagotchiProps) 
               className="h-full bg-blue-500"
               initial={{ width: 0 }}
               animate={{ width: `${happiness}%` }}
-              transition={{ type: "spring", bounce: 0 }}
             />
           </div>
         </div>
@@ -172,26 +119,24 @@ export default function UrwisTamagotchi({ initialState }: UrwisTamagotchiProps) 
       {/* Przyciski Akcji */}
       <div className="grid grid-cols-2 gap-4">
         <JellyButton 
-          variant={!isOnline ? "secondary" : "primary"}
-          onClick={() => handleAction('feed')}
-          disabled={isPending || !isOnline}
-          className="py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="primary" 
+          onClick={handleFeed}
+          className="py-3 text-sm"
         >
-          {isPending && isFeeding ? 'Mniam...' : 'Karm Urwisa'}
+          Karm Urwisa
         </JellyButton>
         <JellyButton 
-          variant={!isOnline ? "secondary" : "blue"}
-          onClick={() => handleAction('play')}
-          disabled={isPending || !isOnline}
-          className="py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="blue" 
+          onClick={handlePlay}
+          className="py-3 text-sm"
         >
-          {isPending && !isFeeding ? 'Zabawa...' : 'Baw się'}
+          Baw się
         </JellyButton>
       </div>
 
       <p className="mt-6 text-center text-[10px] text-gray-400 font-bold leading-tight">
-        Wymieniaj punkty na nagrody na<br/>
-        <span className="text-orange-500">ul. Reymonta 38A, Białobrzegi</span>
+        Zbieraj punkty i odbieraj nagrody stacjonarnie w<br/>
+        <span className="text-orange-500">Sklepie Urwis - Reymonta 38A, Białobrzegi</span>
       </p>
     </Card>
   )

@@ -116,15 +116,22 @@ export default function Footer() {
                 <div className="text-zinc-600 font-bold">NIP: 7981093937 | REGON: 671959384</div>
               </div>
               <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
-                <span className="flex items-center gap-1"> MADE WITH <Heart size={10} className="text-[#BF2024]" fill="currentColor" /> IN BIAŁOBRZEGI </span>            
-                <a 
-                  href="#" 
-                  onClick={(e) => { e.preventDefault(); trackFooterEvent('click_creator', { location: 'footer' }); }}
-                  className="hover:text-zinc-900 transition-colors text-zinc-500"
-                >
-                    DESIGN & CODE BY MARCIN MOLENDA
-                </a>
-              </div>
+  <span className="flex items-center gap-1"> 
+    MADE WITH <Heart size={10} className="text-[#BF2024]" fill="currentColor" /> IN BIAŁOBRZEGI 
+  </span>            
+  <a 
+  href="https://molendadevelopment.pl/" 
+  target="_blank" // Otwiera w nowej karcie, co pomaga w analityce
+  rel="nofollow noopener noreferrer" // SEO + Bezpieczeństwo
+  onClick={() => { 
+    // Wywołujemy funkcję śledzącą bez blokowania domyślnej akcji
+    trackFooterEvent('click_creator', { location: 'footer' }); 
+  }}
+  className="hover:text-orange-600 text-[12px] transition-colors text-orange-600"
+>
+  DESIGN & CODE BY MARCIN MOLENDA
+</a>
+</div>
             </div>
 
             {/* 🛡️ ZBIORCZA NOTA PRAWNA */}
