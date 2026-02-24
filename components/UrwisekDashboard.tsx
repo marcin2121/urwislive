@@ -38,12 +38,22 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   
     // 1. INTELIGENTNA SYNCHRONIZACJA
     useEffect(() => {
-      // Synchronizuj tylko gdy naprawdę zmienił się czas w bazie lub poziom
-      if (initialState.lastInteraction !== state.lastInteraction || initialState.level !== state.level) {
-        setState(initialState)
-      }
-    }, [initialState.lastInteraction, initialState.level])
-  
+        if (initialState.lastInteraction !== state.lastInteraction || initialState.level !== state.level) {
+          setState(prev => ({
+            ...prev,
+            // Ekonomia i meta – zawsze z serwera
+            level: initialState.level,
+            urwisCoins: initialState.urwisCoins,
+            goldenUrwis: initialState.goldenUrwis,
+            points_earned: initialState.points_earned,
+            lastInteraction: initialState.lastInteraction,
+            // Statystyki – tylko jeśli serwer ma WYŻSZE wartości (wynik akcji feed/wash/play)
+            hunger: Math.max(prev.hunger, initialState.hunger),
+            hygiene: Math.max(prev.hygiene, initialState.hygiene),
+            happiness: Math.max(prev.happiness, initialState.happiness),
+          }))
+        }
+      }, [initialState.lastInteraction, initialState.level])
     // 2. DECAY LOKALNY (Płynność)
     useEffect(() => {
       const timer = setInterval(() => {

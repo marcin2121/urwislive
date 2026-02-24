@@ -13,8 +13,8 @@ export function getXPForLevel(level: number): number {
  * Wykorzystuje bezpieczną matematykę, aby uniknąć błędów NaN i skoków.
  */
 export function calculateDecay(val: number, secondsPassed: number): number {
-  const startVal = isNaN(val) ? 100 : Number(val);
-  const secs = (isNaN(secondsPassed) || secondsPassed < 0) ? 0 : secondsPassed;
+    const startVal = (val == null || isNaN(Number(val))) ? 0 : Number(val);
+    const secs = (isNaN(secondsPassed) || secondsPassed < 0) ? 0 : secondsPassed;
 
   if (secs === 0) return startVal;
 
