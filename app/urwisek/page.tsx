@@ -15,10 +15,17 @@ export default async function UrwisekPage() {
     
     if (data) {
       const now = Date.now();
-      const lastUpdate = data.last_interaction ? new Date(data.last_interaction).getTime() : now;
+      
+      // NAPRAWA DATY: Wymuszamy format UTC, aby serwer nie gubił się w strefach czasowych
+      let dbDate = data.last_interaction;
+      if (dbDate && !dbDate.endsWith('Z') && !dbDate.includes('+')) {
+        dbDate += 'Z'; 
+      }
+      
+      const lastUpdate = dbDate ? new Date(dbDate).getTime() : now;
       const secondsPassed = Math.max(0, Math.floor((now - lastUpdate) / 1000));
 
-      // Przeliczamy statystyki raz na serwerze i zaokrąglamy (dla uniknięcia problemów z typem integer)
+      // Przeliczamy statystyki raz na serwerze
       pet = {
         ...data,
         hunger_level: Math.round(calculateDecay(data.hunger_level, secondsPassed)),
@@ -49,7 +56,6 @@ export default async function UrwisekPage() {
                 urwisCoins: pet.urwis_coins,
                 goldenUrwis: pet.golden_urwis,
                 points_earned: pet.points_earned,
-                // DODAJ TO POLE:
                 lastInteraction: pet.last_interaction 
               }} 
             />

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useTransition, useRef } from 'react'
+import React, { useState, useEffect, useTransition } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 
@@ -28,108 +28,126 @@ export interface PetState {
 }
 
 export default function UrwisekDashboard({ initialState }: { initialState: PetState }) {
-    const [state, setState] = useState<PetState>(() => ({
-      ...initialState,
-      // Zabezpiecz przed undefined z serwera przy inicjalizacji
-      hunger: Number(initialState.hunger) || 0,
-      hygiene: Number(initialState.hygiene) || 0,
-      happiness: Number(initialState.happiness) || 0,
-    }))
-    const [isPending, startTransition] = useTransition()
-    const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding'>('none')
-    const [rewardMessage, setRewardMessage] = useState<string | null>(null)
-    const [showSmile, setShowSmile] = useState(false)
-    const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
+  // Stan inicjuje się TYLKO RAZ. Ignorujemy wszystkie kolejne "duchowe" aktualizacje z serwera.
+  const [state, setState] = useState<PetState>(() => ({
+    ...initialState,
+    hunger: Number(initialState.hunger) || 0,
+    hygiene: Number(initialState.hygiene) || 0,
+    happiness: Number(initialState.happiness) || 0,
+  }))
   
-    // ✅ DECAY LOKALNY – jedyne źródło prawdy dla hunger/hygiene/happiness w sesji
-    useEffect(() => {
-      const timer = setInterval(() => {
-        setState(prev => ({
-          ...prev,
-          hunger: calculateDecay(prev.hunger, 1),
-          hygiene: calculateDecay(prev.hygiene, 1),
-          happiness: calculateDecay(prev.happiness, 1),
-        }))
-      }, 1000)
-      return () => clearInterval(timer)
-    }, [])
-  
-    // ✅ SYNC TYLKO META-POLA (nie nadpisuj statystyk!)
-    // Odpala się TYLKO gdy serwer zwróci nową sesję (np. otwarcie drugiej zakładki)
-    const lastSyncedInteraction = useRef(initialState.lastInteraction)
-    useEffect(() => {
-      if (initialState.lastInteraction !== lastSyncedInteraction.current) {
-        lastSyncedInteraction.current = initialState.lastInteraction
-        setState(prev => ({
-          ...prev,
-          // Tylko pola ekonomiczne – statystyki zostawiamy lokalne
-          level: initialState.level,
-          urwisCoins: initialState.urwisCoins,
-          goldenUrwis: initialState.goldenUrwis,
-          points_earned: initialState.points_earned,
-          lastInteraction: initialState.lastInteraction,
-          playerName: initialState.playerName,
-          petName: initialState.petName,
-        }))
+  const [isPending, startTransition] = useTransition()
+  const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding'>('none')
+  const [rewardMessage, setRewardMessage] = useState<string | null>(null)
+  const [showSmile, setShowSmile] = useState(false)
+  const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
+  const [showLoginBonus, setShowLoginBonus] = useState(false)
+
+  // DECAY LOKALNY – jedyne źródło zmian statystyk w czasie sesji
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setState(prev => ({
+        ...prev,
+        hunger: calculateDecay(prev.hunger, 1),
+        hygiene: calculateDecay(prev.hygiene, 1),
+        happiness: calculateDecay(prev.happiness, 1),
+      }))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Bonus za logowanie (przy uruchomieniu)
+  useEffect(() => {
+    const checkDailyLogin = async () => {
+      const res = await claimDailyLogin()
+      if (res.success) {
+        setShowLoginBonus(true)
+        setState(prev => ({ ...prev, urwisCoins: prev.urwisCoins + 50 }))
+        setTimeout(() => setShowLoginBonus(false), 5000)
       }
-    }, [initialState.lastInteraction])
+    }
+    checkDailyLogin()
+  }, [])
+
+  // OBSŁUGA AKCJI
+  const handleAction = async (type: 'feed' | 'wash' | 'play') => {
+    startTransition(async () => {
+      const res = await interactWithUrwis(type)
   
-    const handleAction = async (type: 'feed' | 'wash' | 'play') => {
-        startTransition(async () => {
-          const res = await interactWithUrwis(type)
-      
-          if (res.success && res.reward) {
-            if (res.newState) {
-              setState(prev => ({
-                ...prev,
-                // ?? zamiast || – 0 jest poprawną wartością statystyki!
-                hunger: res.newState!.hunger ?? prev.hunger,
-                hygiene: res.newState!.hygiene ?? prev.hygiene,
-                happiness: res.newState!.happiness ?? prev.happiness,
-                urwisCoins: res.newState!.urwisCoins,
-                level: res.newState!.level,
-                points_earned: res.newState!.points_earned,
-                goldenUrwis: res.newState!.goldenUrwis,
-                lastInteraction: res.newState!.lastInteraction,
-              }))
-              // Aktualizuj ref, żeby sync efekt nie nadpisał po revalidatePath
-              lastSyncedInteraction.current = res.newState!.lastInteraction
-            }
-            setShowSmile(true)
-            const coinLabel = res.reward.coins >= 0 ? `+${res.reward.coins}` : `${res.reward.coins}`
-            setRewardMessage(`${coinLabel} 🪙 i +${res.reward.exp} EXP`)
-            setActiveMode('none')
-      
-            setTimeout(() => {
-              setShowSmile(false)
-              setRewardMessage(null)
-              setLevelUpData(null)
-            }, 4000)
-      
-            if (res.leveledUp) {
-              setLevelUpData({ show: true, lvl: res.newState?.level || state.level + 1 })
-            }
-          } else if (res.error) {
-            alert(res.error)
-            setActiveMode('none')
-          }
-        })
+      if (res.success && res.reward) {
+        // Aktualizujemy stan lokalny po udanej akcji
+        if (res.newState) {
+          setState(prev => ({
+            ...prev,
+            hunger: res.newState!.hunger ?? prev.hunger,
+            hygiene: res.newState!.hygiene ?? prev.hygiene,
+            happiness: res.newState!.happiness ?? prev.happiness,
+            urwisCoins: res.newState!.urwisCoins,
+            level: res.newState!.level,
+            points_earned: res.newState!.points_earned,
+            goldenUrwis: res.newState!.goldenUrwis,
+            lastInteraction: res.newState!.lastInteraction,
+          }))
+        }
+
+        setShowSmile(true)
+        const coinLabel = res.reward.coins >= 0 ? `+${res.reward.coins}` : `${res.reward.coins}`
+        setRewardMessage(`${coinLabel} 🪙 i +${res.reward.exp} EXP`)
+        setActiveMode('none')
+  
+        setTimeout(() => {
+          setShowSmile(false)
+          setRewardMessage(null)
+          setLevelUpData(null)
+        }, 4000)
+  
+        if (res.leveledUp) {
+          setLevelUpData({ show: true, lvl: res.newState?.level || state.level + 1 })
+        }
+      } else if (res.error) {
+        alert(res.error)
+        setActiveMode('none')
       }
-      
-  
-    return (
-  
-      <div className="...">
-        {/* ... AnimatePresence dla LevelUp itp. ... */}
-        <StatsSection state={state} />
-        <PetDisplay 
-          activeMode={activeMode} 
-          onActionComplete={handleAction} 
-          rewardMessage={rewardMessage} 
-          setActiveMode={setActiveMode}
-          showSmile={showSmile} // Przekazujemy stan uśmiechu
-        />
-        <ActionPanel state={state} activeMode={activeMode} onModeChange={setActiveMode} onAction={handleAction} />
-      </div>
-    )
+    })
   }
+  
+  return (
+    <div className="max-w-md mx-auto w-full min-h-[85vh] flex flex-col justify-between p-4 bg-white rounded-[40px] shadow-2xl border-4 border-[#0055ff]/10 relative overflow-hidden">
+      
+      <AnimatePresence>
+        {/* Bonus za logowanie */}
+        {showLoginBonus && (
+          <motion.div initial={{ y: -100 }} animate={{ y: 20 }} exit={{ y: -100 }} className="absolute top-0 left-0 right-0 z-[110] flex justify-center px-10">
+             <div className="bg-gradient-to-r from-yellow-400 to-[#bf2024] text-white p-4 rounded-3xl shadow-2xl text-center border-4 border-white">
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Dzień dobry! 🎁</p>
+                <p className="text-xl font-black leading-none">+50 MONET</p>
+             </div>
+          </motion.div>
+        )}
+
+        {/* Informacja o awansie */}
+        {levelUpData?.show && (
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute inset-0 z-[120] flex items-center justify-center bg-[#0055ff]/40 backdrop-blur-md">
+             <div className="bg-white p-8 rounded-[3rem] shadow-2xl text-center border-8 border-yellow-400 m-6">
+                <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-2" />
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">NOWY POZIOM!</h2>
+                <p className="text-6xl font-black text-[#0055ff] my-2">{levelUpData.lvl}</p>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <StatsSection state={state} />
+      
+      <PetDisplay 
+        activeMode={activeMode} 
+        onActionComplete={handleAction} 
+        rewardMessage={rewardMessage} 
+        setActiveMode={setActiveMode}
+        showSmile={showSmile}
+      />
+      
+      <ActionPanel state={state} activeMode={activeMode} onModeChange={setActiveMode} onAction={handleAction} />
+    </div>
+  )
+}

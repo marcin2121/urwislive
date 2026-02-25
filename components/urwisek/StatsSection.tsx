@@ -6,15 +6,22 @@ import { getXPForLevel } from '@/lib/urwis/engine';
 export default function StatsSection({ state }: { state: any }) {
   const nextLvlXP = getXPForLevel(state.level);
   const xpPercentage = (state.points_earned / nextLvlXP) * 100;
+// Fragment wewnątrz components/urwisek/StatsSection.tsx
 
-  const StatBar = ({ icon: Icon, label, value, color }: any) => (
+const StatBar = ({ icon: Icon, label, value, color }: any) => (
     <div className="space-y-1">
       <div className="flex justify-between text-[10px] font-black uppercase text-gray-500">
         <span className="flex items-center gap-1"><Icon className="w-3 h-3" /> {label}</span>
-        <span>{Math.round(value)}%</span>
+        {/* Zabezpieczamy wartość na widoku */}
+        <span>{Math.round(Number(value) || 0)}%</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner border border-gray-200/50">
-        <motion.div className={`h-full ${color}`} animate={{ width: `${value}%` }} transition={{ type: "spring", bounce: 0 }} />
+        <motion.div 
+          className={`h-full ${color}`} 
+          animate={{ width: `${Math.min(100, Math.max(0, Number(value) || 0))}%` }} 
+          // 👇 To zapobiegnie mikro-drganiom paska przy płynnym spadku czasu
+          transition={{ ease: "linear", duration: 1 }} 
+        />
       </div>
     </div>
   );
