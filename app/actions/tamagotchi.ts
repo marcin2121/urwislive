@@ -74,7 +74,6 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
     level: Math.floor(newLvl),
     last_interaction: now.toISOString(),
     [dateField]: now.toISOString(),
-    // Zaokrąglamy statystyki do liczb całkowitych dla Supabase
     hunger_level: Math.round(actionType === 'feed' ? Math.min(100, currentHunger + 20) : currentHunger),
     hygiene_level: Math.round(actionType === 'wash' ? Math.min(100, currentHygiene + 20) : currentHygiene),
     happiness_level: Math.round(actionType === 'play' ? Math.min(100, currentHappiness + 20) : currentHappiness),
@@ -103,6 +102,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
     }
   }
 }
+
 export async function claimDailyLogin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -163,4 +163,22 @@ export async function createUrwisPet(playerName: string, petName: string, gender
 
   revalidatePath('/urwisek')
   return { success: true }
+}
+
+export async function getUrwisRanking() {
+  const supabase = await createClient()
+  
+  const { data, error } = await supabase
+    .from('urwis_pet')
+    .select('player_name, name, level, points_earned, gender')
+    .order('level', { ascending: false })
+    .order('points_earned', { ascending: false })
+    .limit(10)
+
+  if (error) {
+    console.error('Błąd pobierania rankingu:', error)
+    return { error: 'Nie udało się pobrać rankingu.' }
+  }
+
+  return { success: true, ranking: data }
 }

@@ -8,9 +8,10 @@ import { Trophy } from 'lucide-react'
 import StatsSection from './urwisek/StatsSection'
 import ActionPanel from './urwisek/ActionPanel'
 import PetDisplay from './urwisek/PetDisplay'
+import RankingModal from './urwisek/RankingModal'
 
 // Importy logiki i akcji
-import { interactWithUrwis, claimDailyLogin } from '@/app/actions/tamagotchi'
+import { interactWithUrwis, claimDailyLogin, getUrwisRanking } from '@/app/actions/tamagotchi'
 import { calculateDecay } from '@/lib/urwis/engine'
 
 export interface PetState {
@@ -36,23 +37,39 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   }))
   
   const [isPending, startTransition] = useTransition()
-  const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding'>('none')
+  const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding' | 'playing' | 'ranking'>('none')
   const [rewardMessage, setRewardMessage] = useState<string | null>(null)
   const [showSmile, setShowSmile] = useState(false)
   const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
   const [showLoginBonus, setShowLoginBonus] = useState(false)
-
-  // 🛡️ REF DO CZASU: Zapamiętuje moment ostatniego "tiku"
+  const [rankingData, setRankingData] = useState<any[]>([])
+  const [isRankingOpen, setIsRankingOpen] = useState(false)
+  
   const lastTickRef = useRef(Date.now());
 
-  // ✅ DECAY LOKALNY ODPORNY NA USYPIANIE (Delta Time)
+  // ✅ LOGIKA RANKINGU
+  useEffect(() => {
+    if (activeMode === 'ranking') {
+      const fetchRanking = async () => {
+        const res = await getUrwisRanking()
+        if (res.success && res.ranking) {
+          setRankingData(res.ranking)
+          setIsRankingOpen(true)
+          // Resetujemy mode na 'none', bo modal ma własny stan isRankingOpen
+          setActiveMode('none')
+        }
+      }
+      fetchRanking()
+    }
+  }, [activeMode])
+
+  // ✅ DECAY LOKALNY ODPORNY NA USYPIANIE
   useEffect(() => {
     const performTick = () => {
       const now = Date.now();
-      // Obliczamy DOKŁADNĄ różnicę czasu w sekundach
       const deltaSeconds = (now - lastTickRef.current) / 1000;
       
-      if (deltaSeconds >= 1) { // Chroni przed spamowaniem wyliczeń
+      if (deltaSeconds >= 1) {
         lastTickRef.current = now;
         setState(prev => ({
           ...prev,
@@ -63,14 +80,9 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
       }
     };
 
-    // Standardowe odliczanie co 1 sekundę
     const timer = setInterval(performTick, 1000);
-
-    // Gdy użytkownik wraca z innej karty / minimalizacji (błyskawiczne odświeżenie paska)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        performTick();
-      }
+      if (document.visibilityState === 'visible') performTick();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -93,16 +105,13 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
     checkDailyLogin()
   }, [])
 
-  // OBSŁUGA AKCJI
   const handleAction = async (type: 'feed' | 'wash' | 'play') => {
     startTransition(async () => {
       const res = await interactWithUrwis(type)
   
       if (res.success && res.reward) {
         if (res.newState) {
-          // RESETUJEMY ZEGAR po akcji, żeby nie ucięło nam dodatkowego czasu oczekiwania na serwer
           lastTickRef.current = Date.now();
-          
           setState(prev => ({
             ...prev,
             hunger: res.newState!.hunger ?? prev.hunger,
@@ -140,10 +149,10 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   return (
     <div className="max-w-md mx-auto w-full min-h-[85vh] flex flex-col justify-between p-4 bg-white rounded-[40px] shadow-2xl border-4 border-[#0055ff]/10 relative overflow-hidden">
       
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {/* Bonus za logowanie */}
         {showLoginBonus && (
-          <motion.div initial={{ y: -100 }} animate={{ y: 20 }} exit={{ y: -100 }} className="absolute top-0 left-0 right-0 z-[110] flex justify-center px-10">
+          <motion.div key="login-bonus" initial={{ y: -100 }} animate={{ y: 20 }} exit={{ y: -100 }} className="absolute top-0 left-0 right-0 z-[110] flex justify-center px-10">
              <div className="bg-gradient-to-r from-yellow-400 to-[#bf2024] text-white p-4 rounded-3xl shadow-2xl text-center border-4 border-white">
                 <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Dzień dobry! 🎁</p>
                 <p className="text-xl font-black leading-none">+50 MONET</p>
@@ -153,7 +162,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
 
         {/* Informacja o awansie */}
         {levelUpData?.show && (
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute inset-0 z-[120] flex items-center justify-center bg-[#0055ff]/40 backdrop-blur-md">
+          <motion.div key="levelup" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute inset-0 z-[120] flex items-center justify-center bg-[#0055ff]/40 backdrop-blur-md">
              <div className="bg-white p-8 rounded-[3rem] shadow-2xl text-center border-8 border-yellow-400 m-6">
                 <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-2" />
                 <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">NOWY POZIOM!</h2>
@@ -161,10 +170,20 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
              </div>
           </motion.div>
         )}
+
+        {/* 🏆 MODAL RANKINGU */}
+        {isRankingOpen && (
+          <RankingModal 
+            key="ranking"
+            isOpen={isRankingOpen} 
+            onClose={() => setIsRankingOpen(false)} 
+            ranking={rankingData} 
+          />
+        )}
       </AnimatePresence>
 
-      <StatsSection state={state} />
-      
+      <StatsSection state={state} activeMode={activeMode} />
+
       <PetDisplay 
         activeMode={activeMode} 
         onActionComplete={handleAction} 

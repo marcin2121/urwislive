@@ -8,6 +8,7 @@ import { Sparkles, X } from 'lucide-react'
 // Importujemy minigry
 import WashingGame from './games/WashingGame'
 import FeedingGame from './games/FeedingGame'
+import PlayingGame from './games/PlayingGame'
 
 export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage, showSmile }: any) {
   
@@ -15,12 +16,11 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
     if (showSmile) return "/urwisek/usmiech.webp";
     if (activeMode === 'washing') return "/urwisek/mycie.webp";
     if (activeMode === 'feeding') return "/urwisek/jedzenie.webp";
-    return "/urwisek/urwisek.webp";
+    return "/urwisek/urwisek.webp"; 
   };
 
   return (
-    // Zmieniamy na flex-col i dajemy 'justify-start pt-2', żeby Urwisek przykleił się do sufitu podczas karmienia
-    <div className={`flex-1 flex flex-col items-center relative mt-4 mb-4 transition-all duration-500 ${activeMode === 'feeding' ? 'justify-start pt-2' : 'justify-center'}`}>
+    <div className={`flex-1 flex flex-col items-center relative mt-4 mb-4 transition-all duration-500 ${activeMode === 'feeding' || activeMode === 'playing' ? 'justify-start pt-2' : 'justify-center'}`}>
       
       <AnimatePresence>
         {rewardMessage && (
@@ -28,7 +28,7 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute top-0 z-50 bg-[#0055ff] text-white px-4 py-2 rounded-2xl font-black text-xs shadow-xl text-center"
+            className="absolute top-0 z-50 bg-urwis-blue text-white px-4 py-2 rounded-2xl font-black text-xs shadow-xl text-center"
           > 
             {rewardMessage} 
           </motion.div>
@@ -37,7 +37,7 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
 
       <div className="relative w-64 h-64 flex items-center justify-center z-10">
         <Image 
-          id="urwisek-image" // 👈 DODANE ID! To nasz "celownik" dla jabłka
+          id="urwisek-image" 
           src={getPetImageSrc()} 
           alt="Urwisek" 
           width={256} height={256} 
@@ -53,25 +53,37 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
           )}
         </AnimatePresence>
 
-        {/* Mycie zostaje wewnątrz małego kwadratu */}
+        {/* Mycie */}
         {activeMode === 'washing' && (
           <WashingGame onComplete={() => onActionComplete('wash')} />
         )}
       </div>
 
-      {/* 🚀 Karmienie wychodzi POZA kwadrat, na całą przestrzeń! */}
+      {/* Karmienie na całej przestrzeni */}
       {activeMode === 'feeding' && (
         <FeedingGame onComplete={() => onActionComplete('feed')} />
       )}
 
-      {activeMode !== 'none' && (
-        <button 
-          onClick={() => setActiveMode('none')} 
-          className="absolute bottom-4 right-4 bg-white p-3 rounded-full text-[#bf2024] shadow-md border z-50 hover:bg-red-50 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+      {/* Zabawa na całej przestrzeni */}
+      {activeMode === 'playing' && (
+        <PlayingGame onComplete={() => onActionComplete('play')} />
       )}
+
+      {/* Nowoczesny przycisk wyjścia z gry */}
+      <AnimatePresence>
+        {activeMode !== 'none' && (
+          <motion.button 
+            initial={{ scale: 0, opacity: 0, rotate: -90 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            exit={{ scale: 0, opacity: 0, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setActiveMode('none')} 
+            className="absolute bottom-6 right-6 bg-white/80 backdrop-blur-xl p-4 rounded-full text-urwis-red shadow-[0_10px_25px_-5px_rgba(191,32,36,0.3)] border-4 border-white z-50 transition-colors"
+          >
+            <X className="w-7 h-7 stroke-3" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
