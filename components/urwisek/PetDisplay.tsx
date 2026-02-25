@@ -36,14 +36,15 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
       </AnimatePresence>
 
       <div className="relative w-64 h-64 flex items-center justify-center z-10">
-        <Image 
-          id="urwisek-image" 
-          src={getPetImageSrc()} 
-          alt="Urwisek" 
-          width={256} height={256} 
-          className="object-contain drop-shadow-2xl transition-all duration-300" 
-          priority 
-        />
+      <Image 
+  id="urwisek-image" 
+  src={getPetImageSrc()} 
+  alt="Urwisek" 
+  width={256} height={256} 
+  className="object-contain drop-shadow-2xl transition-all duration-300 pointer-events-none" // pointer-events-none też tu pomoże!
+  priority 
+  draggable={false} // 👈 To blokuje systemowe przeciąganie obrazka
+/>
 
         <AnimatePresence>
           {showSmile && (

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useTransition, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Trophy } from 'lucide-react'
+import { Trophy, ArrowLeft, Coins, Star } from 'lucide-react' 
+import Link from 'next/link'
 
 // Importy komponentów modułowych
 import StatsSection from './urwisek/StatsSection'
@@ -13,6 +14,7 @@ import RankingModal from './urwisek/RankingModal'
 // Importy logiki i akcji
 import { interactWithUrwis, claimDailyLogin, getUrwisRanking } from '@/app/actions/tamagotchi'
 import { calculateDecay } from '@/lib/urwis/engine'
+import { cn } from '@/lib/utils'
 
 export interface PetState {
   playerName: string
@@ -47,6 +49,14 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   
   const lastTickRef = useRef(Date.now());
 
+  // ✅ FULLSCREEN & HIDE NAVBAR LOGIC
+  useEffect(() => {
+    document.body.classList.add('game-mode');
+    return () => {
+      document.body.classList.remove('game-mode');
+    }
+  }, []);
+
   // ✅ LOGIKA RANKINGU
   useEffect(() => {
     if (activeMode === 'ranking') {
@@ -55,7 +65,6 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
         if (res.success && res.ranking) {
           setRankingData(res.ranking)
           setIsRankingOpen(true)
-          // Resetujemy mode na 'none', bo modal ma własny stan isRankingOpen
           setActiveMode('none')
         }
       }
@@ -63,7 +72,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
     }
   }, [activeMode])
 
-  // ✅ DECAY LOKALNY ODPORNY NA USYPIANIE
+  // ✅ DECAY LOKALNY
   useEffect(() => {
     const performTick = () => {
       const now = Date.now();
@@ -92,7 +101,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
     };
   }, []);
 
-  // Bonus za codzienne logowanie
+  // Bonus za logowanie
   useEffect(() => {
     const checkDailyLogin = async () => {
       const res = await claimDailyLogin()
@@ -108,7 +117,6 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   const handleAction = async (type: 'feed' | 'wash' | 'play') => {
     startTransition(async () => {
       const res = await interactWithUrwis(type)
-  
       if (res.success && res.reward) {
         if (res.newState) {
           lastTickRef.current = Date.now();
@@ -124,18 +132,13 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
             lastInteraction: res.newState!.lastInteraction,
           }))
         }
-
         setShowSmile(true)
         const coinLabel = res.reward.coins >= 0 ? `+${res.reward.coins}` : `${res.reward.coins}`
         setRewardMessage(`${coinLabel} 🪙 i +${res.reward.exp} EXP`)
         setActiveMode('none')
-  
         setTimeout(() => {
-          setShowSmile(false)
-          setRewardMessage(null)
-          setLevelUpData(null)
+          setShowSmile(false); setRewardMessage(null); setLevelUpData(null);
         }, 4000)
-  
         if (res.leveledUp) {
           setLevelUpData({ show: true, lvl: res.newState?.level || state.level + 1 })
         }
@@ -147,31 +150,59 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   }
   
   return (
-    <div className="max-w-md mx-auto w-full min-h-[85vh] flex flex-col justify-between p-4 bg-white rounded-[40px] shadow-2xl border-4 border-[#0055ff]/10 relative overflow-hidden">
+    <div className="select-none mx-auto w-full flex flex-col justify-between p-6 bg-white relative overflow-hidden
+      md:max-w-2xl md:h-[92vh] md:my-4 md:rounded-[50px] md:shadow-2xl md:border-8 md:border-[#0055ff]/10
+      max-md:fixed max-md:inset-0 max-md:z-[100] max-md:min-h-screen">
       
+      {/* 🌟 NOWY HEADER GRY (Górny pasek) */}
+      <div className={cn(
+        "absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-[150] transition-all duration-500",
+        activeMode !== 'none' && "opacity-0 -translate-y-20" // Chowa się podczas gier
+      )}>
+        {/* Lewa: Powrót */}
+        <Link 
+          href="/" 
+          className="bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-lg border-2 border-white flex items-center gap-2 hover:scale-110 active:scale-95 transition-all group"
+        >
+          <ArrowLeft className="w-6 h-6 text-urwis-blue stroke-[3]" />
+        </Link>
+  
+        {/* Prawa: Waluty */}
+        <div className="flex gap-2">
+          {/* Złote Urwiski (jeśli masz w stanie) */}
+          <div className="bg-white/80 backdrop-blur-md px-3 py-2 rounded-2xl shadow-lg border-2 border-white flex items-center gap-1.5">
+            <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+            <span className="text-sm font-black text-gray-700">{state.goldenUrwis || 0}</span>
+          </div>
+          
+          {/* Monety */}
+          <div className="bg-white/80 backdrop-blur-md px-3 py-2 rounded-2xl shadow-lg border-2 border-white flex items-center gap-1.5">
+            <Coins className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+            <span className="text-sm font-black text-gray-700">{Math.floor(state.urwisCoins)}</span>
+          </div>
+        </div>
+      </div>
+
       <AnimatePresence mode="wait">
-        {/* Bonus za logowanie */}
         {showLoginBonus && (
           <motion.div key="login-bonus" initial={{ y: -100 }} animate={{ y: 20 }} exit={{ y: -100 }} className="absolute top-0 left-0 right-0 z-[110] flex justify-center px-10">
-             <div className="bg-gradient-to-r from-yellow-400 to-[#bf2024] text-white p-4 rounded-3xl shadow-2xl text-center border-4 border-white">
+             <div className="bg-gradient-to-r from-yellow-400 to-urwis-red text-white p-4 rounded-3xl shadow-2xl text-center border-4 border-white">
                 <p className="text-[10px] font-black uppercase tracking-widest leading-none mb-1">Dzień dobry! 🎁</p>
                 <p className="text-xl font-black leading-none">+50 MONET</p>
              </div>
           </motion.div>
         )}
 
-        {/* Informacja o awansie */}
         {levelUpData?.show && (
-          <motion.div key="levelup" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute inset-0 z-[120] flex items-center justify-center bg-[#0055ff]/40 backdrop-blur-md">
+          <motion.div key="levelup" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="absolute inset-0 z-[120] flex items-center justify-center bg-urwis-blue/40 backdrop-blur-md">
              <div className="bg-white p-8 rounded-[3rem] shadow-2xl text-center border-8 border-yellow-400 m-6">
                 <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-2" />
                 <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">NOWY POZIOM!</h2>
-                <p className="text-6xl font-black text-[#0055ff] my-2">{levelUpData.lvl}</p>
+                <p className="text-6xl font-black text-urwis-blue my-2">{levelUpData.lvl}</p>
              </div>
           </motion.div>
         )}
 
-        {/* 🏆 MODAL RANKINGU */}
         {isRankingOpen && (
           <RankingModal 
             key="ranking"

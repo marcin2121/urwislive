@@ -39,3 +39,16 @@ body {
   height: 100%;
   overflow: hidden;
 }
+/* Klasa aktywowana tylko na stronie Urwiska */
+body.game-mode {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+}
+
+/* Ukrywamy standardowy Navbar i Footer, gdy ciało strony ma klasę game-mode */
+body.game-mode nav, 
+body.game-mode footer {
+  display: none !important;
+}
