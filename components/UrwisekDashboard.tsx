@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useTransition } from 'react'
+import React, { useState, useEffect, useTransition, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 
@@ -28,7 +28,6 @@ export interface PetState {
 }
 
 export default function UrwisekDashboard({ initialState }: { initialState: PetState }) {
-  // Stan inicjuje się TYLKO RAZ. Ignorujemy wszystkie kolejne "duchowe" aktualizacje z serwera.
   const [state, setState] = useState<PetState>(() => ({
     ...initialState,
     hunger: Number(initialState.hunger) || 0,
@@ -43,20 +42,45 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
   const [showLoginBonus, setShowLoginBonus] = useState(false)
 
-  // DECAY LOKALNY – jedyne źródło zmian statystyk w czasie sesji
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setState(prev => ({
-        ...prev,
-        hunger: calculateDecay(prev.hunger, 1),
-        hygiene: calculateDecay(prev.hygiene, 1),
-        happiness: calculateDecay(prev.happiness, 1),
-      }))
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
+  // 🛡️ REF DO CZASU: Zapamiętuje moment ostatniego "tiku"
+  const lastTickRef = useRef(Date.now());
 
-  // Bonus za logowanie (przy uruchomieniu)
+  // ✅ DECAY LOKALNY ODPORNY NA USYPIANIE (Delta Time)
+  useEffect(() => {
+    const performTick = () => {
+      const now = Date.now();
+      // Obliczamy DOKŁADNĄ różnicę czasu w sekundach
+      const deltaSeconds = (now - lastTickRef.current) / 1000;
+      
+      if (deltaSeconds >= 1) { // Chroni przed spamowaniem wyliczeń
+        lastTickRef.current = now;
+        setState(prev => ({
+          ...prev,
+          hunger: calculateDecay(prev.hunger, deltaSeconds),
+          hygiene: calculateDecay(prev.hygiene, deltaSeconds),
+          happiness: calculateDecay(prev.happiness, deltaSeconds),
+        }));
+      }
+    };
+
+    // Standardowe odliczanie co 1 sekundę
+    const timer = setInterval(performTick, 1000);
+
+    // Gdy użytkownik wraca z innej karty / minimalizacji (błyskawiczne odświeżenie paska)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        performTick();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Bonus za codzienne logowanie
   useEffect(() => {
     const checkDailyLogin = async () => {
       const res = await claimDailyLogin()
@@ -75,8 +99,10 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
       const res = await interactWithUrwis(type)
   
       if (res.success && res.reward) {
-        // Aktualizujemy stan lokalny po udanej akcji
         if (res.newState) {
+          // RESETUJEMY ZEGAR po akcji, żeby nie ucięło nam dodatkowego czasu oczekiwania na serwer
+          lastTickRef.current = Date.now();
+          
           setState(prev => ({
             ...prev,
             hunger: res.newState!.hunger ?? prev.hunger,

@@ -19,7 +19,9 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center relative mt-4 mb-4">
+    // 👇 Dodano transition-transform oraz -translate-y-8 dla trybu feeding
+    <div className={`flex-1 flex items-center justify-center relative mt-4 mb-4 transition-transform duration-500 ${activeMode === 'feeding' ? '-translate-y-8' : ''}`}>
+      
       <AnimatePresence>
         {rewardMessage && (
           <motion.div 

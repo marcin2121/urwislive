@@ -1,30 +1,37 @@
+'use client'
+
 import { motion } from 'framer-motion';
 import { Utensils, Droplets, Heart, Coins, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { getXPForLevel } from '@/lib/urwis/engine';
 
-export default function StatsSection({ state }: { state: any }) {
-  const nextLvlXP = getXPForLevel(state.level);
-  const xpPercentage = (state.points_earned / nextLvlXP) * 100;
-// Fragment wewnątrz components/urwisek/StatsSection.tsx
+// ✅ KLUCZOWA POPRAWKA: Komponent StatBar wyciągnięty NA ZEWNĄTRZ!
+// Dzięki temu React go nie niszczy przy każdym odliczeniu sekundy.
+const StatBar = ({ icon: Icon, label, value, color }: any) => {
+  const safeValue = Math.min(100, Math.max(0, Number(value) || 0));
 
-const StatBar = ({ icon: Icon, label, value, color }: any) => (
+  return (
     <div className="space-y-1">
       <div className="flex justify-between text-[10px] font-black uppercase text-gray-500">
         <span className="flex items-center gap-1"><Icon className="w-3 h-3" /> {label}</span>
-        {/* Zabezpieczamy wartość na widoku */}
-        <span>{Math.round(Number(value) || 0)}%</span>
+        <span>{Math.round(safeValue)}%</span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner border border-gray-200/50">
         <motion.div 
           className={`h-full ${color}`} 
-          animate={{ width: `${Math.min(100, Math.max(0, Number(value) || 0))}%` }} 
-          // 👇 To zapobiegnie mikro-drganiom paska przy płynnym spadku czasu
+          // Ustawiamy pozycję początkową, aby zapobiec startowi od 100%
+          initial={{ width: `${safeValue}%` }}
+          animate={{ width: `${safeValue}%` }} 
           transition={{ ease: "linear", duration: 1 }} 
         />
       </div>
     </div>
   );
+};
+
+export default function StatsSection({ state }: { state: any }) {
+  const nextLvlXP = getXPForLevel(state.level);
+  const xpPercentage = Math.min(100, (state.points_earned / nextLvlXP) * 100);
 
   return (
     <div className="space-y-4 z-10 relative">
@@ -41,7 +48,11 @@ const StatBar = ({ icon: Icon, label, value, color }: any) => (
           </div>
         </div>
         <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-           <motion.div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500" animate={{ width: `${xpPercentage}%` }} />
+           <motion.div 
+             className="h-full bg-gradient-to-r from-yellow-400 to-orange-500" 
+             initial={{ width: `${xpPercentage}%` }}
+             animate={{ width: `${xpPercentage}%` }} 
+           />
         </div>
       </div>
       <Card className="p-4 bg-white border-2 border-gray-100 shadow-md rounded-2xl space-y-3">
