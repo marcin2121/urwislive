@@ -19,8 +19,8 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
   };
 
   return (
-    // 👇 Dodano transition-transform oraz -translate-y-8 dla trybu feeding
-    <div className={`flex-1 flex items-center justify-center relative mt-4 mb-4 transition-transform duration-500 ${activeMode === 'feeding' ? '-translate-y-8' : ''}`}>
+    // Zmieniamy na flex-col i dajemy 'justify-start pt-2', żeby Urwisek przykleił się do sufitu podczas karmienia
+    <div className={`flex-1 flex flex-col items-center relative mt-4 mb-4 transition-all duration-500 ${activeMode === 'feeding' ? 'justify-start pt-2' : 'justify-center'}`}>
       
       <AnimatePresence>
         {rewardMessage && (
@@ -35,8 +35,9 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
         )}
       </AnimatePresence>
 
-      <div className="relative w-64 h-64 flex items-center justify-center">
+      <div className="relative w-64 h-64 flex items-center justify-center z-10">
         <Image 
+          id="urwisek-image" // 👈 DODANE ID! To nasz "celownik" dla jabłka
           src={getPetImageSrc()} 
           alt="Urwisek" 
           width={256} height={256} 
@@ -44,31 +45,25 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
           priority 
         />
 
-        {/* Efekt błysku przy uśmiechu */}
         <AnimatePresence>
           {showSmile && (
-            <motion.div 
-              initial={{ scale: 0, opacity: 0 }} 
-              animate={{ scale: 1.3, opacity: 0.5 }} 
-              exit={{ opacity: 0 }} 
-              className="absolute z-20"
-            >
+            <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1.3, opacity: 0.5 }} exit={{ opacity: 0 }} className="absolute z-20">
               <Sparkles className="w-48 h-48 text-yellow-400" />
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* WARSTWY MINIGIER */}
+        {/* Mycie zostaje wewnątrz małego kwadratu */}
         {activeMode === 'washing' && (
           <WashingGame onComplete={() => onActionComplete('wash')} />
         )}
-
-        {activeMode === 'feeding' && (
-          <FeedingGame onComplete={() => onActionComplete('feed')} />
-        )}
       </div>
 
-      {/* Przycisk zamknięcia trybu gry (X) */}
+      {/* 🚀 Karmienie wychodzi POZA kwadrat, na całą przestrzeń! */}
+      {activeMode === 'feeding' && (
+        <FeedingGame onComplete={() => onActionComplete('feed')} />
+      )}
+
       {activeMode !== 'none' && (
         <button 
           onClick={() => setActiveMode('none')} 
