@@ -7,7 +7,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import PushButton from "./PushButton";
 import { useAuth } from "@/components/AuthProvider";
-import { createClient } from "@/lib/supabase/client";
+import AuthModal from "./AuthModal"; // 👈 Upewnij się, że masz ten plik!
 import {
   ShoppingBag,
   Coffee,
@@ -17,11 +17,10 @@ import {
   X,
   ChevronDown,
   Clock,
-  BadgePercent,
   Info,
-  Coins,
-  Wallet,
-  Palette
+  Palette,
+  Smile,
+  User
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -43,7 +42,7 @@ const FULL_HOURS_LIST = [
 const NAV_ITEMS = [
   { name: "O nas", href: "/o-nas", icon: Info },
   { name: "Oferta", href: "/oferta", icon: ShoppingBag },
-  { name: "Promocje", href: "/oferta/promocje", icon: BadgePercent },
+  { name: "Urwisek", href: "/urwisek", icon: Smile }, // Zastąpiono Promocje
   { name: "Kolorowanki", href: "/kolorowanki", icon: Palette }, 
   { name: "Kontakt", href: "/kontakt", icon: Phone },
   { name: "Sala Zabaw", href: "/salazabaw", icon: Coffee },
@@ -51,16 +50,14 @@ const NAV_ITEMS = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const supabase = createClient();
-  const { user, session } = useAuth();
+  const { user } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isHoursDropdownOpen, setIsHoursDropdownOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pushKey, setPushKey] = useState(0);
-  const [userPoints, setUserPoints] = useState<number | null>(null);
 
-  // REF dla detekcji kliknięcia poza modalem godzin
   const hoursRef = useRef<HTMLDivElement>(null);
 
   const [shopStatus, setShopStatus] = useState({ 
@@ -75,7 +72,7 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  // LOGIKA: Zamykanie modalu godzin po kliknięciu poza nim
+  // LOGIKA ZAMYKANIA GODZIN
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (hoursRef.current && !hoursRef.current.contains(event.target as Node)) {
@@ -91,22 +88,43 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isHoursDropdownOpen, trackEvent]);
 
+  // LOGIKA "EDGE SWIPE" DO OTWIERANIA MENU NA MOBILE
   useEffect(() => {
-    if (user && session) {
-      const fetchPoints = async () => {
-        const { data } = await supabase
-          .from('loyalty_cards')
-          .select('points')
-          .eq('phone_number', user.user_metadata.phone)
-          .maybeSingle();
-        if (data) setUserPoints(data.points);
-      };
-      fetchPoints();
-    } else {
-      setUserPoints(null);
-    }
-  }, [user, session, supabase]);
+    let touchStartX = 0;
+    let touchStartY = 0;
 
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = Math.abs(touchEndY - touchStartY);
+
+      // SWIPE W LEWO: Otwiera menu (tylko jeśli zacząłeś blisko prawej krawędzi - max 50px od brzegu)
+      if (deltaX < -40 && deltaY < 40 && touchStartX > window.innerWidth - 50) {
+        setMobileMenuOpen(true);
+      }
+
+      // SWIPE W PRAWO: Zamyka menu (działa w każdym miejscu ekranu)
+      if (deltaX > 50 && deltaY < 50 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [mobileMenuOpen]);
+
+  // STATUS OTWARCIA SKLEPU
   useEffect(() => {
     setMounted(true);
     const handlePushRefresh = () => {
@@ -143,7 +161,6 @@ export default function Navbar() {
       } else {
         subLabel = "W poniedziałek";
       }
-
       setShopStatus({ isOpen, label, subLabel });
     };
 
@@ -171,18 +188,10 @@ export default function Navbar() {
             <Link 
               href="/" 
               onClick={() => trackEvent('nav_logo_click')} 
-              aria-label="Sklep Urwis - Strona główna"
               className="flex items-center gap-0.5 md:gap-1 group shrink-0"
             >
               <div className="relative w-9 h-9 md:w-11 md:h-11 shrink-0 transition-transform group-hover:scale-105">
-                <Image 
-                  src="/logo.png" 
-                  alt="Logo Sklepu Urwis" 
-                  width={44} 
-                  height={44} 
-                  className="object-contain" 
-                  priority 
-                />
+                <Image src="/logo.png" alt="Logo Sklepu Urwis" width={44} height={44} className="object-contain" priority />
               </div>
               <div className="flex flex-col leading-[0.8] pt-0.5 font-black italic">
                 <span className="text-[11px] md:text-[14px] text-[#BF2024]">SKLEP</span>
@@ -192,8 +201,6 @@ export default function Navbar() {
 
             {/* STATUS SKLEPU / DROPDOWN GODZIN */}
             <button 
-              aria-label="Pokaż godziny otwarcia"
-              aria-expanded={isHoursDropdownOpen}
               onClick={() => {
                 const newState = !isHoursDropdownOpen;
                 setIsHoursDropdownOpen(newState);
@@ -201,7 +208,7 @@ export default function Navbar() {
               }}
               className="flex items-center gap-1.5 px-2 py-1.5 md:px-4 md:py-2 rounded-full bg-white/50 border border-white/60 shadow-sm shrink-0 hover:bg-white transition-colors"
             >
-              <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5 shrink-0" aria-hidden="true">
+              <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5 shrink-0">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${shopStatus.isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
                 <span className={`relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
               </div>
@@ -209,7 +216,7 @@ export default function Navbar() {
                 <span className={`text-[10px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
                 <span className="text-[8px] md:text-[11px] font-bold text-zinc-400 tracking-tighter mt-[1px] leading-none">{shopStatus.subLabel}</span>
               </div>
-              <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+              <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             <AnimatePresence>
@@ -221,7 +228,7 @@ export default function Navbar() {
                     className="absolute top-full left-0 md:left-14 mt-4 w-[260px] md:w-72 bg-white/95 backdrop-blur-3xl rounded-4xl shadow-2xl border border-white/60 p-5 z-[100]"
                 >
                   <div className="flex items-center gap-2 mb-4 text-zinc-400">
-                    <Clock size={14} strokeWidth={2.5} aria-hidden="true" />
+                    <Clock size={14} strokeWidth={2.5} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Godziny Otwarcia</span>
                   </div>
                   <div className="space-y-3">
@@ -238,7 +245,7 @@ export default function Navbar() {
           </div>
 
           {/* DESKTOP NAV ITEMS */}
-          <nav className="hidden xl:flex items-center gap-1 bg-zinc-100/50 p-1.5 rounded-full border border-white/20" aria-label="Menu główne">
+          <nav className="hidden xl:flex items-center gap-1 bg-zinc-100/50 p-1.5 rounded-full border border-white/20">
             {NAV_ITEMS.map((item) => (
               <Link 
                 key={item.name} 
@@ -252,65 +259,63 @@ export default function Navbar() {
                       : 'text-zinc-500 hover:text-zinc-900 hover:bg-white/40'
                 }`}
               >
-                {item.name === "Kolorowanki" && <Palette size={14} aria-hidden="true" />}
+                {item.name === "Kolorowanki" && <Palette size={14} />}
+                {item.name === "Urwisek" && <Smile size={14} />}
                 {item.name}
               </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-1 md:gap-3 shrink-0">
-            {/* PORTFEL / KARTA */}
-            <Link 
-              href="/karta" 
-              onClick={() => trackEvent('nav_wallet_click')}
-              aria-label={user ? "Twój portfel lojalnościowy" : "Zaloguj się do strefy klienta"}
-              className={`relative flex items-center justify-center w-9 h-9 rounded-full transition-all group shrink-0 border shadow-sm ${user ? 'bg-linear-to-br from-amber-400 to-yellow-500 text-white border-amber-300 shadow-amber-500/20' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-500 border-zinc-200'}`}
-            >
-              {user ? (
-                <>
-                  <Coins size={18} className="group-hover:rotate-12 transition-transform shrink-0" aria-hidden="true" />
-                  {userPoints !== null && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black min-w-[16px] h-[16px] flex items-center justify-center rounded-full border border-white leading-none shadow-sm">
-                      {userPoints}
-                    </span>
-                  )}
-                </>
-              ) : (
-                <Wallet size={18} className="text-zinc-400 group-hover:scale-110 transition-transform shrink-0" aria-hidden="true" />
-              )}
-            </Link>
-
             {/* PUSH BUTTON */}
-            <div className="shrink-0 flex items-center justify-center transform scale-90 origin-center">
+            <div className="shrink-0 flex items-center justify-center transform scale-90 origin-center hidden md:flex">
               <PushButton key={`nav-push-${pushKey}`} />
+            </div>
+
+            {/* STREFA KLIENTA / PROFIL (Desktop) */}
+            <div className="hidden md:block">
+              {user ? (
+                <Link 
+                  href="/profil" 
+                  onClick={() => trackEvent('nav_profile_click')}
+                  className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-50 hover:bg-zinc-100 text-[#0055ff] border-zinc-200"
+                >
+                  <span className="text-[11px] font-black uppercase mr-2 text-zinc-700">Mój Profil</span>
+                  <User size={16} />
+                </Link>
+              ) : (
+                <button 
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-900 text-white hover:bg-zinc-800 border-zinc-800 shadow-lg"
+                >
+                  <span className="text-[11px] font-black uppercase">Zaloguj</span>
+                </button>
+              )}
             </div>
 
             {/* AKADEMIA (Desktop) */}
             <Link 
               href="https://akademiaurwisa.pl" 
               target="_blank" 
-              aria-label="Akademia Urwisa - Platforma edukacyjna (otwiera się w nowej karcie)"
               onClick={() => trackEvent('nav_cta_akademia')}
               className="hidden lg:flex relative overflow-hidden items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-full shadow-lg shadow-blue-900/20 hover:scale-105 transition-all shrink-0"
             >
               <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff]" />
               <div className="relative flex items-center gap-2">
-                <GraduationCap size={18} aria-hidden="true" />
+                <GraduationCap size={18} />
                 <span className="text-[12px] font-black uppercase tracking-widest">Akademia</span>
               </div>
             </Link>
 
             {/* MOBILE MENU TOGGLE */}
             <button 
-              aria-label="Otwórz menu mobilne"
-              aria-expanded={mobileMenuOpen}
               onClick={() => {
                 setMobileMenuOpen(true);
                 trackEvent('mobile_menu_open');
               }} 
               className="xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm hover:bg-zinc-100 text-zinc-600 active:scale-90 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              <Menu className="w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />
+              <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>
         </div>
@@ -329,16 +334,12 @@ export default function Navbar() {
                 setMobileMenuOpen(false);
                 trackEvent('mobile_menu_close_backdrop');
               }} 
-              aria-hidden="true"
             />
             <motion.div 
               initial={{ x: "100%" }} 
               animate={{ x: 0 }} 
               exit={{ x: "100%" }} 
               className="fixed inset-y-0 right-0 z-[70] w-full max-w-sm bg-white shadow-2xl p-6 flex flex-col"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Menu nawigacji mobilnej"
             >
               
               <div className="flex justify-between items-center mb-8">
@@ -350,41 +351,50 @@ export default function Navbar() {
                   </div>
                 </div>
                 <button 
-                  aria-label="Zamknij menu" 
                   onClick={() => {
                     setMobileMenuOpen(false);
                     trackEvent('mobile_menu_close_button');
                   }} 
                   className="p-3 bg-zinc-50 border border-zinc-200 shadow-sm rounded-full text-zinc-600 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
-                  <X size={24} aria-hidden="true" />
+                  <X size={24} />
                 </button>
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                
-                <Link 
-                  href="/karta" 
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    trackEvent('mobile_wallet_click');
-                  }} 
-                  aria-label={user ? `Twoje punkty: ${userPoints}` : "Strefa Klienta - Zaloguj się"}
-                  className={`flex items-center justify-between p-6 rounded-4xl border shadow-sm transition-all ${user ? 'bg-linear-to-br from-amber-400 to-yellow-600 text-white border-amber-300 shadow-lg' : 'bg-zinc-50 text-zinc-900 border-zinc-200 hover:bg-zinc-100'}`}
-                >
-                  <div className="flex items-center gap-4">
-                    {user ? <Coins size={28} aria-hidden="true" /> : <Wallet size={28} className="text-zinc-400" aria-hidden="true" />}
-                    <div className="flex flex-col">
-                      <span className="text-[12px] font-black uppercase opacity-70 leading-none mb-1">{user ? 'Twoje Złote Urwisy' : 'Strefa Klienta'}</span>
-                      <span className="text-xl font-black italic uppercase leading-none">
-                        {user ? (userPoints !== null ? `${userPoints} Urwisów` : 'Twój Portfel') : 'Zaloguj się'}
-                      </span>
-                    </div>
-                  </div>
-                  <ChevronDown className="-rotate-90 opacity-50 size-5" aria-hidden="true" />
-                </Link>
 
-                <nav className="flex flex-col gap-1" aria-label="Menu mobilne">
+                {/* LOGOWANIE / PROFIL W MENU MOBILNYM */}
+                {user ? (
+                  <Link 
+                    href="/profil" 
+                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_profile_click'); }} 
+                    className="flex items-center justify-between p-6 rounded-4xl border shadow-sm transition-all bg-zinc-50 text-zinc-900 border-zinc-200 hover:bg-zinc-100"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-[#0055ff]"><User size={20} /></div>
+                      <div className="flex flex-col">
+                        <span className="text-[12px] font-black uppercase opacity-70 leading-none mb-1">Zarządzaj kontem</span>
+                        <span className="text-xl font-black italic uppercase leading-none">Mój Profil</span>
+                      </div>
+                    </div>
+                    <ChevronDown className="-rotate-90 opacity-50 size-5" />
+                  </Link>
+                ) : (
+                  <button 
+                    onClick={() => { setMobileMenuOpen(false); setIsAuthModalOpen(true); }}
+                    className="w-full flex items-center justify-between p-6 rounded-4xl border shadow-lg transition-all bg-zinc-900 text-white border-zinc-800"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300"><User size={20} /></div>
+                      <div className="flex flex-col text-left">
+                        <span className="text-[12px] font-black uppercase opacity-70 leading-none mb-1">Strefa Klienta</span>
+                        <span className="text-xl font-black italic uppercase leading-none">Zaloguj się</span>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                <nav className="flex flex-col gap-1 mt-2">
                   {NAV_ITEMS.filter(item => item.name !== "Kolorowanki").map((item) => (
                     <Link 
                       key={item.name} 
@@ -395,7 +405,7 @@ export default function Navbar() {
                       }} 
                       className="flex items-center gap-4 p-4 rounded-2xl text-lg font-black italic uppercase tracking-tighter hover:bg-zinc-50 text-zinc-800"
                     >
-                      <item.icon size={20} className="text-zinc-400" aria-hidden="true" />
+                      <item.icon size={20} className="text-zinc-400" />
                       {item.name}
                     </Link>
                   ))}
@@ -406,17 +416,13 @@ export default function Navbar() {
                 <div className="flex flex-col gap-3">
                   <Link 
                     href="/kolorowanki" 
-                    aria-label="Studio Kreatywne - Interaktywne Kolorowanki"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      trackEvent('mobile_cta_kolorowanki');
-                    }} 
+                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_kolorowanki'); }} 
                     className="flex flex-col relative overflow-hidden p-6 rounded-4xl bg-zinc-900 text-white border border-zinc-800 shadow-xl"
                   >
                     <div className="absolute inset-0 bg-linear-to-br from-[#BF2024]/40 to-[#0055ff]/40 opacity-80" />
                     <div className="relative flex items-center justify-between z-10 mb-2">
                        <div className="flex items-center gap-3">
-                         <Palette size={24} className="text-yellow-400" aria-hidden="true" />
+                         <Palette size={24} className="text-yellow-400" />
                          <div className="font-black italic uppercase tracking-tighter text-xl">Studio Kreatywne</div>
                        </div>
                     </div>
@@ -427,50 +433,39 @@ export default function Navbar() {
 
                   <Link 
                     href="/salazabaw" 
-                    aria-label="Lecę w Kulki - Sala Zabaw"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      trackEvent('mobile_cta_kulki');
-                    }} 
+                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_kulki'); }} 
                     className="flex items-center gap-4 p-6 rounded-4xl bg-blue-50 text-blue-700 border border-blue-100"
                   >
-                      <Coffee size={24} aria-hidden="true" />
+                      <Coffee size={24} />
                       <div className="font-black italic uppercase tracking-tighter text-[18px]">Lecę w Kulki</div>
                   </Link>
 
                   <Link 
                     href="https://akademiaurwisa.pl" 
                     target="_blank" 
-                    aria-label="Akademia Urwisa (otwiera się w nowej karcie)"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      trackEvent('mobile_cta_akademia');
-                    }} 
+                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_akademia'); }} 
                     className="flex items-center gap-4 p-6 rounded-4xl bg-zinc-900 text-white border border-zinc-800 relative overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff] opacity-80" />
                     <div className="relative flex items-center gap-4">
-                      <GraduationCap size={24} aria-hidden="true" />
+                      <GraduationCap size={24} />
                       <div className="font-black italic uppercase tracking-tighter text-lg">Akademia</div>
                     </div>
                   </Link>
                 </div>
 
-                {/* GODZINY W MOBILE MENU */}
-                <div className="bg-zinc-50 p-6 rounded-4xl border border-zinc-100 mt-4">
-                    <span className="text-[12px] font-black uppercase text-zinc-400 tracking-widest mb-4 block">Godziny Otwarcia</span>
-                    {FULL_HOURS_LIST.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-xs py-2 border-b border-zinc-200/50 last:border-0">
-                        <span className="font-bold text-zinc-400">{item.day}</span>
-                        <span className={`font-black ${item.isRed ? 'text-red-500' : 'text-zinc-900'}`}>{item.hours}</span>
-                      </div>
-                    ))}
+                {/* PUSH W MOBILE */}
+                <div className="bg-zinc-50 p-4 rounded-3xl border border-zinc-100 flex justify-center">
+                  <PushButton key={`nav-push-mob-${pushKey}`} />
                 </div>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      {/* MODAL LOGOWANIA */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </header>
   );
 }
