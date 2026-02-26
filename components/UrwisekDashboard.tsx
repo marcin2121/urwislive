@@ -152,7 +152,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   return (
     <div className="select-none mx-auto w-full flex flex-col justify-between p-6 bg-white relative overflow-hidden
       md:max-w-2xl md:h-[92vh] md:my-4 md:rounded-[50px] md:shadow-2xl md:border-8 md:border-[#0055ff]/10
-      max-md:fixed max-md:inset-0 max-md:z-[100] max-md:min-h-screen">
+      max-md:fixed max-md:inset-0 max-md:z-[100] max-md:h-[100dvh]">
       
       {/* 🌟 NOWY HEADER GRY (Górny pasek) */}
       <div className={cn(

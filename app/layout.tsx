@@ -85,6 +85,7 @@ export const viewport: Viewport = {
   themeColor: "#0055ff", 
   width: "device-width",
   initialScale: 1,
+  viewportFit: 'cover',
 };
 
 const GA_MEASUREMENT_ID = "G-FE44ZTQ7GT";

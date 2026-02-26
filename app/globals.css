@@ -40,11 +40,14 @@ body {
   overflow: hidden;
 }
 /* Klasa aktywowana tylko na stronie Urwiska */
+/* app/globals.css */
 body.game-mode {
   overflow: hidden;
-  height: 100vh;
+  height: 100dvh; /* 👈 ZMIEŃ NA dvh: Dynamicznie dostosowuje się do pasków przeglądarki */
   width: 100vw;
   position: fixed;
+  padding-top: env(safe-area-inset-top);    /* 👈 Zabezpiecza przed notchem */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Ukrywamy standardowy Navbar i Footer, gdy ciało strony ma klasę game-mode */
