@@ -4,56 +4,46 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { BadgePercent, LockKeyhole, ArrowRight, Timer, Ticket, History, AlertCircle, CheckCircle2, Repeat, Calendar, Flame, ImageIcon, TicketPercent } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import Image from "next/image";
 
-type ActiveCoupon = {
-  id: string;
-  expiresAt: number; // Timestamp
-};
+type ActiveCoupon = { id: string; expiresAt: number; };
+type UsedCoupon = { id: string; usedAt: number; };
 
-type UsedCoupon = {
-  id: string;
-  usedAt: number; // Timestamp
-};
+const DAYS_OF_WEEK = [
+  { id: 1, label: 'Pn' }, { id: 2, label: 'Wt' }, { id: 3, label: 'Śr' },
+  { id: 4, label: 'Cz' }, { id: 5, label: 'Pt' }, { id: 6, label: 'Sb' }, { id: 0, label: 'Nd' }
+]
 
 export default function RabatyPage() {
   const { user } = useAuth();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
 
-  // Stan UI
   const [activeTab, setActiveTab] = useState<'dostepne' | 'wykorzystane'>('dostepne');
   const [confirmModal, setConfirmModal] = useState<string | null>(null);
 
-  // Stan Bazy i Zastosowania
   const [dbCoupons, setDbCoupons] = useState<any[]>([]);
-  const [promos, setPromos] = useState<any[]>([]); // 🚀 NOWOŚĆ: Stan na promocje
+  const [promos, setPromos] = useState<any[]>([]);
   const [activeCoupon, setActiveCoupon] = useState<ActiveCoupon | null>(null);
   const [usedCoupons, setUsedCoupons] = useState<UsedCoupon[]>([]);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
-  // 1. Inicjalizacja (Pobranie z DB + LocalStorage)
   useEffect(() => {
     setMounted(true);
-
     const fetchData = async () => {
-      // Pobieramy kupony i aktywne promocje jednocześnie
       const [kuponyRes, promosRes] = await Promise.all([
-        supabase.from('kupony').select('*').eq('is_active', true),
+        supabase.from('kupony').select('*').eq('is_active', true).order('created_at', { ascending: false }),
         supabase.from('promocje').select('*').eq('is_active', true).order('created_at', { ascending: false })
       ]);
-
       if (kuponyRes.data) setDbCoupons(kuponyRes.data);
       if (promosRes.data) setPromos(promosRes.data);
     };
-    
     if (user) fetchData();
 
     const savedActive = localStorage.getItem('urwis_active_coupon');
     const savedUsed = localStorage.getItem('urwis_used_coupons');
-
     if (savedActive) {
       const parsed = JSON.parse(savedActive);
       if (Date.now() < parsed.expiresAt) setActiveCoupon(parsed);
@@ -62,7 +52,6 @@ export default function RabatyPage() {
     if (savedUsed) setUsedCoupons(JSON.parse(savedUsed));
   }, [user, supabase]);
 
-  // 2. Timer Odliczania
   useEffect(() => {
     if (!activeCoupon) return;
     const interval = setInterval(() => {
@@ -76,7 +65,6 @@ export default function RabatyPage() {
     return () => clearInterval(interval);
   }, [activeCoupon]);
 
-  // 3. Akcje na kuponie
   const handleExpire = (id: string, timestamp: number) => {
     setActiveCoupon(null);
     localStorage.removeItem('urwis_active_coupon');
@@ -88,26 +76,43 @@ export default function RabatyPage() {
     });
   };
 
-  const activateCoupon = (id: string) => {
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 MINUT
+  const activateCoupon = async (id: string) => {
+    const expiresAt = Date.now() + 5 * 60 * 1000;
     const newActive = { id, expiresAt };
     setActiveCoupon(newActive);
     localStorage.setItem('urwis_active_coupon', JSON.stringify(newActive));
     setConfirmModal(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Podbijamy licznik zużycia w bazie
+    const coupon = dbCoupons.find(c => c.id === id);
+    if (coupon) {
+      await supabase.from('kupony').update({ current_usage: (coupon.current_usage || 0) + 1 }).eq('id', id);
+    }
   };
 
-  // 4. Logika filtrowania kuponów
-  const todayIndex = new Date().getDay(); // 0 (Nd) - 6 (Sb)
+  const todayIndex = new Date().getDay();
   const isUsedToday = (usedAt: number) => {
     const usedDate = new Date(usedAt);
     const now = new Date();
     return usedDate.getDate() === now.getDate() && usedDate.getMonth() === now.getMonth() && usedDate.getFullYear() === now.getFullYear();
   };
 
+  const getDayNames = (days: number[]) => {
+    if (!days || days.length === 0) return 'Codziennie';
+    const sorted = [...days].sort();
+    return sorted.map(d => DAYS_OF_WEEK.find(dw => dw.id === d)?.label).join(', ');
+  }
+
   const availableCouponsList = dbCoupons.filter(c => {
-    if (c.allowed_days && c.allowed_days.length > 0 && !c.allowed_days.includes(todayIndex)) return false;
+    // Sprawdzamy datę ważności ogólną
+    if (c.expires_at && new Date(c.expires_at) < new Date()) return false;
+    
+    // Sprawdzamy limit użyć
+    if (c.usage_limit && c.current_usage >= c.usage_limit) return false;
+
     if (activeCoupon?.id === c.id) return false;
+
     const useData = usedCoupons.find(uc => uc.id === c.id);
     if (useData) {
       if (!c.is_reusable) return false;
@@ -126,7 +131,7 @@ export default function RabatyPage() {
     <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
       <div className="w-full max-w-2xl space-y-12">
         
-        {/* --- SEKCJA 1: KUPONY --- */}
+        {/* --- SEKCJA 1: KUPONY INTERAKTYWNE --- */}
         <section>
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter text-zinc-900 mb-2 flex items-center justify-center gap-3">
@@ -198,25 +203,38 @@ export default function RabatyPage() {
                     </div>
                   )}
 
-                  {availableCouponsList.map(coupon => (
-                    <div key={coupon.id} className={`bg-gradient-to-br ${coupon.gradient} p-6 md:p-8 rounded-[2rem] text-white shadow-xl flex flex-col md:flex-row items-start justify-between gap-6 transition-all ${activeCoupon ? 'opacity-50 grayscale pointer-events-none' : 'hover:scale-[1.02]'}`}>
-                      <div className="w-full">
-                        <div className="flex flex-wrap gap-2 mb-3">
-                           {coupon.is_reusable && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Repeat size={10}/> Odnawialny</span>}
-                           {coupon.allowed_days?.length > 0 && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Calendar size={10}/> Wybrane Dni</span>}
+                  {availableCouponsList.map(coupon => {
+                    // Sprawdzamy czy dany dzień się zgadza
+                    let allowedDays: number[] = [];
+                    try { allowedDays = Array.isArray(coupon.allowed_days) ? coupon.allowed_days : JSON.parse(coupon.allowed_days || '[]'); } catch (e) {}
+                    const isCorrectDay = allowedDays.length === 0 || allowedDays.includes(todayIndex);
+
+                    return (
+                      <div key={coupon.id} className={`bg-gradient-to-br ${coupon.gradient} p-6 md:p-8 rounded-[2rem] text-white shadow-xl flex flex-col md:flex-row items-start justify-between gap-6 transition-all ${activeCoupon ? 'opacity-50 grayscale pointer-events-none' : 'hover:scale-[1.02]'}`}>
+                        <div className="w-full">
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {coupon.is_reusable && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Repeat size={10}/> Odnawialny</span>}
+                            {allowedDays.length > 0 && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Calendar size={10}/> {getDayNames(allowedDays)}</span>}
+                            {coupon.usage_limit && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30">Pula: {coupon.usage_limit - (coupon.current_usage || 0)} szt.</span>}
+                          </div>
+                          <h3 className="text-2xl md:text-3xl font-black italic uppercase leading-none mb-2">{coupon.title}</h3>
+                          <p className="text-white/90 text-sm font-medium">{coupon.description}</p>
                         </div>
-                        <h3 className="text-2xl md:text-3xl font-black italic uppercase leading-none mb-2">{coupon.title}</h3>
-                        <p className="text-white/90 text-sm font-medium">{coupon.description}</p>
+                        
+                        <button 
+                          onClick={() => setConfirmModal(coupon.id)}
+                          disabled={!!activeCoupon || !isCorrectDay}
+                          className={`w-full md:w-auto px-6 py-4 rounded-2xl font-black uppercase text-xs shadow-lg transition-colors shrink-0 whitespace-nowrap mt-2 md:mt-0 ${
+                            isCorrectDay 
+                            ? 'bg-white text-zinc-900 hover:bg-zinc-50' 
+                            : 'bg-black/20 text-white/50 cursor-not-allowed border border-white/10'
+                          }`}
+                        >
+                          {isCorrectDay ? 'Zrealizuj Kupon' : `Dostępny w: ${getDayNames(allowedDays)}`}
+                        </button>
                       </div>
-                      <button 
-                        onClick={() => setConfirmModal(coupon.id)}
-                        disabled={!!activeCoupon}
-                        className="w-full md:w-auto bg-white text-zinc-900 px-6 py-4 rounded-2xl font-black uppercase text-xs shadow-lg hover:bg-zinc-50 transition-colors shrink-0 whitespace-nowrap mt-2 md:mt-0"
-                      >
-                        Zrealizuj Kupon
-                      </button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
 
@@ -263,36 +281,26 @@ export default function RabatyPage() {
               <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-zinc-900 mb-2 flex items-center justify-center gap-2">
                 <Flame className="text-[#BF2024]" size={28} /> Tablica Okazji
               </h2>
-              <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest">Informacyjnie: Zobacz, co aktualnie taniejemy!</p>
+              <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest">Zobacz, co u nas słychać!</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               {promos.map(promo => (
                 <div key={promo.id} className="bg-white rounded-3xl border border-zinc-100 shadow-lg overflow-hidden flex flex-col group relative">
-                  
-                  {/* Tagi */}
                   <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 items-start">
                     <span className="bg-white/90 backdrop-blur-md text-zinc-800 text-[10px] font-black uppercase px-3 py-1.5 rounded-xl shadow-sm">
                       {promo.category}
                     </span>
                   </div>
-
-                  {/* Odznaka Rabatu */}
                   {promo.discount && (
                     <div className="absolute top-4 right-4 z-10 bg-red-500 text-white font-black italic text-lg px-3 py-1 rounded-xl shadow-lg transform rotate-3 shadow-red-500/30">
                       {promo.discount}
                     </div>
                   )}
 
-                  {/* Zdjęcie Produktu */}
                   {promo.image_url ? (
                     <div className="relative w-full h-48 md:h-56 bg-zinc-50 overflow-hidden">
-                      <Image 
-                        src={promo.image_url} 
-                        alt={promo.title} 
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <Image src={promo.image_url} alt={promo.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                   ) : (
                     <div className="w-full h-32 bg-zinc-100 flex items-center justify-center text-zinc-300">
@@ -300,12 +308,10 @@ export default function RabatyPage() {
                     </div>
                   )}
 
-                  {/* Treść */}
                   <div className="p-5 md:p-6 flex flex-col flex-1 justify-between bg-white relative z-10">
                     <h3 className="text-lg md:text-xl font-black uppercase italic text-zinc-900 leading-[1.1] mb-4">
                       {promo.title}
                     </h3>
-                    
                     <div className="flex items-baseline justify-between pt-4 border-t border-zinc-100">
                       <div className="flex flex-col">
                         <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest mb-1">Cena po rabacie</span>
