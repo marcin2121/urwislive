@@ -13,7 +13,7 @@ type UsedCoupon = { id: string; usedAt: number; };
 
 const DAYS_OF_WEEK = [
   { id: 1, label: 'Pn' }, { id: 2, label: 'Wt' }, { id: 3, label: 'Śr' },
-  { id: 4, label: 'Cz' }, { id: 5, label: 'Pt' }, { id: 6, label: 'Sb' }, { id: 0, label: 'Nd' }
+  { id: 4, label: 'Cz' }, { id: 5, label: 'Pt' }, { id: 6, label: 'Sob' }, { id: 0, label: 'Nd' }
 ]
 
 export default function RabatyPage() {

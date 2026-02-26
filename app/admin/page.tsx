@@ -168,34 +168,56 @@ export default function AdminDashboard() {
     setIsAddingKupon(true)
   }
 
-  const handleSaveKupon = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    const payload = {
-      title: kuponForm.title, code: kuponForm.code, description: kuponForm.description,
-      gradient: kuponForm.gradient, image_url: kuponForm.image_url, 
-      is_reusable: kuponForm.is_reusable, allowed_days: kuponForm.allowed_days,
-      expires_at: kuponForm.expires_at ? new Date(kuponForm.expires_at).toISOString() : null,
-      usage_limit: kuponForm.usage_limit ? parseInt(kuponForm.usage_limit) : null,
-      is_active: true
-    }
+ // Zaktualizowana funkcja w admin/page.tsx
+const handleSaveKupon = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  // Bezpieczne parsowanie usage_limit: jeśli jest pustym stringiem, wyślij null
+  const parsedUsageLimit = kuponForm.usage_limit && kuponForm.usage_limit.trim() !== '' 
+      ? parseInt(kuponForm.usage_limit, 10) 
+      : null;
 
-    let error;
-    if (kuponForm.id) {
-      const res = await supabase.from('kupony').update(payload).eq('id', kuponForm.id)
-      error = res.error
-    } else {
-      const res = await supabase.from('kupony').insert([payload])
-      error = res.error
-    }
+  // Bezpieczne ustawianie daty: jeśli pusta, wyślij null
+  const parsedExpiresAt = kuponForm.expires_at && kuponForm.expires_at.trim() !== ''
+      ? new Date(kuponForm.expires_at).toISOString()
+      : null;
 
-    if (!error) {
-      setIsAddingKupon(false);
-      setKuponForm({ title: '', code: '', description: '', gradient: 'from-[#0055ff] to-blue-500', image_url: '', is_reusable: false, allowed_days: [], expires_at: '', usage_limit: '' });
-      toast.success(kuponForm.id ? 'Zaktualizowano kupon!' : 'Dodano nowy kupon!'); 
-      fetchData();
-    } else toast.error('Błąd zapisu kuponu')
+  const payload = {
+    title: kuponForm.title, 
+    code: kuponForm.code, 
+    description: kuponForm.description,
+    gradient: kuponForm.gradient, 
+    image_url: kuponForm.image_url, 
+    is_reusable: kuponForm.is_reusable, 
+    allowed_days: kuponForm.allowed_days,
+    expires_at: parsedExpiresAt,
+    usage_limit: parsedUsageLimit,
+    is_active: true
+  };
+
+  let error;
+  if (kuponForm.id) {
+    const res = await supabase.from('kupony').update(payload).eq('id', kuponForm.id);
+    error = res.error;
+  } else {
+    const res = await supabase.from('kupony').insert([payload]);
+    error = res.error;
   }
+
+  if (!error) {
+    setIsAddingKupon(false);
+    // Reset formularza
+    setKuponForm({ 
+        title: '', code: '', description: '', gradient: 'from-[#0055ff] to-blue-500', 
+        image_url: '', is_reusable: false, allowed_days: [], expires_at: '', usage_limit: '' 
+    });
+    toast.success(kuponForm.id ? 'Zaktualizowano kupon!' : 'Dodano nowy kupon!'); 
+    fetchData();
+  } else {
+    console.error("Szczegóły błędu Supabase:", error);
+    toast.error(`Błąd: ${error.message || 'Nie udało się zapisać kuponu'}`);
+  }
+};
 
   const handleDeleteKupon = async (id: string) => {
     if (confirm('Usunąć ten kupon rabatowy?')) {
