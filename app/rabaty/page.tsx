@@ -9,13 +9,13 @@ import {
   BadgePercent, LockKeyhole, ArrowRight, Timer, Ticket, History, 
   AlertCircle, CheckCircle2, Repeat, Calendar, Flame, ImageIcon, 
   Share, PlusSquare, Smartphone, ArrowDownCircle, TicketPercent,
-  CircleDashed, PartyPopper
+  CircleDashed, PartyPopper, Clock
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { spinWheel } from "@/app/actions/spin-wheel";
 import { toast } from "sonner";
 
-type ActiveCoupon = { id: string; expiresAt: number; };
+type ActiveCoupon = { id: string; expiresAt: number; created_at?: string; user_id?: string; };
 type UsedCoupon = { id: string; usedAt: number; };
 
 const DAYS_OF_WEEK = [
@@ -51,8 +51,8 @@ export default function RabatyPage() {
   // --- Wheel Of Fortune States ---
   const [canSpin, setCanSpin] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [timeToNextSpin, setTimeToNextSpin] = useState<string>("");
   
-  // 🚀 Zmiana - ref trzymający absolutny aktualny kąt
   const wheelCurrentAngle = useRef(0); 
   const [wheelRotation, setWheelRotation] = useState(0);
   
@@ -81,27 +81,24 @@ export default function RabatyPage() {
 
   const fetchData = useCallback(async () => {
     if (!user) return;
-    const [kuponyRes, promosRes, wheelRes, cardRes] = await Promise.all([
+    const [kuponyRes, promosRes, wheelRes] = await Promise.all([
       supabase.from('kupony').select('*').eq('is_active', true).order('created_at', { ascending: false }),
       supabase.from('promocje').select('*').eq('is_active', true).order('created_at', { ascending: false }),
-      supabase.from('wheel_prizes').select('*').eq('is_active', true),
-      supabase.from('loyalty_cards').select('last_spin_at').eq('id', user.id).single()
+      supabase.from('wheel_prizes').select('*').eq('is_active', true)
     ]);
     
     if (kuponyRes.data) setDbCoupons(kuponyRes.data);
     if (promosRes.data) setPromos(promosRes.data);
     if (wheelRes.data) setWheelPrizes(wheelRes.data);
     
-    if (cardRes.data) {
-      const lastSpin = cardRes.data.last_spin_at ? new Date(cardRes.data.last_spin_at) : null;
-      const today = new Date();
-      const spunToday = lastSpin && 
-                        lastSpin.getFullYear() === today.getFullYear() &&
-                        lastSpin.getMonth() === today.getMonth() &&
-                        lastSpin.getDate() === today.getDate();
-      setCanSpin(!spunToday);
-    } else {
-      setCanSpin(true);
+    if (kuponyRes.data) {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const hasSpunToday = kuponyRes.data.some(k => 
+        k.user_id === user.id && new Date(k.created_at) >= todayStart
+      );
+      setCanSpin(!hasSpunToday);
     }
   }, [user, supabase]);
 
@@ -117,6 +114,7 @@ export default function RabatyPage() {
     if (savedUsed) setUsedCoupons(JSON.parse(savedUsed));
   }, [fetchData]);
 
+  // Timer dla aktywnego kuponu
   useEffect(() => {
     if (!activeCoupon) return;
     const interval = setInterval(() => {
@@ -129,6 +127,35 @@ export default function RabatyPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, [activeCoupon]);
+
+  // 🚀 ODLICZANIE DO PÓŁNOCY (Timer zablokowanego koła)
+  useEffect(() => {
+    if (canSpin) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const diff = tomorrow.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setCanSpin(true);
+        fetchData();
+        return;
+      }
+
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diff / 1000 / 60) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+
+      setTimeToNextSpin(
+        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+      );
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [canSpin, fetchData]);
 
   const handleExpire = (id: string, timestamp: number) => {
     setActiveCoupon(null);
@@ -171,29 +198,25 @@ export default function RabatyPage() {
     }
 
     if (!canSpin || isSpinning) return;
+    setCanSpin(false); 
     setIsSpinning(true);
 
     const result = await spinWheel();
+    
     if (result.error || !result.prize) {
       toast.error(result.error || 'Wystąpił błąd losowania. Spróbuj za chwilę.');
-      setCanSpin(false); 
       setIsSpinning(false);
+      fetchData(); 
       return;
     }
 
     const winningPrize = result.prize;
     const prizeIndex = wheelPrizes.findIndex(p => p.id === winningPrize.id);
     
-    // 🚀 OBLICZANIE KĄTA (BEZBŁĘDNE)
     const sliceAngle = 360 / wheelPrizes.length;
-    // Gdzie kończy się wskaźnik? (0 stopni to godzina 12:00 dla transformacji)
-    // Chcemy trafić w środek kawałka. 
-    // Obrót jest w prawo (zgodnie z zegarem).
     const targetAngle = 360 - (prizeIndex * sliceAngle) - (sliceAngle / 2);
-    
     const spins = 5 * 360; 
     
-    // Obliczamy nowy całkowity obrót, dodając resztę od 360 by zawsze kończyć idealnie na stopniu nagrody
     const newAbsoluteRotation = wheelCurrentAngle.current + spins + targetAngle - (wheelCurrentAngle.current % 360);
     
     wheelCurrentAngle.current = newAbsoluteRotation;
@@ -203,7 +226,6 @@ export default function RabatyPage() {
       setIsSpinning(false);
       setSpinResult(winningPrize);
       setShowPrizeModal(true);
-      setCanSpin(false);
       fetchData(); 
     }, 5500);
   };
@@ -302,12 +324,30 @@ export default function RabatyPage() {
             </div>
 
             <div className="relative w-64 h-64 md:w-80 md:h-80 mx-auto my-8">
+              {/* Ticker Indicator (Czerwona strzałka) */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20 text-[#BF2024] drop-shadow-lg">
                  <svg width="46" height="46" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                    <path d="M12 21L22 9H2L12 21Z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
                  </svg>
               </div>
 
+              {/* 🚀 OBERLAY ZABLOKOWANIA (SOFT LOCK) */}
+              <AnimatePresence>
+                {!canSpin && !isSpinning && (
+                  <motion.div 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="absolute inset-0 z-30 bg-white/70 backdrop-blur-md rounded-full flex flex-col items-center justify-center border-4 border-white shadow-inner"
+                  >
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-zinc-400 mb-2">
+                      <LockKeyhole size={24} />
+                    </div>
+                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Nowe losowanie za</span>
+                    <span className="text-2xl md:text-3xl font-black text-amber-500 font-mono tracking-tighter">{timeToNextSpin}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Obracające się Koło */}
               <motion.div
                 className="w-full h-full rounded-full border-[6px] border-zinc-900 overflow-hidden shadow-inner relative"
                 animate={{ rotate: wheelRotation }}
@@ -326,11 +366,10 @@ export default function RabatyPage() {
                    return (
                      <div
                        key={p.id}
-                       // 🚀 Poprawka pl-8 odsuwa tekst od środka koła!
-                       className="absolute w-[50%] h-12 top-1/2 left-1/2 origin-left flex items-center pl-8 md:pl-10"
+                       className="absolute w-[50%] h-12 top-1/2 left-1/2 origin-left flex items-center pl-12 md:pl-16 pr-2"
                        style={{ transform: `translate(0, -50%) rotate(${rotation - 90}deg)` }}
                      >
-                       <span className="text-white font-black text-[9px] md:text-xs text-left leading-tight drop-shadow-md z-10 w-full pr-4 uppercase line-clamp-2">
+                       <span className="text-white font-black text-[9px] md:text-xs text-left leading-tight drop-shadow-md z-10 w-full uppercase line-clamp-2">
                          {p.title}
                        </span>
                      </div>
@@ -338,6 +377,7 @@ export default function RabatyPage() {
                 })}
               </motion.div>
               
+              {/* Centralny punkt na kole */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full border-4 border-zinc-900 z-20 shadow-lg flex items-center justify-center">
                 <div className="w-5 h-5 bg-amber-500 rounded-full animate-pulse" />
               </div>

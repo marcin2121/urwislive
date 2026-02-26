@@ -13,33 +13,23 @@ export async function spinWheel() {
       return { error: 'Zaloguj się, aby zakręcić kołem.' }
     }
 
-    // 2. Pobieramy kartę lojalnościową klienta, aby sprawdzić, kiedy kręcił ostatnio
-    const { data: card, error: cardError } = await supabase
-      .from('loyalty_cards')
-      .select('last_spin_at')
-      .eq('id', user.id)
-      .single()
+    // 2. NIEZAWODNE SPRAWDZANIE: Czy użytkownik ma już wygenerowany dzisiaj "Prywatny Kupon"?
+    // Data dzisiejsza od północy:
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
-    if (cardError && cardError.code !== 'PGRST116') {
-      return { error: 'Błąd podczas weryfikacji konta.' }
+    const { data: recentCoupons } = await supabase
+      .from('kupony')
+      .select('id')
+      .eq('user_id', user.id) // Tylko kupony tego klienta
+      .gte('created_at', todayStart.toISOString()) // Stworzone dzisiaj
+      .limit(1);
+
+    if (recentCoupons && recentCoupons.length > 0) {
+      return { error: 'Już dziś wykorzystałeś swoją szansę! Wróć jutro.' }
     }
 
-    // 3. Sprawdzamy, czy kręcił już DZISIAJ
-    if (card?.last_spin_at) {
-      const lastSpin = new Date(card.last_spin_at)
-      const today = new Date()
-      
-      // Jeśli rok, miesiąc i dzień są takie same = kręcił dzisiaj
-      if (
-        lastSpin.getFullYear() === today.getFullYear() &&
-        lastSpin.getMonth() === today.getMonth() &&
-        lastSpin.getDate() === today.getDate()
-      ) {
-        return { error: 'Już dziś wykorzystałeś swoją szansę! Wróć jutro.' }
-      }
-    }
-
-    // 4. Pobieramy wszystkie aktywne nagrody z Koła z bazy danych
+    // 3. Pobieramy wszystkie aktywne nagrody z Koła z bazy danych
     const { data: prizes } = await supabase
       .from('wheel_prizes')
       .select('*')
@@ -49,7 +39,7 @@ export async function spinWheel() {
       return { error: 'Koło jest w trakcie naprawy. Brak nagród.' }
     }
 
-    // 5. ALGORYTM LOSOWANIA (Ważony / Weighted Random)
+    // 4. ALGORYTM LOSOWANIA (Ważony)
     const totalWeight = prizes.reduce((sum, p) => sum + Number(p.chance), 0)
     let randomNum = Math.random() * totalWeight
     let winningPrize = prizes[0]
@@ -62,26 +52,23 @@ export async function spinWheel() {
       randomNum -= Number(prize.chance)
     }
 
-    // 6. Generujemy unikalny kod kuponu (np. BONUS10-A4B9)
+    // 5. Generujemy unikalny kod kuponu (np. BONUS10-A4B9)
     const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase()
     const finalCode = `${winningPrize.code_prefix}-${randomSuffix}`
 
-    // 🚀 ZMIANA: Brak ustalonej daty wygaśnięcia. Kupon zostaje na koncie na zawsze (lub aż do użycia)
-    const expiresAt = null;
-
-    // 8. Zapisujemy wylosowany kupon TYLKO dla tego użytkownika (user_id)
+    // 6. Zapisujemy wylosowany kupon dla użytkownika
     const { error: insertError } = await supabase
       .from('kupony')
       .insert({
-        user_id: user.id, // Przypisanie do użytkownika
+        user_id: user.id,
         title: winningPrize.title,
         code: finalCode,
         description: winningPrize.description || 'Wygrana w codziennym losowaniu!',
         gradient: winningPrize.gradient,
-        is_reusable: false, // Kupon jednorazowy - jak wykorzysta (licznik dojdzie do limitu), to zniknie z zakładki "Dostępne"
+        is_reusable: false, // Po zrealizowaniu przy kasie, zniknie
         usage_limit: 1,
         current_usage: 0,
-        expires_at: expiresAt, // null - nie znika samoczynnie o 23:59
+        expires_at: null, // Nie wygasa samoczynnie o północy, czeka aż go użyjesz!
         is_active: true
       })
 
@@ -90,16 +77,10 @@ export async function spinWheel() {
       return { error: 'Nie udało się przypisać nagrody. Spróbuj ponownie.' }
     }
 
-    // 9. Aktualizujemy datę ostatniego kręcenia u użytkownika
-    await supabase
-      .from('loyalty_cards')
-      .update({ last_spin_at: new Date().toISOString() })
-      .eq('id', user.id)
-
-    // Odświeżamy stronę rabatów
+    // Odświeżamy widok
     revalidatePath('/rabaty')
 
-    // Zwracamy wygraną nagrodę
+    // Zwracamy wygraną nagrodę do animacji
     return { 
       success: true, 
       prize: winningPrize 
