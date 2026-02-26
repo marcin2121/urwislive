@@ -5,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { BadgePercent, LockKeyhole, ArrowRight, Timer, Ticket, History, AlertCircle, CheckCircle2, Repeat, Calendar, Flame, ImageIcon, TicketPercent } from "lucide-react";
+import { BadgePercent, LockKeyhole, ArrowRight, Timer, Ticket, History, AlertCircle, CheckCircle2, Repeat, Calendar, Flame, ImageIcon, Share, PlusSquare, Smartphone, ArrowDownCircle, TicketPercent } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type ActiveCoupon = { id: string; expiresAt: number; };
@@ -21,6 +21,12 @@ export default function RabatyPage() {
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
 
+  // 🚀 PWA Installation States
+  const [isPWA, setIsPWA] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
   const [activeTab, setActiveTab] = useState<'dostepne' | 'wykorzystane'>('dostepne');
   const [confirmModal, setConfirmModal] = useState<string | null>(null);
 
@@ -30,8 +36,39 @@ export default function RabatyPage() {
   const [usedCoupons, setUsedCoupons] = useState<UsedCoupon[]>([]);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
+  // 1. PWA & Device Detection
   useEffect(() => {
     setMounted(true);
+
+    const checkDevice = () => {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      const ios = /iphone|ipad|ipod/.test(userAgent);
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in window.navigator && (window.navigator as any).standalone === true);
+
+      setIsMobile(mobile);
+      setIsIOS(ios);
+      setIsPWA(standalone || !mobile); // Jeśli to PWA lub Desktop, przepuszczamy
+    };
+
+    checkDevice();
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  // 2. Fetch Data
+  useEffect(() => {
+    if (!isPWA && isMobile) return; // Nie pobieramy danych, jeśli i tak zablokujemy ekran
+
     const fetchData = async () => {
       const [kuponyRes, promosRes] = await Promise.all([
         supabase.from('kupony').select('*').eq('is_active', true).order('created_at', { ascending: false }),
@@ -50,8 +87,9 @@ export default function RabatyPage() {
       else handleExpire(parsed.id, parsed.expiresAt);
     }
     if (savedUsed) setUsedCoupons(JSON.parse(savedUsed));
-  }, [user, supabase]);
+  }, [user, supabase, isPWA, isMobile]);
 
+  // 3. Timer Odliczania
   useEffect(() => {
     if (!activeCoupon) return;
     const interval = setInterval(() => {
@@ -84,10 +122,19 @@ export default function RabatyPage() {
     setConfirmModal(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Podbijamy licznik zużycia w bazie
     const coupon = dbCoupons.find(c => c.id === id);
     if (coupon) {
       await supabase.from('kupony').update({ current_usage: (coupon.current_usage || 0) + 1 }).eq('id', id);
+    }
+  };
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
     }
   };
 
@@ -105,12 +152,8 @@ export default function RabatyPage() {
   }
 
   const availableCouponsList = dbCoupons.filter(c => {
-    // Sprawdzamy datę ważności ogólną
     if (c.expires_at && new Date(c.expires_at) < new Date()) return false;
-    
-    // Sprawdzamy limit użyć
     if (c.usage_limit && c.current_usage >= c.usage_limit) return false;
-
     if (activeCoupon?.id === c.id) return false;
 
     const useData = usedCoupons.find(uc => uc.id === c.id);
@@ -127,6 +170,55 @@ export default function RabatyPage() {
 
   if (!mounted) return null;
 
+  // 🚀 ZMIANA: Ekran blokady instalacji PWA na Mobile
+  if (isMobile && !isPWA) {
+    return (
+      <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center items-center bg-zinc-50 relative z-30">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm bg-white p-8 rounded-4xl shadow-xl border border-zinc-100 text-center">
+          <div className="w-20 h-20 bg-blue-50 text-urwis-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <Smartphone size={40} />
+          </div>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter text-zinc-900 mb-2">
+            Aplikacja Wymagana
+          </h1>
+          <p className="text-zinc-500 mb-8 text-sm">
+            Aby korzystać z kuponów rabatowych przy kasie, zainstaluj Sklep Urwis jako darmową aplikację na swoim telefonie.
+          </p>
+
+          {isIOS ? (
+            <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200 text-left space-y-4">
+              <p className="text-xs font-black uppercase text-zinc-400 tracking-widest text-center mb-2">Instrukcja dla iPhone</p>
+              <div className="flex items-center gap-4 text-sm font-medium text-zinc-700">
+                <div className="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center shrink-0 text-urwis-blue"><Share size={16} /></div>
+                <p>1. Dotknij ikony <strong>Udostępnij</strong> na dolnym pasku przeglądarki Safari.</p>
+              </div>
+              <div className="flex items-center gap-4 text-sm font-medium text-zinc-700">
+                <div className="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center shrink-0 text-zinc-900"><PlusSquare size={16} /></div>
+                <p>2. Wybierz <strong>"Do ekranu początkowego"</strong> z listy.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <button 
+                onClick={handleInstallClick}
+                disabled={!deferredPrompt}
+                className="w-full bg-urwis-blue text-white py-4 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+              >
+                <ArrowDownCircle size={18} /> Instaluj Aplikację
+              </button>
+              {!deferredPrompt && (
+                <p className="text-[10px] text-zinc-400 font-bold">
+                  Jeśli przycisk nie działa, kliknij 3 kropki (menu przeglądarki) i wybierz "Zainstaluj aplikację".
+                </p>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
+  // --- ZWYKŁY WIDOK (PWA LUB DESKTOP) ---
   return (
     <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
       <div className="w-full max-w-2xl space-y-12">
@@ -204,7 +296,6 @@ export default function RabatyPage() {
                   )}
 
                   {availableCouponsList.map(coupon => {
-                    // Sprawdzamy czy dany dzień się zgadza
                     let allowedDays: number[] = [];
                     try { allowedDays = Array.isArray(coupon.allowed_days) ? coupon.allowed_days : JSON.parse(coupon.allowed_days || '[]'); } catch (e) {}
                     const isCorrectDay = allowedDays.length === 0 || allowedDays.includes(todayIndex);
