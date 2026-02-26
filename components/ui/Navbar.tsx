@@ -7,7 +7,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import PushButton from "./PushButton";
 import { useAuth } from "@/components/AuthProvider";
-import AuthModal from "./AuthModal"; // 👈 Upewnij się, że masz ten plik!
+import AuthModal from "./AuthModal";
 import {
   ShoppingBag,
   Coffee,
@@ -20,7 +20,8 @@ import {
   Info,
   Palette,
   Smile,
-  User
+  User,
+  BadgePercent
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -42,7 +43,7 @@ const FULL_HOURS_LIST = [
 const NAV_ITEMS = [
   { name: "O nas", href: "/o-nas", icon: Info },
   { name: "Oferta", href: "/oferta", icon: ShoppingBag },
-  { name: "Urwisek", href: "/urwisek", icon: Smile }, // Zastąpiono Promocje
+  { name: "Urwisek", href: "/urwisek", icon: Smile },
   { name: "Kolorowanki", href: "/kolorowanki", icon: Palette }, 
   { name: "Kontakt", href: "/kontakt", icon: Phone },
   { name: "Sala Zabaw", href: "/salazabaw", icon: Coffee },
@@ -104,12 +105,9 @@ export default function Navbar() {
       const deltaX = touchEndX - touchStartX;
       const deltaY = Math.abs(touchEndY - touchStartY);
 
-      // SWIPE W LEWO: Otwiera menu (tylko jeśli zacząłeś blisko prawej krawędzi - max 50px od brzegu)
       if (deltaX < -40 && deltaY < 40 && touchStartX > window.innerWidth - 50) {
         setMobileMenuOpen(true);
       }
-
-      // SWIPE W PRAWO: Zamyka menu (działa w każdym miejscu ekranu)
       if (deltaX > 50 && deltaY < 50 && mobileMenuOpen) {
         setMobileMenuOpen(false);
       }
@@ -199,7 +197,7 @@ export default function Navbar() {
               </div>
             </Link>
 
-            {/* STATUS SKLEPU / DROPDOWN GODZIN */}
+            {/* STATUS SKLEPU */}
             <button 
               onClick={() => {
                 const newState = !isHoursDropdownOpen;
@@ -272,6 +270,18 @@ export default function Navbar() {
               <PushButton key={`nav-push-${pushKey}`} />
             </div>
 
+            {/* 🌟 NOWOŚĆ: Przycisk Rabaty na desktopie */}
+            <div className="hidden md:block">
+              <Link 
+                href="/rabaty" 
+                onClick={() => trackEvent('nav_rabaty_click')}
+                className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-red-50 hover:bg-red-100 text-red-600 border-red-200 shadow-sm"
+              >
+                <span className="text-[11px] font-black uppercase mr-1.5">Rabaty</span>
+                <BadgePercent size={16} />
+              </Link>
+            </div>
+
             {/* STREFA KLIENTA / PROFIL (Desktop) */}
             <div className="hidden md:block">
               {user ? (
@@ -280,7 +290,7 @@ export default function Navbar() {
                   onClick={() => trackEvent('nav_profile_click')}
                   className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-50 hover:bg-zinc-100 text-[#0055ff] border-zinc-200"
                 >
-                  <span className="text-[11px] font-black uppercase mr-2 text-zinc-700">Mój Profil</span>
+                  <span className="text-[11px] font-black uppercase mr-2 text-zinc-700">Profil</span>
                   <User size={16} />
                 </Link>
               ) : (
@@ -292,20 +302,6 @@ export default function Navbar() {
                 </button>
               )}
             </div>
-
-            {/* AKADEMIA (Desktop) */}
-            <Link 
-              href="https://akademiaurwisa.pl" 
-              target="_blank" 
-              onClick={() => trackEvent('nav_cta_akademia')}
-              className="hidden lg:flex relative overflow-hidden items-center gap-2 px-6 py-3 bg-zinc-900 text-white rounded-full shadow-lg shadow-blue-900/20 hover:scale-105 transition-all shrink-0"
-            >
-              <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff]" />
-              <div className="relative flex items-center gap-2">
-                <GraduationCap size={18} />
-                <span className="text-[12px] font-black uppercase tracking-widest">Akademia</span>
-              </div>
-            </Link>
 
             {/* MOBILE MENU TOGGLE */}
             <button 
@@ -363,32 +359,47 @@ export default function Navbar() {
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
 
+                {/* 🌟 NOWOŚĆ: Strefa Rabatów jako główny przycisk na mobile */}
+                <Link 
+                  href="/rabaty" 
+                  onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_rabaty_click'); }} 
+                  className="flex items-center justify-between p-6 rounded-4xl border shadow-md transition-all bg-gradient-to-br from-red-500 to-red-600 text-white border-red-400"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white"><BadgePercent size={24} /></div>
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-black uppercase opacity-80 leading-none mb-1">Sklep Urwis Club</span>
+                      <span className="text-xl font-black italic uppercase leading-none">Strefa Rabatów</span>
+                    </div>
+                  </div>
+                  <ChevronDown className="-rotate-90 opacity-50 size-5" />
+                </Link>
+
                 {/* LOGOWANIE / PROFIL W MENU MOBILNYM */}
                 {user ? (
                   <Link 
                     href="/profil" 
                     onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_profile_click'); }} 
-                    className="flex items-center justify-between p-6 rounded-4xl border shadow-sm transition-all bg-zinc-50 text-zinc-900 border-zinc-200 hover:bg-zinc-100"
+                    className="flex items-center justify-between p-5 rounded-3xl border shadow-sm transition-all bg-zinc-50 text-zinc-900 border-zinc-200 hover:bg-zinc-100"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-[#0055ff]"><User size={20} /></div>
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#0055ff]"><User size={16} /></div>
                       <div className="flex flex-col">
-                        <span className="text-[12px] font-black uppercase opacity-70 leading-none mb-1">Zarządzaj kontem</span>
-                        <span className="text-xl font-black italic uppercase leading-none">Mój Profil</span>
+                        <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-1">Zarządzaj kontem</span>
+                        <span className="text-lg font-black italic uppercase leading-none">Mój Profil</span>
                       </div>
                     </div>
-                    <ChevronDown className="-rotate-90 opacity-50 size-5" />
                   </Link>
                 ) : (
                   <button 
                     onClick={() => { setMobileMenuOpen(false); setIsAuthModalOpen(true); }}
-                    className="w-full flex items-center justify-between p-6 rounded-4xl border shadow-lg transition-all bg-zinc-900 text-white border-zinc-800"
+                    className="w-full flex items-center justify-between p-5 rounded-3xl border shadow-sm transition-all bg-zinc-900 text-white border-zinc-800"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300"><User size={20} /></div>
+                      <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300"><User size={16} /></div>
                       <div className="flex flex-col text-left">
-                        <span className="text-[12px] font-black uppercase opacity-70 leading-none mb-1">Strefa Klienta</span>
-                        <span className="text-xl font-black italic uppercase leading-none">Zaloguj się</span>
+                        <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-1">Dołącz do nas</span>
+                        <span className="text-lg font-black italic uppercase leading-none">Zaloguj się</span>
                       </div>
                     </div>
                   </button>
@@ -419,7 +430,7 @@ export default function Navbar() {
                     onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_kolorowanki'); }} 
                     className="flex flex-col relative overflow-hidden p-6 rounded-4xl bg-zinc-900 text-white border border-zinc-800 shadow-xl"
                   >
-                    <div className="absolute inset-0 bg-linear-to-br from-[#BF2024]/40 to-[#0055ff]/40 opacity-80" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#BF2024]/40 to-[#0055ff]/40 opacity-80" />
                     <div className="relative flex items-center justify-between z-10 mb-2">
                        <div className="flex items-center gap-3">
                          <Palette size={24} className="text-yellow-400" />
@@ -427,35 +438,13 @@ export default function Navbar() {
                        </div>
                     </div>
                     <p className="relative z-10 text-[10px] font-bold uppercase text-zinc-300 opacity-90 leading-tight">
-                      Twórzcie, bawcie się i zapisujcie najpiękniejsze wspólne chwile. Idealny sposób na kreatywne popołudnie!
+                      Twórzcie, bawcie się i zapisujcie najpiękniejsze wspólne chwile.
                     </p>
-                  </Link>
-
-                  <Link 
-                    href="/salazabaw" 
-                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_kulki'); }} 
-                    className="flex items-center gap-4 p-6 rounded-4xl bg-blue-50 text-blue-700 border border-blue-100"
-                  >
-                      <Coffee size={24} />
-                      <div className="font-black italic uppercase tracking-tighter text-[18px]">Lecę w Kulki</div>
-                  </Link>
-
-                  <Link 
-                    href="https://akademiaurwisa.pl" 
-                    target="_blank" 
-                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_akademia'); }} 
-                    className="flex items-center gap-4 p-6 rounded-4xl bg-zinc-900 text-white border border-zinc-800 relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-linear-to-r from-[#BF2024] to-[#0055ff] opacity-80" />
-                    <div className="relative flex items-center gap-4">
-                      <GraduationCap size={24} />
-                      <div className="font-black italic uppercase tracking-tighter text-lg">Akademia</div>
-                    </div>
                   </Link>
                 </div>
 
                 {/* PUSH W MOBILE */}
-                <div className="bg-zinc-50 p-4 rounded-3xl border border-zinc-100 flex justify-center">
+                <div className="bg-zinc-50 p-4 rounded-3xl border border-zinc-100 flex justify-center mt-2">
                   <PushButton key={`nav-push-mob-${pushKey}`} />
                 </div>
               </div>
@@ -464,7 +453,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* MODAL LOGOWANIA */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </header>
   );
