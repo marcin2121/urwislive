@@ -44,11 +44,12 @@ export default function RabatyPage() {
       const userAgent = window.navigator.userAgent.toLowerCase();
       const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
       const ios = /iphone|ipad|ipod/.test(userAgent);
+      // Sprawdza czy aplikacja została uruchomiona w trybie standalone (zainstalowana)
       const standalone = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in window.navigator && (window.navigator as any).standalone === true);
 
       setIsMobile(mobile);
       setIsIOS(ios);
-      setIsPWA(standalone || !mobile); // Jeśli to PWA lub Desktop, przepuszczamy
+      setIsPWA(standalone || !mobile); // Desktopowi przepuszcza (traktuje jak PWA)
     };
 
     checkDevice();
@@ -67,8 +68,7 @@ export default function RabatyPage() {
 
   // 2. Fetch Data
   useEffect(() => {
-    if (!isPWA && isMobile) return; // Nie pobieramy danych, jeśli i tak zablokujemy ekran
-
+    // 💡 Pobieramy mimo wszystko, bo oferty i tak chcemy wyświetlić!
     const fetchData = async () => {
       const [kuponyRes, promosRes] = await Promise.all([
         supabase.from('kupony').select('*').eq('is_active', true).order('created_at', { ascending: false }),
@@ -87,7 +87,7 @@ export default function RabatyPage() {
       else handleExpire(parsed.id, parsed.expiresAt);
     }
     if (savedUsed) setUsedCoupons(JSON.parse(savedUsed));
-  }, [user, supabase, isPWA, isMobile]);
+  }, [user, supabase]);
 
   // 3. Timer Odliczania
   useEffect(() => {
@@ -170,55 +170,6 @@ export default function RabatyPage() {
 
   if (!mounted) return null;
 
-  // 🚀 ZMIANA: Ekran blokady instalacji PWA na Mobile
-  if (isMobile && !isPWA) {
-    return (
-      <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center items-center bg-zinc-50 relative z-30">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm bg-white p-8 rounded-4xl shadow-xl border border-zinc-100 text-center">
-          <div className="w-20 h-20 bg-blue-50 text-urwis-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-            <Smartphone size={40} />
-          </div>
-          <h1 className="text-2xl font-black italic uppercase tracking-tighter text-zinc-900 mb-2">
-            Aplikacja Wymagana
-          </h1>
-          <p className="text-zinc-500 mb-8 text-sm">
-            Aby korzystać z kuponów rabatowych przy kasie, zainstaluj Sklep Urwis jako darmową aplikację na swoim telefonie.
-          </p>
-
-          {isIOS ? (
-            <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200 text-left space-y-4">
-              <p className="text-xs font-black uppercase text-zinc-400 tracking-widest text-center mb-2">Instrukcja dla iPhone</p>
-              <div className="flex items-center gap-4 text-sm font-medium text-zinc-700">
-                <div className="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center shrink-0 text-urwis-blue"><Share size={16} /></div>
-                <p>1. Dotknij ikony <strong>Udostępnij</strong> na dolnym pasku przeglądarki Safari.</p>
-              </div>
-              <div className="flex items-center gap-4 text-sm font-medium text-zinc-700">
-                <div className="w-8 h-8 rounded-full bg-white shadow flex items-center justify-center shrink-0 text-zinc-900"><PlusSquare size={16} /></div>
-                <p>2. Wybierz <strong>"Do ekranu początkowego"</strong> z listy.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <button 
-                onClick={handleInstallClick}
-                disabled={!deferredPrompt}
-                className="w-full bg-urwis-blue text-white py-4 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-              >
-                <ArrowDownCircle size={18} /> Instaluj Aplikację
-              </button>
-              {!deferredPrompt && (
-                <p className="text-[10px] text-zinc-400 font-bold">
-                  Jeśli przycisk nie działa, kliknij 3 kropki (menu przeglądarki) i wybierz "Zainstaluj aplikację".
-                </p>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </div>
-    );
-  }
-
-  // --- ZWYKŁY WIDOK (PWA LUB DESKTOP) ---
   return (
     <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
       <div className="w-full max-w-2xl space-y-12">
@@ -232,7 +183,51 @@ export default function RabatyPage() {
             <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest">Aktywuj przy kasie, by obniżyć cenę</p>
           </div>
 
-          {!user ? (
+          {/* 🚀 WDROŻENIE SOFT GATE: Blokujemy tylko Kupony, ale pokazujemy instrukcję */}
+          {isMobile && !isPWA ? (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-6 md:p-8 rounded-4xl shadow-xl border border-blue-100 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#0055ff] to-blue-400" />
+              <div className="w-16 h-16 bg-blue-50 text-[#0055ff] rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <Smartphone size={32} />
+              </div>
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter text-zinc-900 mb-2">
+                Odbierz zniżki w Aplikacji
+              </h2>
+              <p className="text-zinc-500 mb-6 text-sm">
+                Specjalne kupony i kody kasowe są dostępne <strong>wyłącznie</strong> po dodaniu Sklepu Urwis do ekranu głównego. Zainstaluj, by oszczędzać!
+              </p>
+
+              {isIOS ? (
+                <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-200 text-left space-y-3">
+                  <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest text-center mb-1">Instrukcja dla iPhone</p>
+                  <div className="flex items-center gap-3 text-xs font-bold text-zinc-700">
+                    <div className="w-7 h-7 rounded-full bg-white shadow flex items-center justify-center shrink-0 text-[#0055ff]"><Share size={14} /></div>
+                    <p>1. Dotknij ikony <strong>Udostępnij</strong> w Safari.</p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs font-bold text-zinc-700">
+                    <div className="w-7 h-7 rounded-full bg-white shadow flex items-center justify-center shrink-0 text-zinc-900"><PlusSquare size={14} /></div>
+                    <p>2. Wybierz <strong>"Do ekranu początkowego"</strong> z listy.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <button 
+                    onClick={handleInstallClick}
+                    disabled={!deferredPrompt}
+                    className="w-full bg-[#0055ff] text-white py-4 rounded-xl font-black uppercase text-sm shadow-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                  >
+                    <ArrowDownCircle size={18} /> Zainstaluj PWA
+                  </button>
+                  {!deferredPrompt && (
+                    <p className="text-[10px] text-zinc-400 font-bold">
+                      Rozwiń 3 kropki w przeglądarce i wybierz "Zainstaluj aplikację".
+                    </p>
+                  )}
+                </div>
+              )}
+            </motion.div>
+
+          ) : !user ? (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-8 rounded-[2rem] shadow-xl border border-zinc-100 text-center">
               <LockKeyhole size={48} className="mx-auto text-zinc-300 mb-4" />
               <h2 className="text-2xl font-black text-zinc-800 mb-2">Zaloguj się, by zobaczyć rabaty</h2>
@@ -306,7 +301,7 @@ export default function RabatyPage() {
                           <div className="flex flex-wrap gap-2 mb-3">
                             {coupon.is_reusable && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Repeat size={10}/> Odnawialny</span>}
                             {allowedDays.length > 0 && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Calendar size={10}/> {getDayNames(allowedDays)}</span>}
-                            {coupon.usage_limit && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30">Pula: {coupon.usage_limit - (coupon.current_usage || 0)} szt.</span>}
+                            {coupon.usage_limit && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30">Zostało: {coupon.usage_limit - (coupon.current_usage || 0)} szt.</span>}
                           </div>
                           <h3 className="text-2xl md:text-3xl font-black italic uppercase leading-none mb-2">{coupon.title}</h3>
                           <p className="text-white/90 text-sm font-medium">{coupon.description}</p>

@@ -71,7 +71,11 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [lastPoint, setLastPoint] = useState<{x: number, y: number} | null>(null);
   
   const [undoStack, setUndoStack] = useState<string[]>([]);
+  
+  // 🚀 ZMIANA: Poprawiona obsługa orientacji z opcją pominięcia
   const [isPortrait, setIsPortrait] = useState(false);
+  const [forceDismissOrientation, setForceDismissOrientation] = useState(false);
+
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [dynamicCursor, setDynamicCursor] = useState('default');
 
@@ -179,7 +183,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     handleZoom(scale + delta, e.clientX, e.clientY);
   };
 
-  // --- FLOOD FILL ALGORITHM (Zoptymalizowany dla wydajności) ---
+  // --- FLOOD FILL ALGORITHM ---
   const fillCanvas = useCallback((x: number, y: number) => {
     const canvas = canvasRef.current;
     const ghost = ghostCanvasRef.current;
@@ -209,11 +213,9 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     const startPos = (startY * width + startX) * 4;
     const sR = data[startPos], sG = data[startPos+1], sB = data[startPos+2];
 
-    // Zabezpieczenia by nie wejść w nieskończoną pętlę i nie wypełniać czarnych linii z ghosta
     if (ghostData[startPos] < 100 && ghostData[startPos+1] < 100 && ghostData[startPos+2] < 100) return;
     if (Math.abs(sR - fR) < 10 && Math.abs(sG - fG) < 10 && Math.abs(sB - fB) < 10) return;
 
-    // Fast 1D stack array
     const stack = new Int32Array(width * height * 2);
     let ptr = 0;
     stack[ptr++] = startX;
@@ -231,16 +233,11 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
 
         const p = idx * 4;
         
-        // Wykrywamy granice linii czarnych szablonu (Ghost Canvas)
         if (ghostData[p] < 100 && ghostData[p+1] < 100 && ghostData[p+2] < 100) continue; 
-        
-        // Wykrywamy granice na głównym canvasie (inny kolor)
         if (Math.abs(data[p] - sR) > 15 || Math.abs(data[p+1] - sG) > 15 || Math.abs(data[p+2] - sB) > 15) continue; 
 
-        // Rysuj (pokoloruj)
         data[p] = fR; data[p+1] = fG; data[p+2] = fB; data[p+3] = 255;
 
-        // BFS - Dodaj sąsiadów
         if (currentX > 0) { stack[ptr++] = currentX - 1; stack[ptr++] = currentY; }
         if (currentX < width - 1) { stack[ptr++] = currentX + 1; stack[ptr++] = currentY; }
         if (currentY > 0) { stack[ptr++] = currentX; stack[ptr++] = currentY - 1; }
@@ -273,7 +270,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       }
       setDynamicCursor(`url(${cursorCanvas.toDataURL()}) ${cursorCanvas.width / 2} ${cursorCanvas.height / 2}, crosshair`);
     } else if (activeTool === 'fill') {
-      setDynamicCursor('crosshair'); // Alternatywnie customowy url do ikony bucket
+      setDynamicCursor('crosshair');
     } else {
       setDynamicCursor(activeTool === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'crosshair');
     }
@@ -300,12 +297,31 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo]);
 
+  // 🚀 ZMIANA: Lepsza metoda wykrywania orientacji za pomocą matchMedia i EventListenera
   useEffect(() => {
     trackEvent('coloring_start', { template_id: template.id, template_title: template.title });
-    const checkOrientation = () => setIsPortrait(window.innerHeight > window.innerWidth);
-    window.addEventListener('resize', checkOrientation);
-    checkOrientation();
     setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+
+    const mql = window.matchMedia('(orientation: portrait)');
+    
+    // Ustaw stan początkowy
+    setIsPortrait(mql.matches);
+
+    // Nasłuchiwanie zmian orientacji (to jest znacznie bardziej niezawodne na Androidzie niż resize)
+    const handleOrientationChange = (e: MediaQueryListEvent) => {
+        setIsPortrait(e.matches);
+        // Jeśli obróciliśmy telefon prawidłowo do poziomu, możemy zresetować wymuszone ignorowanie
+        if (!e.matches) {
+            setForceDismissOrientation(false);
+        }
+    };
+
+    if (mql.addEventListener) {
+        mql.addEventListener('change', handleOrientationChange);
+    } else {
+        // Fallback dla bardzo starych przeglądarek
+        mql.addListener(handleOrientationChange);
+    }
 
     const canvas = canvasRef.current;
     if (canvas) {
@@ -329,7 +345,14 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         ghostCanvasRef.current = ghost;
       };
     }
-    return () => window.removeEventListener('resize', checkOrientation);
+
+    return () => {
+        if (mql.removeEventListener) {
+            mql.removeEventListener('change', handleOrientationChange);
+        } else {
+            mql.removeListener(handleOrientationChange);
+        }
+    };
   }, [template]);
 
   const handleDownload = () => {
@@ -361,7 +384,6 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       setInitialPinchDistance(dist); setInitialScale(scale);
       
-      // Zapisujemy startowy środek Panna (dzięki temu działa przesuwanie przy zoomie z dwóch palców)
       setPanStart({ 
         x: ((e.touches[0].clientX + e.touches[1].clientX) / 2) - offset.x, 
         y: ((e.touches[0].clientY + e.touches[1].clientY) / 2) - offset.y 
@@ -386,12 +408,10 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
 
   const handleMove = (e: any) => {
     if (e.touches && e.touches.length === 2 && initialPinchDistance) {
-      // Skalowanie z dwóch palców
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       const newScale = Math.max(1, Math.min(5, initialScale * (dist / initialPinchDistance)));
       setScale(newScale);
 
-      // Panning (przesuwanie) z dwóch palców
       const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
       const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       setOffset({ x: cx - panStart.x, y: cy - panStart.y });
@@ -424,18 +444,31 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   };
 
   return (
-    // select-none blokuje systemowe zaznaczanie ekranu
     <div className="fixed inset-0 z-50 bg-zinc-950 overflow-hidden touch-none select-none flex flex-row p-2 gap-2 text-white font-sans">
       
       {/* 📱 BLOKADA ORIENTACJI */}
       <AnimatePresence>
-        {isTouchDevice && isPortrait && (
+        {isTouchDevice && isPortrait && !forceDismissOrientation && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[5000] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-6">
+            
+            {/* 🚀 ZMIANA: Przycisk pozwalający zamknąć komunikat, jeśli API zawiodło */}
+            <button 
+              onClick={() => {
+                setForceDismissOrientation(true);
+                trackEvent('coloring_orientation_bypassed');
+              }}
+              className="absolute top-6 right-6 p-4 text-zinc-400 hover:text-white border-none bg-transparent"
+            >
+              <X size={28} />
+            </button>
+
             <motion.div animate={{ rotate: 90 }} transition={{ repeat: Infinity, duration: 1.5 }} className="w-20 h-20 bg-white/10 border-2 border-white/30 rounded-3xl mb-6 flex items-center justify-center text-white">
               <Smartphone size={32} />
             </motion.div>
             <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-2">Obróć telefon</h2>
-            <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest">Do rysowania potrzebujemy więcej miejsca!</p>
+            <p className="text-zinc-400 font-bold uppercase text-[10px] tracking-widest max-w-[200px] mb-8">Do wygodnego rysowania potrzebujemy więcej miejsca poziomo!</p>
+            
+            <p className="text-zinc-600 font-bold uppercase text-[8px] tracking-widest mt-8">Jeśli obróciłeś i komunikat nie znika, kliknij krzyżyk w rogu.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -443,35 +476,34 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       {/* LEFT PANEL */}
       {!zenMode && (
         <motion.div initial={{ x: -100 }} animate={{ x: 0 }} className="w-14 lg:w-72 shrink-0 flex flex-col gap-2 overflow-y-auto py-1 bg-zinc-950 lg:bg-transparent border-r border-white/5 z-40 scrollbar-hide">
-          <button onClick={() => setShowExitConfirm(true)} aria-label="Wróć" className="w-full aspect-square lg:aspect-auto lg:py-4 lg:px-5 bg-white/10 rounded-2xl flex items-center justify-center lg:justify-start border border-white/20 hover:bg-red-600 transition-colors">
+          <button onClick={() => setShowExitConfirm(true)} aria-label="Wróć" className="w-full aspect-square lg:aspect-auto lg:py-4 lg:px-5 bg-white/10 rounded-2xl flex items-center justify-center lg:justify-start border border-white/20 hover:bg-red-600 transition-colors cursor-pointer outline-none">
             <ChevronLeft size={20} /><span className="hidden lg:block ml-3 font-black uppercase text-xs">Wróć</span>
           </button>
           
           <div className="flex lg:hidden flex-col gap-2 mt-1">
             <button 
               onClick={() => setShowColorPicker(true)} 
-              className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center border-white/30`} 
+              className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center border-white/30 cursor-pointer outline-none`} 
               style={{ backgroundColor: tool === 'magic' ? 'transparent' : selectedColor }}
             >
               {tool === 'magic' ? <div className="absolute inset-0 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)] animate-spin-slow rounded-xl" /> : <Palette size={20} />}
             </button>
-            <button onClick={() => setTool('brush')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border ${tool === 'brush' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Paintbrush size={20}/></button>
-            <button onClick={() => setTool('fill')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border ${tool === 'fill' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><PaintBucket size={20}/></button>
-            <button onClick={() => setTool('pan')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border ${tool === 'pan' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Hand size={20}/></button>
+            <button onClick={() => setTool('brush')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'brush' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Paintbrush size={20}/></button>
+            <button onClick={() => setTool('fill')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'fill' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><PaintBucket size={20}/></button>
+            <button onClick={() => setTool('pan')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'pan' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Hand size={20}/></button>
           </div>
 
           <div className="hidden lg:flex flex-col gap-8 p-4">
              <div className="grid grid-cols-2 gap-3">
                {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'fill',n:'Wiadro',i:PaintBucket}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
-                 <button key={t.id} onClick={() => setTool(t.id as any)} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
+                 <button key={t.id} onClick={() => setTool(t.id as any)} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all cursor-pointer outline-none ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
                    <t.i size={24} /><span className="text-[10px] font-black uppercase">{t.n}</span>
                  </button>
                ))}
              </div>
              
-             {/* NOWA PALETA Z DOWOLNYM KOLOREM DLA DESKTOPA */}
              <div className="grid grid-cols-6 gap-2 bg-white/5 p-4 rounded-3xl border border-white/10">
-                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor===c?'border-white scale-110 shadow-md':'border-white/10'}`} style={{ backgroundColor: c }} />)}
+                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 cursor-pointer outline-none ${selectedColor===c?'border-white scale-110 shadow-md':'border-white/10'}`} style={{ backgroundColor: c }} />)}
                 
                 <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 relative cursor-pointer hover:border-white/50 transition-colors" title="Własny kolor">
                   <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => selectColor(e.target.value)} />
@@ -490,8 +522,6 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         >
           <motion.div animate={{ scale, x: offset.x, y: offset.y }} className="absolute inset-0 w-full h-full origin-center">
             <canvas ref={canvasRef} width={1280} height={720} className="absolute inset-0 w-full h-full pointer-events-none" />
-            
-            {/* draggable=false zapobiega ghostowaniu systemowemu */}
             <Image src={template.src} alt={template.title} fill priority draggable={false} className="object-fill pointer-events-none select-none" style={{ mixBlendMode: 'multiply' }} />
           </motion.div>
 
@@ -503,7 +533,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             )}
           </AnimatePresence>
 
-          <button onClick={() => setZenMode(!zenMode)} className="absolute bottom-4 left-4 z-30 w-10 h-10 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md">
+          <button onClick={() => setZenMode(!zenMode)} className="absolute bottom-4 left-4 z-30 w-10 h-10 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer outline-none">
             {zenMode ? <Eye size={20} /> : <EyeOff size={20} />}
           </button>
         </div>
@@ -534,9 +564,9 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
                 <div className="mt-2 text-zinc-500 font-black text-[8px] uppercase tracking-tighter">Size</div>
              </div>
              
-             <button onClick={() => { setTool('eraser'); playSfx('click'); }} className={`w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border transition-all ${tool === 'eraser' ? 'bg-white text-zinc-900 border-white shadow-xl scale-110' : 'bg-white/5 border-white/10 text-white'}`}><Eraser size={20}/></button>
-             <button onClick={undo} disabled={undoStack.length <= 1} className="w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/5 text-white disabled:opacity-20"><RotateCcw size={18}/></button>
-             <button onClick={handleDownload} className="w-full aspect-square bg-[#0055ff] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg active:scale-90 transition-transform"><Download size={20} /></button>
+             <button onClick={() => { setTool('eraser'); playSfx('click'); }} className={`w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border transition-all cursor-pointer outline-none ${tool === 'eraser' ? 'bg-white text-zinc-900 border-white shadow-xl scale-110' : 'bg-white/5 border-white/10 text-white'}`}><Eraser size={20}/></button>
+             <button onClick={undo} disabled={undoStack.length <= 1} className="w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/5 text-white disabled:opacity-20 cursor-pointer outline-none"><RotateCcw size={18}/></button>
+             <button onClick={handleDownload} className="w-full aspect-square bg-[#0055ff] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg active:scale-90 transition-transform cursor-pointer outline-none"><Download size={20} /></button>
           </div>
 
           {/* DESKTOP UI */}
@@ -548,13 +578,13 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
               <div className="space-y-4 pt-4 border-t border-white/10">
                 <div className="flex justify-between text-[10px] font-black uppercase"><span>Głośność</span><span>{isMuted ? 0 : ambientVolume}%</span></div>
                 <div className="flex items-center gap-3">
-                  <button onClick={toggleMute}>{getVolumeIcon()}</button>
+                  <button onClick={toggleMute} className="cursor-pointer outline-none">{getVolumeIcon()}</button>
                   <input type="range" min="0" max="100" value={isMuted ? 0 : ambientVolume} onChange={(e) => handleVolumeChange(parseInt(e.target.value))} className="w-full accent-green-400" />
                 </div>
               </div>
               <div className="mt-auto space-y-3">
-                <button onClick={undo} disabled={undoStack.length <= 1} className="w-full py-4 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs disabled:opacity-30"><RotateCcw size={16}/> Cofnij <span className="text-[9px] opacity-50 font-normal ml-1">(Ctrl+Z)</span></button>
-                <button onClick={handleDownload} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 shadow-xl hover:bg-blue-600 transition-all"><Download size={20} /> Pobierz</button>
+                <button onClick={undo} disabled={undoStack.length <= 1} className="w-full py-4 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs disabled:opacity-30 cursor-pointer outline-none"><RotateCcw size={16}/> Cofnij <span className="text-[9px] opacity-50 font-normal ml-1">(Ctrl+Z)</span></button>
+                <button onClick={handleDownload} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 shadow-xl hover:bg-blue-600 transition-all cursor-pointer outline-none"><Download size={20} /> Pobierz</button>
               </div>
           </div>
         </motion.div>
@@ -567,8 +597,8 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
              <div className="bg-zinc-900 border border-white/10 p-8 rounded-4xl max-w-sm w-full">
               <h3 className="text-xl font-black uppercase italic mb-8">Zakończyć?</h3>
               <div className="flex gap-3">
-                <button onClick={() => setShowExitConfirm(false)} className="flex-1 py-4 bg-white/5 rounded-2xl font-black uppercase text-[10px]">Wróć</button>
-                <button onClick={onClose} className="flex-1 py-4 bg-red-600 rounded-2xl font-black uppercase text-[10px]">Wyjdź</button>
+                <button onClick={() => setShowExitConfirm(false)} className="flex-1 py-4 bg-white/5 rounded-2xl font-black uppercase text-[10px] cursor-pointer outline-none">Wróć</button>
+                <button onClick={onClose} className="flex-1 py-4 bg-red-600 rounded-2xl font-black uppercase text-[10px] cursor-pointer outline-none">Wyjdź</button>
               </div>
             </div>
           </motion.div>
@@ -582,16 +612,16 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-zinc-900 border border-white/10 p-6 rounded-[2.5rem] max-w-sm w-full">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-black uppercase italic tracking-tighter">Paleta Urwisa</h3>
-                <button onClick={() => setShowColorPicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center"><X size={20}/></button>
+                <button onClick={() => setShowColorPicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
               </div>
               <div className="grid grid-cols-6 gap-3 mb-8">
-                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor === c ? 'border-white scale-110 shadow-lg' : 'border-white/10'}`} style={{ backgroundColor: c }} />)}
-                <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 relative">
+                {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 cursor-pointer outline-none ${selectedColor === c ? 'border-white scale-110 shadow-lg' : 'border-white/10'}`} style={{ backgroundColor: c }} />)}
+                <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 relative cursor-pointer hover:bg-white/10 transition-colors">
                   <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => selectColor(e.target.value)} />
                   <Plus size={16} />
                 </label>
               </div>
-              <button onClick={() => { setTool('magic'); setShowColorPicker(false); }} className="w-full py-4 bg-linear-to-r from-red-500 to-blue-500 rounded-2xl font-black uppercase text-xs shadow-lg">Tęcza ✨</button>
+              <button onClick={() => { setTool('magic'); setShowColorPicker(false); }} className="w-full py-4 bg-linear-to-r from-red-500 to-blue-500 rounded-2xl font-black uppercase text-xs shadow-lg cursor-pointer outline-none">Tęcza ✨</button>
             </motion.div>
           </motion.div>
         )}
