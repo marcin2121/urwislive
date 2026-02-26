@@ -22,7 +22,7 @@ import {
   Smile,
   User,
   BadgePercent,
-  ShieldAlert // 👈 Dodana ikona dla admina
+  ShieldAlert
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -58,7 +58,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isHoursDropdownOpen, setIsHoursDropdownOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [pushKey, setPushKey] = useState(0);
 
   const hoursRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +67,6 @@ export default function Navbar() {
     subLabel: "" 
   });
 
-  // 🚀 SPRAWDZENIE, CZY UŻYTKOWNIK TO ADMIN
   const isAdmin = user?.user_metadata?.role === 'admin';
 
   const trackEvent = useCallback((name: string, params: object = {}) => {
@@ -77,7 +75,6 @@ export default function Navbar() {
     }
   }, [pathname]);
 
-  // LOGIKA ZAMYKANIA GODZIN
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (hoursRef.current && !hoursRef.current.contains(event.target as Node)) {
@@ -93,7 +90,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isHoursDropdownOpen, trackEvent]);
 
-  // LOGIKA "EDGE SWIPE" DO OTWIERANIA MENU NA MOBILE
   useEffect(() => {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -126,15 +122,11 @@ export default function Navbar() {
     };
   }, [mobileMenuOpen]);
 
-  // STATUS OTWARCIA SKLEPU
   useEffect(() => {
     setMounted(true);
-    const handlePushRefresh = () => {
-      setPushKey(prev => prev + 1);
-      trackEvent('push_status_updated_auto');
-    };
-    window.addEventListener('push-permission-changed', handlePushRefresh);
-
+    
+    // Usunąłem stąd nasłuchiwanie na event Push, bo przenieśliśmy to na stałe do Profilu.
+    
     const checkStatus = () => {
       const now = new Date();
       const day = now.getDay();
@@ -170,9 +162,8 @@ export default function Navbar() {
     const interval = setInterval(checkStatus, 60000);
     return () => {
       clearInterval(interval);
-      window.removeEventListener('push-permission-changed', handlePushRefresh);
     };
-  }, [pathname, trackEvent]);
+  }, []);
 
   if (!mounted) return null;
 
@@ -269,11 +260,7 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-1 md:gap-3 shrink-0">
-            {/* PUSH BUTTON */}
-            <div className="shrink-0 flex items-center justify-center transform scale-90 origin-center hidden md:flex">
-              <PushButton key={`nav-push-${pushKey}`} />
-            </div>
-
+            
             {/* Przycisk Rabaty na desktopie */}
             <div className="hidden md:block">
               <Link 
@@ -389,7 +376,7 @@ export default function Navbar() {
                   <ChevronDown className="-rotate-90 opacity-50 size-5" />
                 </Link>
 
-                {/* 🚀 NOWOŚĆ: ADMIN W MENU MOBILNYM */}
+                {/* ADMIN W MENU MOBILNYM */}
                 {isAdmin && (
                   <Link 
                     href="/admin" 
@@ -472,11 +459,6 @@ export default function Navbar() {
                       Twórzcie, bawcie się i zapisujcie najpiękniejsze wspólne chwile.
                     </p>
                   </Link>
-                </div>
-
-                {/* PUSH W MOBILE */}
-                <div className="bg-zinc-50 p-4 rounded-3xl border border-zinc-100 flex justify-center mt-2">
-                  <PushButton key={`nav-push-mob-${pushKey}`} />
                 </div>
               </div>
             </motion.div>
