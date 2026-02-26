@@ -3,30 +3,30 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Plus, Trash2, X, Lock, Tag, LogOut, Loader2,
+  Plus, Trash2, X, Tag, LogOut, Loader2,
   Bell, Send, Wand2, Clock, Zap, Flame,
   Image as ImageIcon, Coffee, LayoutDashboard, History, ChevronRight,
-  CreditCard, Search, UserPlus, Coins, Store, ChevronDown, ArrowDownCircle, ArrowUpCircle,
-  Users, Filter, Calendar, Heart
+  Search, Users, ChevronDown, CheckCircle2,
+  Calendar, Repeat, TicketPercent
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { PUSH_CATEGORIES, PushTopic } from '@/lib/push-config'
 
-// --- SZABLONY PUSH ---
-const QUICK_TEMPLATES = [
-  { id: 'luz-na-sali', label: 'Dużo luzu', title: 'Mamy sporo miejsca! 🤸', message: 'Szukasz pomysłu na popołudnie? Zapraszamy na kawę!', topic: 'lecewkulki' as PushTopic, icon: Coffee, color: 'bg-orange-500' },
-  { id: 'nowe-lego', label: 'Nowe LEGO', title: 'Dostawa LEGO! 🧩', message: 'Właśnie rozpakowaliśmy nowe zestawy na półkach. Sprawdź!', topic: 'urwis' as PushTopic, icon: Zap, color: 'bg-blue-600' }
+const DAYS_OF_WEEK = [
+  { id: 1, label: 'Pn' }, { id: 2, label: 'Wt' }, { id: 3, label: 'Śr' },
+  { id: 4, label: 'Cz' }, { id: 5, label: 'Pt' }, { id: 6, label: 'Sb' }, { id: 0, label: 'Nd' }
 ]
 
 export default function AdminDashboard() {
   const supabase = useMemo(() => createClient(), [])
 
   // --- STATE: NAV ---
-  const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history' | 'loyalty'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history' | 'clients' | 'kupony'>('stats')
 
   // --- STATE: DATA ---
   const [promos, setPromos] = useState<any[]>([])
+  const [kupony, setKupony] = useState<any[]>([])
   const [history, setHistory] = useState<any[]>([])
   const [scheduledPushes, setScheduledPushes] = useState<any[]>([])
   const [subscriberCount, setSubscriberCount] = useState(0)
@@ -35,33 +35,28 @@ export default function AdminDashboard() {
   const [pushStats, setPushStats] = useState({ clicks: 0, closes: 0 })
   const [loading, setLoading] = useState(false)
 
-  // --- STATE: LOYALTY ---
-  const [allLoyaltyUsers, setAllLoyaltyUsers] = useState<any[]>([])
-  const [showAllUsers, setShowAllUsers] = useState(false)
-  const [loyaltySearchQuery, setLoyaltySearchQuery] = useState('')
-  const [loyaltyPhone, setLoyaltyPhone] = useState('')
-  const [loyaltyName, setLoyaltyName] = useState('')
-  const [activeCard, setActiveCard] = useState<any>(null)
-  const [cardSearchStatus, setCardSearchStatus] = useState<'idle' | 'searching' | 'found' | 'not_found'>('idle')
-  const [transactionAmount, setTransactionAmount] = useState('')
-  const [redeemAmount, setRedeemAmount] = useState('')
+  // --- STATE: CLIENTS (Baza użytkowników) ---
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [clientSearchQuery, setClientSearchQuery] = useState('')
 
   // --- FORMS ---
   const [isAddingPromo, setIsAddingPromo] = useState(false)
+  const [isAddingKupon, setIsAddingKupon] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [isSendingPush, setIsSendingPush] = useState(false)
   const [selectedTopic, setSelectedTopic] = useState<PushTopic>('wszystkie')
   const [pushData, setPushData] = useState({ title: '', message: '', image_url: '', scheduled_for: '' })
+  
   const [promoForm, setPromoForm] = useState({ 
-    title: '', 
-    old_price: '', 
-    new_price: '', 
-    discount: '', 
-    category: 'Zabawki', 
-    expires_at: '',
-    image_url: '' 
+    title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', expires_at: '', image_url: '' 
   })
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false)
+
+  const [kuponForm, setKuponForm] = useState<{
+    title: string; code: string; description: string; gradient: string; image_url: string; is_reusable: boolean; allowed_days: number[];
+  }>({
+    title: '', code: '', description: '', gradient: 'from-[#0055ff] to-blue-500', image_url: '', is_reusable: false, allowed_days: []
+  })
   
   // --- GTAG TRACKING ---
   const trackAdminEvent = useCallback((name: string, params: object = {}) => {
@@ -73,19 +68,21 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [pRes, hRes, sRes, aRes, allHistRes, loyaltyRes] = await Promise.all([
+      const [pRes, hRes, sRes, aRes, allHistRes, usersRes, kuponyRes] = await Promise.all([
         supabase.from('promocje').select('*').order('created_at', { ascending: false }),
         supabase.from('push_history').select('*').eq('status', 'sent').order('created_at', { ascending: false }).limit(10),
         supabase.from('push_history').select('*').eq('status', 'scheduled').order('scheduled_for', { ascending: true }),
         supabase.from('push_analytics').select('action'),
         supabase.from('push_history').select('sent_to_count').eq('status', 'sent'),
-        supabase.from('loyalty_cards').select('*').order('points', { ascending: false })
+        supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at').order('created_at', { ascending: false }),
+        supabase.from('kupony').select('*').order('created_at', { ascending: false })
       ])
 
       setPromos(pRes?.data || [])
+      setKupony(kuponyRes?.data || [])
       setHistory(hRes?.data || [])
       setScheduledPushes(sRes?.data || [])
-      setAllLoyaltyUsers(loyaltyRes?.data || [])
+      setAllUsers(usersRes?.data || [])
       
       if (aRes?.data) {
         setPushStats({
@@ -111,31 +108,27 @@ export default function AdminDashboard() {
     }
   }, [supabase, selectedTopic])
 
-  // Odpalamy fetchData natychmiast - middleware gwarantuje, że to admin
   useEffect(() => { 
     fetchData() 
   }, [fetchData])
 
-  // --- PRAWDZIWE WYLOGOWANIE ---
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    window.location.href = '/urwisek' // Przeładowanie usunie sesję z proxy i odeśle do logowania
+    window.location.href = '/urwisek'
   }
 
   // --- IMAGE UPLOAD LOGIC ---
-  async function handleFileUpload(file: File, folder: 'broadcasts' | 'promos') {
+  async function handleFileUpload(file: File, folder: 'broadcasts' | 'promos' | 'kupony') {
     setUploading(true)
     const ext = file.name.split('.').pop() ?? 'jpg'
     const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
     
     const { error } = await supabase.storage.from('push-images').upload(path, file)
-    
     if (error) {
       toast.error('Błąd wgrywania pliku')
       setUploading(false)
       return null
     }
-
     const { data } = supabase.storage.from('push-images').getPublicUrl(path)
     setUploading(false)
     return data.publicUrl
@@ -150,29 +143,59 @@ export default function AdminDashboard() {
 
   const handleAddPromo = async (e: React.FormEvent) => {
     e.preventDefault()
-    const payload = { 
-        ...promoForm, 
-        expires_at: promoForm.expires_at ? new Date(promoForm.expires_at).toISOString() : null, 
-        is_active: true 
-    }
+    const payload = { ...promoForm, expires_at: promoForm.expires_at ? new Date(promoForm.expires_at).toISOString() : null, is_active: true }
     const { error } = await supabase.from('promocje').insert([payload])
     if (!error) {
-      setIsAddingPromo(false);
-      setIsCustomCategory(false);
+      setIsAddingPromo(false); setIsCustomCategory(false);
       setPromoForm({ title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', expires_at: '', image_url: '' });
-      toast.success('Okazja opublikowana!');
-      trackAdminEvent('promo_add');
-      fetchData();
+      toast.success('Okazja opublikowana!'); trackAdminEvent('promo_add'); fetchData();
     } else toast.error('Błąd zapisu promocji')
   }
 
   const handleDeletePromo = async (id: string) => {
     if (confirm('Usunąć ofertę z serwisu?')) {
       await supabase.from('promocje').delete().eq('id', id)
-      toast.success('Usunięto ofertę')
-      trackAdminEvent('promo_delete')
-      fetchData()
+      toast.success('Usunięto ofertę'); trackAdminEvent('promo_delete'); fetchData()
     }
+  }
+
+  // --- HANDLERS: KUPONY ---
+  const onKuponImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const url = await handleFileUpload(file, 'kupony');
+    if (url) setKuponForm(prev => ({ ...prev, image_url: url }));
+  }
+
+  const handleAddKupon = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const { error } = await supabase.from('kupony').insert([{ ...kuponForm, is_active: true }])
+    if (!error) {
+      setIsAddingKupon(false);
+      setKuponForm({ title: '', code: '', description: '', gradient: 'from-[#0055ff] to-blue-500', image_url: '', is_reusable: false, allowed_days: [] });
+      toast.success('Kupon dodany pomyślnie!'); trackAdminEvent('kupon_add'); fetchData();
+    } else toast.error('Błąd zapisu kuponu')
+  }
+
+  const handleDeleteKupon = async (id: string) => {
+    if (confirm('Usunąć ten kupon rabatowy ze sklepu?')) {
+      await supabase.from('kupony').delete().eq('id', id)
+      toast.success('Usunięto kupon'); trackAdminEvent('kupon_delete'); fetchData()
+    }
+  }
+
+  const toggleDay = (dayId: number) => {
+    setKuponForm(prev => ({
+      ...prev,
+      allowed_days: prev.allowed_days.includes(dayId) 
+        ? prev.allowed_days.filter(d => d !== dayId) 
+        : [...prev.allowed_days, dayId]
+    }))
+  }
+
+  const getDayNames = (days: number[]) => {
+    if (!days || days.length === 0) return 'Codziennie'
+    const sorted = [...days].sort()
+    return sorted.map(d => DAYS_OF_WEEK.find(dw => dw.id === d)?.label).join(', ')
   }
 
   // --- HANDLERS: PUSH ---
@@ -198,53 +221,9 @@ export default function AdminDashboard() {
     } catch (error) { toast.error('Błąd wysyłki Push') } finally { setIsSendingPush(false) }
   }
 
-  // --- HANDLERS: LOYALTY ---
-  const handleSearchCard = async (e: React.FormEvent) => {
-    e.preventDefault(); if (!loyaltyPhone) return toast.error("Wpisz numer telefonu")
-    setCardSearchStatus('searching')
-    const { data } = await supabase.from('loyalty_cards').select('*').eq('phone_number', loyaltyPhone).maybeSingle()
-    if (data) { 
-      setActiveCard(data); setCardSearchStatus('found'); 
-      trackAdminEvent('loyalty_search_found')
-    } else { 
-      setActiveCard(null); setCardSearchStatus('not_found');
-    }
-  }
-
-  const handleAddPoints = async () => {
-    if (!activeCard || !transactionAmount) return;
-    const amount = Number(transactionAmount);
-    if (amount < 10) return toast.error("Minimum 10 zł.");
-    const pointsToAdd = Math.floor(amount / 10);
-    const newPoints = (activeCard.points || 0) + pointsToAdd;
-    const { error } = await supabase.from('loyalty_cards').update({ points: newPoints, last_visit_at: new Date().toISOString() }).eq('id', activeCard.id)
-    if (!error) {
-      await supabase.from('loyalty_history').insert([{ card_id: activeCard.id, source: 'sklep', points_change: pointsToAdd }]);
-      toast.success(`Dodano ${pointsToAdd} punktów! 🪙`);
-      setActiveCard({ ...activeCard, points: newPoints }); setTransactionAmount('');
-      trackAdminEvent('loyalty_add_points', { amount: pointsToAdd })
-    }
-  }
-
-  const handleRedeemPoints = async () => {
-    if (!activeCard || !redeemAmount) return;
-    const pts = Number(redeemAmount);
-    if (pts > (activeCard.points || 0)) return toast.error("Brak punktów na zniżkę!");
-    const newPoints = (activeCard.points || 0) - pts;
-    const { error } = await supabase.from('loyalty_cards').update({ points: newPoints, last_visit_at: new Date().toISOString() }).eq('id', activeCard.id)
-    if (!error) {
-      await supabase.from('loyalty_history').insert([{ card_id: activeCard.id, source: 'sala', points_change: -pts }]);
-      toast.success(`Zastosowano -${pts} zł zniżki! ☕`);
-      setActiveCard({ ...activeCard, points: newPoints }); setRedeemAmount('');
-      trackAdminEvent('loyalty_redeem_points', { amount: pts })
-    }
-  }
-
-  const filteredLoyaltyUsers = allLoyaltyUsers.filter(u => 
-    u.phone_number?.includes(loyaltySearchQuery) || u.full_name?.toLowerCase().includes(loyaltySearchQuery.toLowerCase())
+  const filteredClients = allUsers.filter(u => 
+    u.phone_number?.includes(clientSearchQuery) || u.full_name?.toLowerCase().includes(clientSearchQuery.toLowerCase())
   );
-
-  const resetSearch = () => { setCardSearchStatus('idle'); setActiveCard(null); setLoyaltyPhone(''); setLoyaltyName(''); }
 
   return (
     <div className="fixed inset-0 z-10000 bg-zinc-50 flex text-zinc-900 overflow-hidden font-sans">
@@ -261,10 +240,11 @@ export default function AdminDashboard() {
         <nav className="space-y-2 flex-1">
           {[
             { id: 'stats', label: 'Statystyki', icon: LayoutDashboard },
-            { id: 'loyalty', label: 'Złote Urwisy', icon: Coins },
+            { id: 'clients', label: 'Baza Klientów', icon: Users },
+            { id: 'kupony', label: 'Kupony Rabatowe', icon: TicketPercent },
             { id: 'promos', label: 'Katalog Ofert', icon: Tag },
             { id: 'push', label: 'Kreator Push', icon: Bell },
-            { id: 'history', label: 'Historia', icon: History }
+            { id: 'history', label: 'Historia Wysyłek', icon: History }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -295,130 +275,102 @@ export default function AdminDashboard() {
                     <p className="text-4xl font-black text-[#0055ff] tracking-tighter">{totalSubscriberCount}</p>
                   </div>
                   <div className="bg-white p-8 rounded-4xl shadow-sm border border-zinc-100">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Aktywne Portfele</p>
-                    <p className="text-4xl font-black text-amber-500 tracking-tighter">{allLoyaltyUsers.length}</p>
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Zarejestrowani Klienci</p>
+                    <p className="text-4xl font-black text-green-500 tracking-tighter">{allUsers.length}</p>
                   </div>
                   <div className="bg-white p-8 rounded-4xl shadow-sm border border-zinc-100">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Łączna Wysyłka</p>
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Łączna Wysyłka Push</p>
                     <p className="text-4xl font-black text-zinc-900 tracking-tighter">{totalSentPushes}</p>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* --- LOYALTY --- */}
-            {activeTab === 'loyalty' && (
-              <motion.div key="loyalty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+            {/* --- BAZA KLIENTÓW --- */}
+            {activeTab === 'clients' && (
+              <motion.div key="clients" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-amber-500 flex items-center gap-3">
-                    <Coins size={32} /> Złote Urwisy
+                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-green-600 flex items-center gap-3">
+                    <Users size={32} /> Nasi Klienci
                   </h2>
-                  <button onClick={() => setShowAllUsers(!showAllUsers)} className="px-6 py-3 bg-amber-100 text-amber-700 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-amber-200 transition-all border-none cursor-pointer">
-                    {showAllUsers ? 'Obsługa Klienta' : 'Wszyscy Klienci'}
-                  </button>
                 </div>
 
-                <AnimatePresence mode="wait">
-                  {showAllUsers ? (
-                    <motion.div key="all-list" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-4xl border border-zinc-100 shadow-xl overflow-hidden">
-                      <div className="p-8 border-b border-zinc-50 bg-zinc-50/50 flex justify-between items-center">
-                        <div className="relative w-full max-w-sm">
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                          <input type="text" placeholder="Szukaj klienta..." className="w-full pl-12 pr-6 py-4 rounded-2xl border-none bg-white shadow-sm font-bold outline-none focus:ring-2 ring-amber-500" value={loyaltySearchQuery} onChange={(e) => setLoyaltySearchQuery(e.target.value)} />
-                        </div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Baza: {filteredLoyaltyUsers.length} osób</p>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                          <thead className="bg-zinc-50/30 text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b border-zinc-50">
-                            <tr>
-                              <th className="p-6">Imię i Nazwisko / Telefon</th>
-                              <th className="p-6 text-center">Punkty</th>
-                              <th className="p-6">Ostatnio u nas</th>
-                              <th className="p-6 text-right">Akcja</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-zinc-50">
-                            {filteredLoyaltyUsers.map((u) => (
-                              <tr key={u.id} className="hover:bg-amber-50/30 transition-colors">
-                                <td className="p-6">
-                                  <div className="flex flex-col">
-                                    <span className="font-black text-zinc-900 uppercase italic">{u.full_name || 'Urwis bez imienia'}</span>
-                                    <span className="text-xs font-bold text-zinc-400">{u.phone_number || 'Brak telefonu'}</span>
-                                  </div>
-                                </td>
-                                <td className="p-6 text-center">
-                                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-xl font-black italic">{u.points} <Coins size={14} /></div>
-                                </td>
-                                <td className="p-6 text-xs font-bold text-zinc-500 uppercase">
-                                  {u.last_visit_at ? new Date(u.last_visit_at).toLocaleDateString() : '---'}
-                                </td>
-                                <td className="p-6 text-right">
-                                  <button onClick={() => { setLoyaltyPhone(u.phone_number); setActiveCard(u); setCardSearchStatus('found'); setShowAllUsers(false); }} className="p-3 bg-zinc-900 text-white rounded-xl hover:bg-amber-500 transition-all border-none cursor-pointer"><ChevronRight size={18} /></button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      <div className="lg:col-span-1 space-y-6">
-                        <div className="bg-white p-8 rounded-4xl shadow-sm border border-zinc-100">
-                          <h3 className="text-xl font-black uppercase text-zinc-900 mb-6">Wyszukaj Portfel</h3>
-                          <form onSubmit={handleSearchCard} className="space-y-4">
-                            <input type="tel" placeholder="Numer telefonu..." className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-amber-500 text-center text-lg" value={loyaltyPhone} onChange={e => setLoyaltyPhone(e.target.value)} />
-                            <button disabled={cardSearchStatus === 'searching'} className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase hover:bg-amber-500 transition-all border-none cursor-pointer">
-                              {cardSearchStatus === 'searching' ? <Loader2 className="animate-spin mx-auto" /> : 'Szukaj Klienta'}
-                            </button>
-                          </form>
-                          {cardSearchStatus === 'found' && <button onClick={resetSearch} className="w-full mt-4 py-3 text-zinc-400 font-bold uppercase text-[10px] tracking-widest bg-transparent border-none cursor-pointer">Zakończ obsługę</button>}
-                        </div>
-                      </div>
-
-                      <div className="lg:col-span-2">
-                        {cardSearchStatus === 'found' && activeCard ? (
-                          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-white p-10 rounded-4xl shadow-xl border border-zinc-100">
-                             <div className="flex justify-between items-center mb-10 pb-8 border-b border-zinc-50">
-                                <div>
-                                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">Aktywny Klient</p>
-                                  <h2 className="text-4xl font-black italic uppercase text-zinc-900">{activeCard.full_name || 'Klient VIP'}</h2>
-                                  <p className="text-zinc-500 font-bold tracking-widest mt-2">{activeCard.phone_number}</p>
-                                </div>
-                                <div className="text-right">
-                                   <div className="text-6xl font-black text-amber-500 flex items-center justify-end gap-3">{activeCard.points || 0} <Coins size={44} /></div>
-                                   <p className="text-xs font-bold text-zinc-400 mt-2 uppercase tracking-widest italic">Złotych Urwisów</p>
-                                </div>
-                             </div>
-
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="p-8 bg-red-50 rounded-4xl border border-red-100 space-y-6">
-                                   <div className="flex items-center gap-3 text-red-600 font-black uppercase italic tracking-tighter"><Store size={24} /> Sklep Urwis</div>
-                                   <div className="space-y-4">
-                                      <input type="number" placeholder="Kwota z paragonu (zł)" className="w-full p-4 rounded-xl border-none bg-white font-black text-xl text-center outline-none focus:ring-2 ring-red-400" value={transactionAmount} onChange={e => setTransactionAmount(e.target.value)} />
-                                      <button onClick={handleAddPoints} className="w-full py-5 bg-red-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-red-700 transition-all border-none cursor-pointer shadow-lg shadow-red-500/20">Dodaj Punkty</button>
-                                   </div>
-                                </div>
-                                <div className="p-8 bg-blue-50 rounded-4xl border border-blue-100 space-y-6">
-                                   <div className="flex items-center gap-3 text-[#0055ff] font-black uppercase italic tracking-tighter"><Coffee size={24} /> Sala Zabaw</div>
-                                   <div className="space-y-4">
-                                      <input type="number" placeholder="Wartość zniżki (zł)" className="w-full p-4 rounded-xl border-none bg-white font-black text-xl text-center outline-none focus:ring-2 ring-blue-400" value={redeemAmount} onChange={e => setRedeemAmount(e.target.value)} />
-                                      <button onClick={handleRedeemPoints} className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-[#0055ff] transition-all border-none cursor-pointer shadow-lg">Pobierz Punkty</button>
-                                   </div>
-                                </div>
-                             </div>
-                          </motion.div>
-                        ) : (
-                          <div className="h-full border-4 border-dashed border-zinc-200 rounded-4xl flex flex-col items-center justify-center text-zinc-300 p-10 text-center">
-                            <Coins size={64} className="mb-4 opacity-20" />
-                            <p className="font-black uppercase text-xs tracking-widest">Wyszukaj numer po lewej <br/> lub wybierz klienta z listy</p>
-                          </div>
+                <div className="bg-white rounded-4xl border border-zinc-100 shadow-xl overflow-hidden">
+                  <div className="p-8 border-b border-zinc-50 bg-zinc-50/50 flex justify-between items-center">
+                    <div className="relative w-full max-w-sm">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+                      <input type="text" placeholder="Szukaj po imieniu lub telefonie..." className="w-full pl-12 pr-6 py-4 rounded-2xl border-none bg-white shadow-sm font-bold outline-none focus:ring-2 ring-green-500" value={clientSearchQuery} onChange={(e) => setClientSearchQuery(e.target.value)} />
+                    </div>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Baza: {filteredClients.length} osób</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-zinc-50/30 text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b border-zinc-50">
+                        <tr>
+                          <th className="p-6">Imię i Nazwisko / Telefon</th>
+                          <th className="p-6">Data Rejestracji</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-50">
+                        {filteredClients.map((u) => (
+                          <tr key={u.id} className="hover:bg-green-50/30 transition-colors">
+                            <td className="p-6">
+                              <div className="flex flex-col">
+                                <span className="font-black text-zinc-900 uppercase italic">{u.full_name || 'Brak Imienia'}</span>
+                                <span className="text-xs font-bold text-zinc-400">{u.phone_number || 'Brak Telefonu'}</span>
+                              </div>
+                            </td>
+                            <td className="p-6 text-xs font-bold text-zinc-500 uppercase">
+                              {u.created_at ? new Date(u.created_at).toLocaleDateString('pl-PL') : '---'}
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredClients.length === 0 && (
+                          <tr><td colSpan={2} className="p-10 text-center text-zinc-400 font-bold">Brak wyników.</td></tr>
                         )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* --- KUPONY RABATOWE --- */}
+            {activeTab === 'kupony' && (
+              <motion.div key="kupony" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-[#0055ff] flex items-center gap-3">
+                    <TicketPercent size={32} /> Kupony Rabatowe
+                  </h2>
+                  <button onClick={() => setIsAddingKupon(true)} className="px-6 py-4 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-xs flex items-center gap-2 hover:bg-blue-600 transition-all border-none cursor-pointer shadow-lg">
+                    <Plus size={18} /> Nowy Kupon
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {kupony.map(k => (
+                    <div key={k.id} className={`bg-gradient-to-br ${k.gradient} p-6 rounded-[2rem] text-white shadow-xl flex flex-col justify-between relative`}>
+                      <button onClick={() => handleDeleteKupon(k.id)} className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-red-500 text-white rounded-full transition-colors cursor-pointer border-none backdrop-blur-sm z-10">
+                        <Trash2 size={16} />
+                      </button>
+                      <div className="mb-4 pr-8">
+                        <div className="flex flex-wrap gap-2 mb-3">
+                           {k.is_reusable && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Repeat size={10}/> Wielorazowy</span>}
+                           {k.allowed_days?.length > 0 && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Calendar size={10}/> {getDayNames(k.allowed_days)}</span>}
+                        </div>
+                        <h3 className="text-2xl font-black italic uppercase leading-none mb-1">{k.title}</h3>
+                        <p className="text-white/80 text-xs font-medium line-clamp-2">{k.description}</p>
+                      </div>
+                      <div className="bg-white text-zinc-900 py-3 px-4 rounded-xl inline-block border-2 border-white/20 shadow-lg text-center mt-auto">
+                        <span className="block text-[8px] uppercase font-black text-zinc-400 mb-0.5">KOD PRZY KASIE</span>
+                        <span className="text-xl font-black tracking-widest">{k.code}</span>
                       </div>
                     </div>
+                  ))}
+                  {kupony.length === 0 && (
+                    <div className="col-span-full text-center py-12 text-zinc-400 font-bold border-2 border-dashed border-zinc-200 rounded-3xl">Brak aktywnych kuponów.</div>
                   )}
-                </AnimatePresence>
+                </div>
               </motion.div>
             )}
 
@@ -469,7 +421,7 @@ export default function AdminDashboard() {
                     <div className="space-y-4">
                         <div className="relative group">
                             <input required placeholder="Tytuł powiadomienia..." className="w-full p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-[#0055ff] transition-all" value={pushData.title} onChange={e => setPushData(prev => ({ ...prev, title: e.target.value }))} />
-                            <button type="button" onClick={() => setPushData(p => ({ ...p, title: "Pst! Mamy coś nowego! 🧩" }))} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#0055ff] hover:scale-110 transition-transform"><Wand2 size={20} /></button>
+                            <button type="button" onClick={() => setPushData(p => ({ ...p, title: "Pst! Mamy coś nowego! 🧩" }))} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#0055ff] hover:scale-110 transition-transform cursor-pointer border-none bg-transparent"><Wand2 size={20} /></button>
                         </div>
                         <textarea required placeholder="Treść wiadomości..." rows={4} className="w-full p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-[#0055ff] text-sm resize-none" value={pushData.message} onChange={e => setPushData(prev => ({ ...prev, message: e.target.value }))} />
                     </div>
@@ -524,11 +476,12 @@ export default function AdminDashboard() {
                 </section>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
       </main>
 
-      {/* --- MODAL: NOWA PROMOCJA (Z WGRYWANIEM ZDJĘCIA) --- */}
+      {/* --- MODAL: NOWA PROMOCJA --- */}
       <AnimatePresence>
         {isAddingPromo && (
           <div className="fixed inset-0 z-10000 flex items-center justify-center p-6 bg-zinc-950/60 backdrop-blur-md">
@@ -538,10 +491,8 @@ export default function AdminDashboard() {
               <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-10 flex items-center gap-3 text-[#BF2024]"><Flame size={32} /> Nowa Okazja</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Nazwa */}
                 <input required placeholder="Nazwa produktu..." className="md:col-span-2 w-full p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-red-500" value={promoForm.title} onChange={e => setPromoForm(prev => ({ ...prev, title: e.target.value }))} />
                 
-                {/* Wgrywanie zdjęcia produktu */}
                 <div className="md:col-span-2">
                     <label className="flex items-center justify-center w-full h-32 transition bg-zinc-50 border-2 border-zinc-200 border-dashed rounded-2xl cursor-pointer hover:border-red-400">
                         {uploading ? (
@@ -562,66 +513,41 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-2">
-  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">
-    Kategoria produktu
-  </label>
-  
-  {!isCustomCategory ? (
-    /* --- WIDOK: WYBÓR Z LISTY --- */
-    <div className="relative">
-      <select 
-        className="w-full p-5 rounded-2xl bg-zinc-50 font-black border-none outline-none text-zinc-900 cursor-pointer appearance-none" 
-        value={promoForm.category} 
-        onChange={e => {
-          if (e.target.value === "INNA") {
-            setIsCustomCategory(true);
-            setPromoForm(prev => ({ ...prev, category: '' })); // Czyścimy pod własny wpis
-          } else {
-            setPromoForm(prev => ({ ...prev, category: e.target.value }));
-          }
-        }}
-      >
-        <option value="Zabawki">Zabawki</option>
-        <option value="LEGO">LEGO</option>
-        <option value="Szkoła">Szkoła</option>
-        <option value="Sala Zabaw">Sala Zabaw</option>
-        <option value="INNA" className="text-blue-600 font-bold">➕ Własna / Inna...</option>
-      </select>
-      {/* Ikona strzałki dla selecta */}
-      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400">
-        <ChevronDown size={18} />
-      </div>
-    </div>
-  ) : (
-    /* --- WIDOK: WPISYWANIE WŁASNEJ --- */
-    <motion.div 
-      initial={{ opacity: 0, x: -10 }} 
-      animate={{ opacity: 1, x: 0 }} 
-      className="relative"
-    >
-      <input 
-        autoFocus
-        placeholder="Wpisz nazwę nowej kategorii..." 
-        className="w-full p-5 rounded-2xl bg-white border-2 border-blue-500 font-black outline-none text-zinc-900 shadow-[0_0_15px_rgba(0,85,255,0.1)]"
-        value={promoForm.category}
-        onChange={e => setPromoForm(prev => ({ ...prev, category: e.target.value }))}
-      />
-      <button 
-        type="button"
-        onClick={() => {
-          setIsCustomCategory(false);
-          setPromoForm(prev => ({ ...prev, category: 'Zabawki' }));
-        }}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 rounded-xl transition-all"
-        title="Wróć do listy"
-      >
-        <X size={16} strokeWidth={3} />
-      </button>
-    </motion.div>
-  )}
-</div>
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Kategoria produktu</label>
+                  {!isCustomCategory ? (
+                    <div className="relative">
+                      <select 
+                        className="w-full p-5 rounded-2xl bg-zinc-50 font-black border-none outline-none text-zinc-900 cursor-pointer appearance-none" 
+                        value={promoForm.category} 
+                        onChange={e => {
+                          if (e.target.value === "INNA") {
+                            setIsCustomCategory(true); setPromoForm(prev => ({ ...prev, category: '' }));
+                          } else {
+                            setPromoForm(prev => ({ ...prev, category: e.target.value }));
+                          }
+                        }}
+                      >
+                        <option value="Zabawki">Zabawki</option>
+                        <option value="LEGO">LEGO</option>
+                        <option value="Szkoła">Szkoła</option>
+                        <option value="Sala Zabaw">Sala Zabaw</option>
+                        <option value="INNA" className="text-blue-600 font-bold">➕ Własna / Inna...</option>
+                      </select>
+                      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400"><ChevronDown size={18} /></div>
+                    </div>
+                  ) : (
+                    <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="relative">
+                      <input 
+                        autoFocus placeholder="Wpisz nazwę nowej kategorii..." 
+                        className="w-full p-5 rounded-2xl bg-white border-2 border-blue-500 font-black outline-none text-zinc-900 shadow-[0_0_15px_rgba(0,85,255,0.1)]"
+                        value={promoForm.category} onChange={e => setPromoForm(prev => ({ ...prev, category: e.target.value }))}
+                      />
+                      <button type="button" onClick={() => { setIsCustomCategory(false); setPromoForm(prev => ({ ...prev, category: 'Zabawki' })); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 rounded-xl transition-all cursor-pointer border-none"><X size={16} strokeWidth={3} /></button>
+                    </motion.div>
+                  )}
+                </div>
+
                 <input placeholder="Rabat (np. -20%)" className="w-full p-5 rounded-2xl bg-zinc-50 border-none outline-none font-black text-zinc-900 focus:ring-2 ring-red-500" value={promoForm.discount} onChange={e => setPromoForm(prev => ({ ...prev, discount: e.target.value }))} />
-                
                 <div className="space-y-1.5"><label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2">Stara Cena (zł)</label>
                   <input required placeholder="0.00" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none" value={promoForm.old_price} onChange={e => setPromoForm(prev => ({ ...prev, old_price: e.target.value }))} />
                 </div>
@@ -636,6 +562,85 @@ export default function AdminDashboard() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* --- MODAL: NOWY KUPON RABATOWY --- */}
+      <AnimatePresence>
+        {isAddingKupon && (
+          <div className="fixed inset-0 z-10000 flex items-center justify-center p-6 bg-zinc-950/60 backdrop-blur-md">
+            <motion.form initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onSubmit={handleAddKupon} className="bg-white rounded-4xl p-8 max-w-2xl w-full shadow-2xl relative text-zinc-900 border border-zinc-100 overflow-y-auto max-h-[90vh]">
+              <button type="button" onClick={() => setIsAddingKupon(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-900 border-none bg-transparent outline-none cursor-pointer"><X size={24} /></button>
+              
+              <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-8 flex items-center gap-3 text-[#0055ff]"><TicketPercent size={28} /> Nowy Kupon</h3>
+              
+              <div className="space-y-5 mb-8">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Tytuł Kuponu</label>
+                    <input required placeholder="np. -10% na klocki LEGO" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none focus:ring-2 ring-blue-500" value={kuponForm.title} onChange={e => setKuponForm(prev => ({ ...prev, title: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Kod przy kasie</label>
+                    <input required placeholder="np. LEGO10" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none focus:ring-2 ring-blue-500 uppercase tracking-widest" value={kuponForm.code} onChange={e => setKuponForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))} />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Krótki opis warunków</label>
+                  <input placeholder="np. Obowiązuje na zestawy nieprzecenione." className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-blue-500 text-sm" value={kuponForm.description} onChange={e => setKuponForm(prev => ({ ...prev, description: e.target.value }))} />
+                </div>
+
+                <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-4">
+                   <label className="flex items-center gap-3 cursor-pointer select-none">
+                     <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${kuponForm.is_reusable ? 'bg-[#0055ff] border-[#0055ff] text-white' : 'bg-white border-zinc-300 text-transparent'}`}>
+                        <Repeat size={14} />
+                     </div>
+                     <input type="checkbox" className="hidden" checked={kuponForm.is_reusable} onChange={e => setKuponForm(prev => ({...prev, is_reusable: e.target.checked}))} />
+                     <div className="flex flex-col">
+                       <span className="font-black text-sm uppercase text-blue-900">Kupon Wielorazowy</span>
+                       <span className="text-[10px] font-bold text-blue-700">Odnawia się każdego następnego dozwolonego dnia.</span>
+                     </div>
+                   </label>
+
+                   <div>
+                     <span className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2 block">Dni dostępności (Puste = Codziennie)</span>
+                     <div className="flex gap-2">
+                       {DAYS_OF_WEEK.map(day => (
+                         <button 
+                            key={day.id} type="button" onClick={() => toggleDay(day.id)}
+                            className={`w-10 h-10 rounded-xl font-black text-sm transition-all border-none cursor-pointer ${kuponForm.allowed_days.includes(day.id) ? 'bg-[#0055ff] text-white shadow-md' : 'bg-white text-blue-400 hover:bg-blue-100'}`}
+                         >
+                           {day.label}
+                         </button>
+                       ))}
+                     </div>
+                   </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-2 block">Kolor Kafelka</label>
+                  <div className="flex gap-3">
+                    {[
+                      { val: 'from-[#0055ff] to-blue-500' },
+                      { val: 'from-[#BF2024] to-red-500' },
+                      { val: 'from-amber-400 to-orange-500' },
+                      { val: 'from-pink-500 to-rose-500' },
+                      { val: 'from-emerald-500 to-green-500' },
+                      { val: 'from-zinc-800 to-black' }
+                    ].map(c => (
+                      <button key={c.val} type="button" onClick={() => setKuponForm(prev => ({...prev, gradient: c.val}))} className={`w-10 h-10 rounded-full bg-gradient-to-br ${c.val} border-4 transition-all cursor-pointer ${kuponForm.gradient === c.val ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" disabled={uploading} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-600 transition-all border-none outline-none active:scale-95 cursor-pointer italic disabled:opacity-50">
+                  {uploading ? 'Wgrywanie...' : 'Utwórz Kupon 🎟️'}
+              </button>
+            </motion.form>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   )
 }

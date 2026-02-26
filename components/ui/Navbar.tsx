@@ -21,7 +21,8 @@ import {
   Palette,
   Smile,
   User,
-  BadgePercent
+  BadgePercent,
+  ShieldAlert // 👈 Dodana ikona dla admina
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -66,6 +67,9 @@ export default function Navbar() {
     label: "...", 
     subLabel: "" 
   });
+
+  // 🚀 SPRAWDZENIE, CZY UŻYTKOWNIK TO ADMIN
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   const trackEvent = useCallback((name: string, params: object = {}) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -270,7 +274,7 @@ export default function Navbar() {
               <PushButton key={`nav-push-${pushKey}`} />
             </div>
 
-            {/* 🌟 NOWOŚĆ: Przycisk Rabaty na desktopie */}
+            {/* Przycisk Rabaty na desktopie */}
             <div className="hidden md:block">
               <Link 
                 href="/rabaty" 
@@ -282,8 +286,18 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* STREFA KLIENTA / PROFIL (Desktop) */}
-            <div className="hidden md:block">
+            {/* STREFA KLIENTA / PROFIL / ADMIN (Desktop) */}
+            <div className="hidden md:flex gap-1 md:gap-2">
+              {isAdmin && (
+                <Link 
+                  href="/admin" 
+                  className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-900 hover:bg-zinc-800 text-white border-zinc-800 shadow-sm"
+                >
+                  <span className="text-[11px] font-black uppercase mr-1.5">Admin</span>
+                  <ShieldAlert size={14} />
+                </Link>
+              )}
+
               {user ? (
                 <Link 
                   href="/profil" 
@@ -359,7 +373,7 @@ export default function Navbar() {
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
 
-                {/* 🌟 NOWOŚĆ: Strefa Rabatów jako główny przycisk na mobile */}
+                {/* Strefa Rabatów jako główny przycisk na mobile */}
                 <Link 
                   href="/rabaty" 
                   onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_rabaty_click'); }} 
@@ -374,6 +388,23 @@ export default function Navbar() {
                   </div>
                   <ChevronDown className="-rotate-90 opacity-50 size-5" />
                 </Link>
+
+                {/* 🚀 NOWOŚĆ: ADMIN W MENU MOBILNYM */}
+                {isAdmin && (
+                  <Link 
+                    href="/admin" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="flex items-center justify-between p-5 rounded-3xl border shadow-sm transition-all bg-zinc-900 text-white border-zinc-800 hover:bg-zinc-800 mt-2"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><ShieldAlert size={16} /></div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-1">Zarządzanie Sklepem</span>
+                        <span className="text-lg font-black italic uppercase leading-none">Panel Admina</span>
+                      </div>
+                    </div>
+                  </Link>
+                )}
 
                 {/* LOGOWANIE / PROFIL W MENU MOBILNYM */}
                 {user ? (

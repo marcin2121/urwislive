@@ -33,7 +33,8 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // 1. Ochrona strefy klienta (Karta Lojalnościowa)
+  // 1. Ochrona strefy klienta (np. profil, rabaty)
+  // UWAGA: Skoro usunęliśmy starą kartę, profil jest chroniony bezpośrednio w swoim pliku page.tsx, ale jeśli masz jakieś "protected", zostawiamy to:
   if (
     request.nextUrl.pathname.startsWith('/protected') &&
     !user
@@ -43,12 +44,21 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // 2. NOWE: Restrykcyjna ochrona panelu administratora
+  // 2. RESTRYKCYJNA OCHRONA PANELU ADMINISTRATORA
   if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Sprawdzamy, czy użytkownik jest zalogowany ORAZ czy to nasz konkretny email
-    if (!user || user.email !== 'admin@sklep-urwis.pl') {
+    // Sprawdzamy czy użytkownik w ogóle istnieje
+    if (!user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/urwisek' // Blokada dostępu: odsyłamy intruza na stronę główną/logowanie
+      url.pathname = '/' // Niezalogowany? Na stronę główną
+      return NextResponse.redirect(url)
+    }
+
+    // Sprawdzamy, czy w metadanych (user_metadata) ma wpisaną rolę "admin"
+    const isAdmin = user.user_metadata?.role === 'admin';
+    
+    if (!isAdmin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/' // Zalogowany, ale nie jest adminem? Na stronę główną
       return NextResponse.redirect(url)
     }
   }
