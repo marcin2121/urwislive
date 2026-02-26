@@ -29,6 +29,7 @@ export default function manifest(): MetadataRoute.Manifest {
     share_target: {
       action: '/share-target',
       method: 'GET',
+      enctype: 'application/x-www-form-urlencoded',
       params: {
         title: 'title',
         text: 'text',
@@ -48,7 +49,7 @@ export default function manifest(): MetadataRoute.Manifest {
         name: "Gorące Promocje",
         short_name: "Promocje",
         description: "Sprawdź najnowsze okazje u Urwisa",
-        url: "/oferta/promocje",
+        url: "/rabaty",
         icons: [{ src: "/android-chrome-192x192.png", sizes: "192x192" }]
       },
       {
