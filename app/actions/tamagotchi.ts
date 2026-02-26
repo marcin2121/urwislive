@@ -134,8 +134,13 @@ export async function createUrwisPet(playerName: string, petName: string, gender
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
   
-  if (!playerName || playerName.trim().length < 3) return { error: 'Twoje imię musi mieć co najmniej 3 znaki.' }
-  if (!petName || petName.trim().length < 3) return { error: 'Imię Urwisa musi mieć co najmniej 3 znaki.' }
+ // Zmień te linijki:
+if (!playerName || playerName.trim().length < 3 || playerName.length > 30) {
+    return { error: 'Twoje imię musi mieć od 3 do 30 znaków.' }
+  }
+  if (!petName || petName.trim().length < 3 || petName.length > 30) {
+    return { error: 'Imię Urwisa musi mieć od 3 do 30 znaków.' }
+  }
   if (!['boy', 'girl'].includes(gender)) return { error: 'Wybierz płeć swojego bohatera.' }
 
   const { error } = await supabase.from('urwis_pet').insert({

@@ -4,6 +4,16 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+    
+    // --- ZABEZPIECZENIE: Weryfikacja tożsamości ---
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || user.email !== 'admin@sklep-urwis.pl') {
+      console.error('❌ Nieautoryzowana próba wysłania masowego Pusha!');
+      return NextResponse.json({ error: 'Brak dostępu' }, { status: 403 });
+    }
+    // ----------------------------------------------
+
     const { title, message, topic, image } = await req.json();
 
     const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -19,8 +29,6 @@ export async function POST(req: Request) {
       publicKey,
       privateKey
     );
-
-    const supabase = await createClient();
 
     // 1. Budowanie zapytania z uwzględnieniem "wszystkie"
     let query = supabase

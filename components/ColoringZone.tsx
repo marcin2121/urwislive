@@ -7,7 +7,7 @@ import {
   RotateCcw, Download, Smartphone, ChevronLeft, 
   Eraser, Palette, Pipette, Trash2, Eye, EyeOff,
   Wand2, Star, Sun, Heart, Smile, X, Plus, Hand, Paintbrush,
-  Volume2, VolumeX, Volume1, ChevronRight
+  Volume2, VolumeX, Volume1, ChevronRight, PaintBucket
 } from 'lucide-react';
 
 export interface Template { 
@@ -45,12 +45,11 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [selectedColor, setSelectedColor] = useState(PRESET_PALETTE[0]);
   const [recentColors, setRecentColors] = useState<string[]>(['#BF2024', '#0055ff', '#FACC15', '#22C55E', '#000000']);
   const [lineWidth, setLineWidth] = useState(15);
-  const [tool, setTool] = useState<'brush' | 'magic' | 'eraser' | 'pan' | 'picker' | 'stamp'>('brush');
+  const [tool, setTool] = useState<'brush' | 'magic' | 'eraser' | 'pan' | 'picker' | 'stamp' | 'fill'>('brush');
   const [selectedStamp, setSelectedStamp] = useState(STAMP_LIST[0]);
   
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [trashHold, setTrashHold] = useState(0);
   const [zenMode, setZenMode] = useState(false);
   const [isSliderDragging, setIsSliderDragging] = useState(false);
 
@@ -68,10 +67,8 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   
   const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
   const [initialScale, setInitialScale] = useState<number>(1);
-  const [pinchCenter, setPinchCenter] = useState<{x: number, y: number} | null>(null);
 
   const [lastPoint, setLastPoint] = useState<{x: number, y: number} | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
   const [undoStack, setUndoStack] = useState<string[]>([]);
   const [isPortrait, setIsPortrait] = useState(false);
@@ -144,18 +141,6 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     };
   }, [undoStack, playSfx]);
 
-  const clearCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (ctx && canvas) {
-      ctx.globalCompositeOperation = 'source-over'; 
-      ctx.fillStyle = '#FFFFFF'; 
-      ctx.fillRect(0, 0, 1280, 720);
-      saveState(); 
-      playSfx('trash');
-    }
-  }, [saveState, playSfx]);
-
   const toggleMute = () => setIsMuted(prev => !prev);
   
   const handleVolumeChange = (val: number) => {
@@ -194,6 +179,79 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     handleZoom(scale + delta, e.clientX, e.clientY);
   };
 
+  // --- FLOOD FILL ALGORITHM (Zoptymalizowany dla wydajności) ---
+  const fillCanvas = useCallback((x: number, y: number) => {
+    const canvas = canvasRef.current;
+    const ghost = ghostCanvasRef.current;
+    if (!canvas || !ghost) return;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const gCtx = ghost.getContext('2d', { willReadFrequently: true });
+    if (!ctx || !gCtx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const startX = Math.floor(x);
+    const startY = Math.floor(y);
+
+    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return;
+
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const gData = gCtx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+    const ghostData = gData.data;
+
+    const hexToRgb = (h: string) => {
+        const int = parseInt(h.replace('#', ''), 16);
+        return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+    };
+    const [fR, fG, fB] = hexToRgb(selectedColor);
+
+    const startPos = (startY * width + startX) * 4;
+    const sR = data[startPos], sG = data[startPos+1], sB = data[startPos+2];
+
+    // Zabezpieczenia by nie wejść w nieskończoną pętlę i nie wypełniać czarnych linii z ghosta
+    if (ghostData[startPos] < 100 && ghostData[startPos+1] < 100 && ghostData[startPos+2] < 100) return;
+    if (Math.abs(sR - fR) < 10 && Math.abs(sG - fG) < 10 && Math.abs(sB - fB) < 10) return;
+
+    // Fast 1D stack array
+    const stack = new Int32Array(width * height * 2);
+    let ptr = 0;
+    stack[ptr++] = startX;
+    stack[ptr++] = startY;
+
+    const visited = new Uint8Array(width * height);
+
+    while (ptr > 0) {
+        const currentY = stack[--ptr];
+        const currentX = stack[--ptr];
+        const idx = currentY * width + currentX;
+        
+        if (visited[idx]) continue;
+        visited[idx] = 1;
+
+        const p = idx * 4;
+        
+        // Wykrywamy granice linii czarnych szablonu (Ghost Canvas)
+        if (ghostData[p] < 100 && ghostData[p+1] < 100 && ghostData[p+2] < 100) continue; 
+        
+        // Wykrywamy granice na głównym canvasie (inny kolor)
+        if (Math.abs(data[p] - sR) > 15 || Math.abs(data[p+1] - sG) > 15 || Math.abs(data[p+2] - sB) > 15) continue; 
+
+        // Rysuj (pokoloruj)
+        data[p] = fR; data[p+1] = fG; data[p+2] = fB; data[p+3] = 255;
+
+        // BFS - Dodaj sąsiadów
+        if (currentX > 0) { stack[ptr++] = currentX - 1; stack[ptr++] = currentY; }
+        if (currentX < width - 1) { stack[ptr++] = currentX + 1; stack[ptr++] = currentY; }
+        if (currentY > 0) { stack[ptr++] = currentX; stack[ptr++] = currentY - 1; }
+        if (currentY < height - 1) { stack[ptr++] = currentX; stack[ptr++] = currentY + 1; }
+    }
+    
+    ctx.putImageData(imgData, 0, 0);
+    saveState();
+    playSfx('paint');
+  }, [selectedColor, saveState, playSfx]);
+
   // --- EFEKTY ---
   useEffect(() => {
     if (isTouchDevice) return; 
@@ -214,6 +272,8 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         }
       }
       setDynamicCursor(`url(${cursorCanvas.toDataURL()}) ${cursorCanvas.width / 2} ${cursorCanvas.height / 2}, crosshair`);
+    } else if (activeTool === 'fill') {
+      setDynamicCursor('crosshair'); // Alternatywnie customowy url do ikony bucket
     } else {
       setDynamicCursor(activeTool === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'crosshair');
     }
@@ -227,6 +287,18 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     ambientAudioRef.current = audio;
     return () => { audio.pause(); audio.src = ''; };
   }, []);
+
+  // Keyboard Shortcuts (Ctrl+Z)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo]);
 
   useEffect(() => {
     trackEvent('coloring_start', { template_id: template.id, template_title: template.title });
@@ -288,14 +360,22 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       setIsDrawing(false); setIsPanning(true); setIsTemporaryPan(true);
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       setInitialPinchDistance(dist); setInitialScale(scale);
-      setPanStart({ x: ((e.touches[0].clientX + e.touches[1].clientX) / 2) - offset.x, y: ((e.touches[0].clientY + e.touches[1].clientY) / 2) - offset.y });
+      
+      // Zapisujemy startowy środek Panna (dzięki temu działa przesuwanie przy zoomie z dwóch palców)
+      setPanStart({ 
+        x: ((e.touches[0].clientX + e.touches[1].clientX) / 2) - offset.x, 
+        y: ((e.touches[0].clientY + e.touches[1].clientY) / 2) - offset.y 
+      });
       return;
     }
     const cx = e.touches ? e.touches[0].clientX : e.clientX; 
     const cy = e.touches ? e.touches[0].clientY : e.clientY;
     const pos = getPos(cx, cy);
+    
     if (tool === 'pan' || e.button === 1) {
       setIsPanning(true); setPanStart({ x: cx - offset.x, y: cy - offset.y });
+    } else if (tool === 'fill') {
+      fillCanvas(pos.x, pos.y);
     } else {
       setIsDrawing(true); setLastPoint(pos);
       if (tool !== 'stamp' && tool !== 'picker') {
@@ -306,9 +386,15 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
 
   const handleMove = (e: any) => {
     if (e.touches && e.touches.length === 2 && initialPinchDistance) {
+      // Skalowanie z dwóch palców
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       const newScale = Math.max(1, Math.min(5, initialScale * (dist / initialPinchDistance)));
       setScale(newScale);
+
+      // Panning (przesuwanie) z dwóch palców
+      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      setOffset({ x: cx - panStart.x, y: cy - panStart.y });
       return;
     }
     const cx = e.touches ? e.touches[0].clientX : e.clientX; 
@@ -338,7 +424,8 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 overflow-hidden touch-none flex flex-row p-2 gap-2 text-white font-sans">
+    // select-none blokuje systemowe zaznaczanie ekranu
+    <div className="fixed inset-0 z-50 bg-zinc-950 overflow-hidden touch-none select-none flex flex-row p-2 gap-2 text-white font-sans">
       
       {/* 📱 BLOKADA ORIENTACJI */}
       <AnimatePresence>
@@ -360,26 +447,36 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <ChevronLeft size={20} /><span className="hidden lg:block ml-3 font-black uppercase text-xs">Wróć</span>
           </button>
           
-          <div className="flex lg:hidden flex-col gap-2">
+          <div className="flex lg:hidden flex-col gap-2 mt-1">
             <button 
-              onClick={() => ['brush','magic','picker'].includes(tool) ? setShowColorPicker(true) : setTool('brush')} 
-              className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center ${['brush','magic','picker'].includes(tool) ? 'border-white scale-110 shadow-lg' : 'border-white/30'}`} 
+              onClick={() => setShowColorPicker(true)} 
+              className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center border-white/30`} 
               style={{ backgroundColor: tool === 'magic' ? 'transparent' : selectedColor }}
             >
               {tool === 'magic' ? <div className="absolute inset-0 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)] animate-spin-slow rounded-xl" /> : <Palette size={20} />}
             </button>
+            <button onClick={() => setTool('brush')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border ${tool === 'brush' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Paintbrush size={20}/></button>
+            <button onClick={() => setTool('fill')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border ${tool === 'fill' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><PaintBucket size={20}/></button>
+            <button onClick={() => setTool('pan')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border ${tool === 'pan' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Hand size={20}/></button>
           </div>
 
           <div className="hidden lg:flex flex-col gap-8 p-4">
              <div className="grid grid-cols-2 gap-3">
-                {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
-                  <button key={t.id} onClick={() => setTool(t.id as any)} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
-                    <t.i size={24} /><span className="text-[10px] font-black uppercase">{t.n}</span>
-                  </button>
-                ))}
+               {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'fill',n:'Wiadro',i:PaintBucket}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
+                 <button key={t.id} onClick={() => setTool(t.id as any)} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
+                   <t.i size={24} /><span className="text-[10px] font-black uppercase">{t.n}</span>
+                 </button>
+               ))}
              </div>
-             <div className="grid grid-cols-5 gap-2 bg-white/5 p-4 rounded-3xl border border-white/10">
+             
+             {/* NOWA PALETA Z DOWOLNYM KOLOREM DLA DESKTOPA */}
+             <div className="grid grid-cols-6 gap-2 bg-white/5 p-4 rounded-3xl border border-white/10">
                 {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 ${selectedColor===c?'border-white scale-110 shadow-md':'border-white/10'}`} style={{ backgroundColor: c }} />)}
+                
+                <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 relative cursor-pointer hover:border-white/50 transition-colors" title="Własny kolor">
+                  <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => selectColor(e.target.value)} />
+                  <Plus size={16} />
+                </label>
              </div>
           </div>
         </motion.div>
@@ -393,7 +490,9 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         >
           <motion.div animate={{ scale, x: offset.x, y: offset.y }} className="absolute inset-0 w-full h-full origin-center">
             <canvas ref={canvasRef} width={1280} height={720} className="absolute inset-0 w-full h-full pointer-events-none" />
-            <Image src={template.src} alt={template.title} fill priority className="object-fill pointer-events-none" style={{ mixBlendMode: 'multiply' }} />
+            
+            {/* draggable=false zapobiega ghostowaniu systemowemu */}
+            <Image src={template.src} alt={template.title} fill priority draggable={false} className="object-fill pointer-events-none select-none" style={{ mixBlendMode: 'multiply' }} />
           </motion.div>
 
           <AnimatePresence>
@@ -443,7 +542,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
           {/* DESKTOP UI */}
           <div className="hidden lg:flex flex-col gap-6 p-6 bg-white/5 rounded-3xl border border-white/10 h-full">
               <div className="space-y-4">
-                <div className="flex justify-between text-[10px] font-black uppercase"><span>Pędzel</span><span>{lineWidth}px</span></div>
+                <div className="flex justify-between text-[10px] font-black uppercase"><span>Rozmiar</span><span>{lineWidth}px</span></div>
                 <input type="range" min="1" max="60" value={lineWidth} onChange={(e) => setLineWidth(parseInt(e.target.value))} className="w-full accent-[#0055ff]" />
               </div>
               <div className="space-y-4 pt-4 border-t border-white/10">
@@ -454,7 +553,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
                 </div>
               </div>
               <div className="mt-auto space-y-3">
-                <button onClick={undo} disabled={undoStack.length <= 1} className="w-full py-4 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs disabled:opacity-30"><RotateCcw size={16}/> Cofnij</button>
+                <button onClick={undo} disabled={undoStack.length <= 1} className="w-full py-4 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs disabled:opacity-30"><RotateCcw size={16}/> Cofnij <span className="text-[9px] opacity-50 font-normal ml-1">(Ctrl+Z)</span></button>
                 <button onClick={handleDownload} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 shadow-xl hover:bg-blue-600 transition-all"><Download size={20} /> Pobierz</button>
               </div>
           </div>

@@ -22,9 +22,7 @@ const QUICK_TEMPLATES = [
 export default function AdminDashboard() {
   const supabase = useMemo(() => createClient(), [])
 
-  // --- STATE: AUTH & NAV ---
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
+  // --- STATE: NAV ---
   const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history' | 'loyalty'>('stats')
 
   // --- STATE: DATA ---
@@ -64,6 +62,7 @@ export default function AdminDashboard() {
     image_url: '' 
   })
   const [isCustomCategory, setIsCustomCategory] = useState(false);
+  
   // --- GTAG TRACKING ---
   const trackAdminEvent = useCallback((name: string, params: object = {}) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -112,17 +111,15 @@ export default function AdminDashboard() {
     }
   }, [supabase, selectedTopic])
 
-  useEffect(() => { if (isAuthenticated) fetchData() }, [isAuthenticated, fetchData])
+  // Odpalamy fetchData natychmiast - middleware gwarantuje, że to admin
+  useEffect(() => { 
+    fetchData() 
+  }, [fetchData])
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password === 'URWIS2026') {
-        setIsAuthenticated(true)
-        trackAdminEvent('login_success')
-    } else {
-        toast.error('Hasło niepoprawne!')
-        trackAdminEvent('login_failed')
-    }
+  // --- PRAWDZIWE WYLOGOWANIE ---
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = '/urwisek' // Przeładowanie usunie sesję z proxy i odeśle do logowania
   }
 
   // --- IMAGE UPLOAD LOGIC ---
@@ -244,25 +241,10 @@ export default function AdminDashboard() {
   }
 
   const filteredLoyaltyUsers = allLoyaltyUsers.filter(u => 
-    u.phone_number.includes(loyaltySearchQuery) || u.full_name?.toLowerCase().includes(loyaltySearchQuery.toLowerCase())
+    u.phone_number?.includes(loyaltySearchQuery) || u.full_name?.toLowerCase().includes(loyaltySearchQuery.toLowerCase())
   );
 
   const resetSearch = () => { setCardSearchStatus('idle'); setActiveCard(null); setLoyaltyPhone(''); setLoyaltyName(''); }
-
-  if (!isAuthenticated) {
-    return (
-      <div className="fixed inset-0 z-10000 flex items-center justify-center bg-zinc-950/90 backdrop-blur-xl p-6">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-10 rounded-4xl shadow-2xl w-full max-w-md text-center border border-white/20">
-          <div className="w-20 h-20 bg-[#0055ff] rounded-3xl flex items-center justify-center mx-auto mb-6 text-white shadow-xl shadow-blue-500/30"><Lock size={32} /></div>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter text-zinc-900 mb-8">Admin Urwis</h2>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input type="password" placeholder="Hasło dostępu..." className="w-full p-5 rounded-2xl bg-zinc-100 border border-zinc-200 text-center font-black text-2xl focus:ring-2 ring-[#0055ff] outline-none transition-all" value={password} onChange={e => setPassword(e.target.value)} autoFocus />
-            <button className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#0055ff] transition-all shadow-lg border-none cursor-pointer">Zaloguj się</button>
-          </form>
-        </motion.div>
-      </div>
-    )
-  }
 
   return (
     <div className="fixed inset-0 z-10000 bg-zinc-50 flex text-zinc-900 overflow-hidden font-sans">
@@ -294,7 +276,7 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        <button onClick={() => setIsAuthenticated(false)} className="flex items-center gap-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all mt-auto border-none bg-transparent cursor-pointer">
+        <button onClick={handleLogout} className="flex items-center gap-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all mt-auto border-none bg-transparent cursor-pointer">
           <LogOut size={20} /> Wyloguj się
         </button>
       </aside>
@@ -362,7 +344,7 @@ export default function AdminDashboard() {
                                 <td className="p-6">
                                   <div className="flex flex-col">
                                     <span className="font-black text-zinc-900 uppercase italic">{u.full_name || 'Urwis bez imienia'}</span>
-                                    <span className="text-xs font-bold text-zinc-400">{u.phone_number}</span>
+                                    <span className="text-xs font-bold text-zinc-400">{u.phone_number || 'Brak telefonu'}</span>
                                   </div>
                                 </td>
                                 <td className="p-6 text-center">
