@@ -368,7 +368,7 @@ export default function Navbar() {
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white"><BadgePercent size={24} /></div>
                     <div className="flex flex-col">
-                      <span className="text-[12px] font-black uppercase opacity-80 leading-none mb-1">Sklep Urwis Club</span>
+                      <span className="text-[12px] font-black uppercase opacity-80 leading-none mb-1">Klub Urwisa</span>
                       <span className="text-xl font-black italic uppercase leading-none">Strefa Rabatów</span>
                     </div>
                   </div>

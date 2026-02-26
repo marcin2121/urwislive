@@ -183,7 +183,7 @@ export default function ProfilePage() {
                       </p>
                       <p className="text-xs font-medium text-zinc-600 opacity-80 leading-relaxed mb-4">
                         {marketingConsent 
-                          ? "Masz dostęp do ukrytych rabatów i ofert specjalnych dla członków Sklep Urwis Club!" 
+                          ? "Masz dostęp do ukrytych rabatów i ofert specjalnych dla członków Klubu Urwisa!" 
                           : "Obecnie nie masz dostępu do ukrytych rabatów. Włącz zgodę, aby odblokować kody zniżkowe widoczne w zakładce Rabaty."}
                       </p>
                       <button 

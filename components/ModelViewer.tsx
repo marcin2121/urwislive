@@ -5,11 +5,11 @@ import {
 } from 'react';
 import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber';
 import {
-  OrbitControls, useGLTF, useFBX, useProgress, Html, Environment, ContactShadows,
+  OrbitControls, useGLTF, useFBX, Html, Environment, ContactShadows,
 } from '@react-three/drei';
 import { SkeletonUtils } from 'three-stdlib';
 import * as THREE from 'three';
-import Image from 'next/image'; // 🚀 DODANY IMPORT DLA OPTYMALIZACJI
+import Image from 'next/image';
 
 // ─── Stałe ──────────────────────────────────────────────────────────────────────
 
@@ -74,26 +74,26 @@ export interface ViewerProps {
   onModelLoaded?: () => void;
 }
 
-// ─── Loader (Zoptymalizowany Image) ──────────────────────────────────────────────
+// ─── Loader (Bez useProgress, naprawia błąd setState w React 18) ────────────────
 
 const Loader: FC<{ placeholderSrc?: string }> = ({ placeholderSrc }) => {
-  const { progress, active } = useProgress();
-  if (!active && progress >= 100) return null;
   return (
     <Html center>
       {placeholderSrc ? (
-        // 🚀 ZMIENIONE NA <Image /> dla 100/100 w Lighthouse
         <Image 
           src={placeholderSrc} 
           width={128} 
           height={128} 
-          className="animate-pulse blur-md rounded-full" 
+          className="animate-pulse blur-md rounded-full select-none pointer-events-none" 
           alt="Ładowanie modelu 3D"
-          priority // Ładujemy z wysokim priorytetem, żeby uniknąć CLS
+          priority 
         />
       ) : (
-        <div className="text-zinc-600 font-bold bg-white/80 backdrop-blur-md px-6 py-3 rounded-full shadow-xl border border-white/20">
-          {Math.round(progress)}%
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-[#0055ff]/30 border-t-[#0055ff] rounded-full animate-spin"></div>
+          <span className="text-xs font-black uppercase tracking-widest text-zinc-600 bg-white/80 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg border border-white/40">
+            Wczytywanie
+          </span>
         </div>
       )}
     </Html>
