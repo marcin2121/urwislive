@@ -7,7 +7,7 @@ import {
   Bell, Send, Wand2, Clock, Zap, Flame,
   Image as ImageIcon, Coffee, LayoutDashboard, History, ChevronRight,
   Search, Users, ChevronDown, CheckCircle2,
-  Calendar, Repeat, TicketPercent
+  Calendar, Repeat, TicketPercent, Menu
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -23,6 +23,7 @@ export default function AdminDashboard() {
 
   // --- STATE: NAV ---
   const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history' | 'clients' | 'kupony'>('stats')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // 🚀 NOWOŚĆ: Stan dla menu mobilnego
 
   // --- STATE: DATA ---
   const [promos, setPromos] = useState<any[]>([])
@@ -225,11 +226,32 @@ export default function AdminDashboard() {
     u.phone_number?.includes(clientSearchQuery) || u.full_name?.toLowerCase().includes(clientSearchQuery.toLowerCase())
   );
 
+  // Zmienne nawigacji
+  const navItems = [
+    { id: 'stats', label: 'Statystyki', icon: LayoutDashboard },
+    { id: 'clients', label: 'Baza Klientów', icon: Users },
+    { id: 'kupony', label: 'Kupony Rabatowe', icon: TicketPercent },
+    { id: 'promos', label: 'Katalog Ofert', icon: Tag },
+    { id: 'push', label: 'Kreator Push', icon: Bell },
+    { id: 'history', label: 'Historia Wysyłek', icon: History }
+  ] as const;
+
   return (
-    <div className="fixed inset-0 z-10000 bg-zinc-50 flex text-zinc-900 overflow-hidden font-sans">
+    <div className="fixed inset-0 z-[10000] bg-zinc-50 flex flex-col md:flex-row text-zinc-900 overflow-hidden font-sans">
       
-      {/* SIDEBAR */}
-      <aside className="w-72 bg-white border-r border-zinc-200 flex flex-col h-full shrink-0 p-6 overflow-y-auto">
+      {/* 🚀 TOP BAR (Tylko Mobile) */}
+      <div className="md:hidden flex items-center justify-between bg-white border-b border-zinc-200 p-4 shrink-0 shadow-sm z-50">
+        <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">Admin <span className="text-[#0055ff]">Urwis</span></h1>
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-2 bg-zinc-100 rounded-xl text-zinc-600 hover:bg-zinc-200 transition-colors border-none"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* 🚀 SIDEBAR (Desktop) */}
+      <aside className="hidden md:flex w-72 bg-white border-r border-zinc-200 flex-col h-full shrink-0 p-6 overflow-y-auto">
         <div className="mb-10 px-2">
           <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none">Admin <span className="text-[#0055ff]">Urwis</span></h1>
           <div className="flex items-center gap-2 mt-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
@@ -238,17 +260,10 @@ export default function AdminDashboard() {
         </div>
 
         <nav className="space-y-2 flex-1">
-          {[
-            { id: 'stats', label: 'Statystyki', icon: LayoutDashboard },
-            { id: 'clients', label: 'Baza Klientów', icon: Users },
-            { id: 'kupony', label: 'Kupony Rabatowe', icon: TicketPercent },
-            { id: 'promos', label: 'Katalog Ofert', icon: Tag },
-            { id: 'push', label: 'Kreator Push', icon: Bell },
-            { id: 'history', label: 'Historia Wysyłek', icon: History }
-          ].map(({ id, label, icon: Icon }) => (
+          {navItems.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as any)}
+              onClick={() => setActiveTab(id)}
               className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all border-none outline-none cursor-pointer ${activeTab === id ? 'bg-blue-50 text-[#0055ff]' : 'hover:bg-zinc-100 text-zinc-500'}`}
             >
               <Icon size={20} aria-hidden="true" /> {label}
@@ -261,26 +276,64 @@ export default function AdminDashboard() {
         </button>
       </aside>
 
-      <main className="flex-1 h-full overflow-y-auto p-10 bg-zinc-50/50 custom-scrollbar">
-        <div className="max-w-6xl mx-auto pb-20">
+      {/* 🚀 MODAL: MENU MOBILNE */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[11000] md:hidden"
+            />
+            <motion.div 
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-[280px] bg-white shadow-2xl z-[12000] md:hidden flex flex-col p-6 overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">Menu <span className="text-[#0055ff]">Admin</span></h1>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-zinc-100 rounded-full text-zinc-600 border-none"><X size={20} /></button>
+              </div>
+
+              <nav className="space-y-2 flex-1">
+                {navItems.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => { setActiveTab(id); setIsMobileMenuOpen(false); }}
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all border-none outline-none cursor-pointer ${activeTab === id ? 'bg-blue-50 text-[#0055ff]' : 'hover:bg-zinc-100 text-zinc-500'}`}
+                  >
+                    <Icon size={20} aria-hidden="true" /> {label}
+                  </button>
+                ))}
+              </nav>
+
+              <button onClick={handleLogout} className="flex items-center gap-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all mt-8 border-none bg-transparent cursor-pointer">
+                <LogOut size={20} /> Wyloguj się
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <main className="flex-1 h-full overflow-y-auto p-4 md:p-10 bg-zinc-50/50 custom-scrollbar">
+        <div className="max-w-6xl mx-auto pb-24 md:pb-20">
           <AnimatePresence mode="wait">
             
             {/* --- DASHBOARD --- */}
             {activeTab === 'stats' && (
-              <motion.div key="stats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter text-zinc-900">Dashboard</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white p-8 rounded-4xl shadow-sm border border-zinc-100">
+              <motion.div key="stats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
+                <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-zinc-900">Dashboard</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-4xl shadow-sm border border-zinc-100">
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Baza Odbiorców Push</p>
-                    <p className="text-4xl font-black text-[#0055ff] tracking-tighter">{totalSubscriberCount}</p>
+                    <p className="text-3xl md:text-4xl font-black text-[#0055ff] tracking-tighter">{totalSubscriberCount}</p>
                   </div>
-                  <div className="bg-white p-8 rounded-4xl shadow-sm border border-zinc-100">
+                  <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-4xl shadow-sm border border-zinc-100">
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Zarejestrowani Klienci</p>
-                    <p className="text-4xl font-black text-green-500 tracking-tighter">{allUsers.length}</p>
+                    <p className="text-3xl md:text-4xl font-black text-green-500 tracking-tighter">{allUsers.length}</p>
                   </div>
-                  <div className="bg-white p-8 rounded-4xl shadow-sm border border-zinc-100">
+                  <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-4xl shadow-sm border border-zinc-100">
                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Łączna Wysyłka Push</p>
-                    <p className="text-4xl font-black text-zinc-900 tracking-tighter">{totalSentPushes}</p>
+                    <p className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tighter">{totalSentPushes}</p>
                   </div>
                 </div>
               </motion.div>
@@ -288,39 +341,39 @@ export default function AdminDashboard() {
 
             {/* --- BAZA KLIENTÓW --- */}
             {activeTab === 'clients' && (
-              <motion.div key="clients" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+              <motion.div key="clients" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-green-600 flex items-center gap-3">
-                    <Users size={32} /> Nasi Klienci
+                  <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-green-600 flex items-center gap-3">
+                    <Users size={28} className="md:w-8 md:h-8" /> Nasi Klienci
                   </h2>
                 </div>
 
-                <div className="bg-white rounded-4xl border border-zinc-100 shadow-xl overflow-hidden">
-                  <div className="p-8 border-b border-zinc-50 bg-zinc-50/50 flex justify-between items-center">
-                    <div className="relative w-full max-w-sm">
+                <div className="bg-white rounded-3xl md:rounded-4xl border border-zinc-100 shadow-xl overflow-hidden">
+                  <div className="p-4 md:p-8 border-b border-zinc-50 bg-zinc-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="relative w-full md:max-w-sm">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                      <input type="text" placeholder="Szukaj po imieniu lub telefonie..." className="w-full pl-12 pr-6 py-4 rounded-2xl border-none bg-white shadow-sm font-bold outline-none focus:ring-2 ring-green-500" value={clientSearchQuery} onChange={(e) => setClientSearchQuery(e.target.value)} />
+                      <input type="text" placeholder="Szukaj (imię/telefon)..." className="w-full pl-12 pr-6 py-4 rounded-2xl border-none bg-white shadow-sm font-bold outline-none focus:ring-2 ring-green-500 text-sm" value={clientSearchQuery} onChange={(e) => setClientSearchQuery(e.target.value)} />
                     </div>
-                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Baza: {filteredClients.length} osób</p>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 md:ml-0">Baza: {filteredClients.length} osób</p>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-zinc-50/30 text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b border-zinc-50">
                         <tr>
-                          <th className="p-6">Imię i Nazwisko / Telefon</th>
-                          <th className="p-6">Data Rejestracji</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap">Imię / Telefon</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap">Rejestracja</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-50">
                         {filteredClients.map((u) => (
                           <tr key={u.id} className="hover:bg-green-50/30 transition-colors">
-                            <td className="p-6">
+                            <td className="p-4 md:p-6">
                               <div className="flex flex-col">
-                                <span className="font-black text-zinc-900 uppercase italic">{u.full_name || 'Brak Imienia'}</span>
-                                <span className="text-xs font-bold text-zinc-400">{u.phone_number || 'Brak Telefonu'}</span>
+                                <span className="font-black text-zinc-900 uppercase italic text-sm md:text-base">{u.full_name || 'Brak Imienia'}</span>
+                                <span className="text-[10px] md:text-xs font-bold text-zinc-400">{u.phone_number || 'Brak Telefonu'}</span>
                               </div>
                             </td>
-                            <td className="p-6 text-xs font-bold text-zinc-500 uppercase">
+                            <td className="p-4 md:p-6 text-[10px] md:text-xs font-bold text-zinc-500 uppercase whitespace-nowrap">
                               {u.created_at ? new Date(u.created_at).toLocaleDateString('pl-PL') : '---'}
                             </td>
                           </tr>
@@ -337,33 +390,33 @@ export default function AdminDashboard() {
 
             {/* --- KUPONY RABATOWE --- */}
             {activeTab === 'kupony' && (
-              <motion.div key="kupony" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-[#0055ff] flex items-center gap-3">
-                    <TicketPercent size={32} /> Kupony Rabatowe
+              <motion.div key="kupony" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-[#0055ff] flex items-center gap-3">
+                    <TicketPercent size={28} className="md:w-8 md:h-8" /> Kupony
                   </h2>
-                  <button onClick={() => setIsAddingKupon(true)} className="px-6 py-4 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-xs flex items-center gap-2 hover:bg-blue-600 transition-all border-none cursor-pointer shadow-lg">
+                  <button onClick={() => setIsAddingKupon(true)} className="w-full sm:w-auto px-6 py-4 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-blue-600 transition-all border-none cursor-pointer shadow-lg">
                     <Plus size={18} /> Nowy Kupon
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {kupony.map(k => (
-                    <div key={k.id} className={`bg-gradient-to-br ${k.gradient} p-6 rounded-[2rem] text-white shadow-xl flex flex-col justify-between relative`}>
+                    <div key={k.id} className={`bg-gradient-to-br ${k.gradient} p-5 md:p-6 rounded-3xl md:rounded-[2rem] text-white shadow-xl flex flex-col justify-between relative min-h-[200px]`}>
                       <button onClick={() => handleDeleteKupon(k.id)} className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-red-500 text-white rounded-full transition-colors cursor-pointer border-none backdrop-blur-sm z-10">
                         <Trash2 size={16} />
                       </button>
                       <div className="mb-4 pr-8">
-                        <div className="flex flex-wrap gap-2 mb-3">
-                           {k.is_reusable && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Repeat size={10}/> Wielorazowy</span>}
-                           {k.allowed_days?.length > 0 && <span className="bg-white/20 text-white flex items-center gap-1 px-3 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Calendar size={10}/> {getDayNames(k.allowed_days)}</span>}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                           {k.is_reusable && <span className="bg-white/20 text-white flex items-center gap-1 px-2.5 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Repeat size={10}/> Wielorazowy</span>}
+                           {k.allowed_days?.length > 0 && <span className="bg-white/20 text-white flex items-center gap-1 px-2.5 py-1 rounded-full font-black uppercase tracking-widest text-[8px] backdrop-blur-sm border border-white/30"><Calendar size={10}/> {getDayNames(k.allowed_days)}</span>}
                         </div>
-                        <h3 className="text-2xl font-black italic uppercase leading-none mb-1">{k.title}</h3>
-                        <p className="text-white/80 text-xs font-medium line-clamp-2">{k.description}</p>
+                        <h3 className="text-xl md:text-2xl font-black italic uppercase leading-none mb-1">{k.title}</h3>
+                        <p className="text-white/80 text-[10px] md:text-xs font-medium line-clamp-2">{k.description}</p>
                       </div>
-                      <div className="bg-white text-zinc-900 py-3 px-4 rounded-xl inline-block border-2 border-white/20 shadow-lg text-center mt-auto">
+                      <div className="bg-white text-zinc-900 py-2.5 px-4 rounded-xl inline-block border-2 border-white/20 shadow-lg text-center mt-auto w-fit">
                         <span className="block text-[8px] uppercase font-black text-zinc-400 mb-0.5">KOD PRZY KASIE</span>
-                        <span className="text-xl font-black tracking-widest">{k.code}</span>
+                        <span className="text-lg md:text-xl font-black tracking-widest">{k.code}</span>
                       </div>
                     </div>
                   ))}
@@ -376,26 +429,26 @@ export default function AdminDashboard() {
 
             {/* --- PROMOS --- */}
             {activeTab === 'promos' && (
-              <motion.div key="promos" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-zinc-900">Katalog Ofert</h2>
-                  <button onClick={() => setIsAddingPromo(true)} className="px-6 py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-xs flex items-center gap-2 hover:bg-[#BF2024] transition-all border-none cursor-pointer shadow-lg"><Plus size={18} /> Nowa Promocja</button>
+              <motion.div key="promos" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-zinc-900">Katalog Ofert</h2>
+                  <button onClick={() => setIsAddingPromo(true)} className="w-full sm:w-auto px-6 py-4 bg-zinc-900 text-white rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-[#BF2024] transition-all border-none cursor-pointer shadow-lg"><Plus size={18} /> Nowa Promocja</button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {promos.map(p => (
-                    <div key={p.id} className="bg-white p-6 rounded-4xl border border-zinc-100 shadow-sm flex flex-col justify-between group relative overflow-hidden">
+                    <div key={p.id} className="bg-white p-5 md:p-6 rounded-3xl md:rounded-4xl border border-zinc-100 shadow-sm flex flex-col justify-between group relative overflow-hidden">
                       {p.image_url && <div className="absolute top-0 right-0 w-24 h-24 bg-zinc-100 opacity-20 -mr-6 -mt-6 rounded-full blur-2xl" />}
                       <div>
-                        <span className={`px-3 py-1 text-[8px] font-black uppercase rounded-lg mb-4 inline-block ${p.category === 'LEGO' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-[#0055ff]'}`}>{p.category}</span>
-                        <h3 className="text-xl font-black uppercase italic text-zinc-900 line-clamp-2 mb-4 leading-[0.95]">{p.title}</h3>
+                        <span className={`px-2.5 py-1 text-[8px] font-black uppercase rounded-lg mb-3 inline-block ${p.category === 'LEGO' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-[#0055ff]'}`}>{p.category}</span>
+                        <h3 className="text-lg md:text-xl font-black uppercase italic text-zinc-900 line-clamp-2 mb-3 leading-[0.95]">{p.title}</h3>
                         <div className="flex items-baseline gap-2 mb-4">
-                          <span className="text-3xl font-black text-zinc-900">{p.new_price} zł</span>
-                          <span className="text-sm text-zinc-400 line-through font-bold">{p.old_price} zł</span>
+                          <span className="text-2xl md:text-3xl font-black text-zinc-900">{p.new_price} zł</span>
+                          <span className="text-xs md:text-sm text-zinc-400 line-through font-bold">{p.old_price} zł</span>
                         </div>
                       </div>
                       <div className="flex justify-between items-center pt-4 border-t border-zinc-50">
                         <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{p.is_active ? '✅ Widoczna' : '❌ Ukryta'}</span>
-                        <button onClick={() => handleDeletePromo(p.id)} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all border-none cursor-pointer"><Trash2 size={18} /></button>
+                        <button onClick={() => handleDeletePromo(p.id)} className="p-2 md:p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all border-none cursor-pointer"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   ))}
@@ -405,37 +458,37 @@ export default function AdminDashboard() {
 
             {/* --- PUSHBroadcaster --- */}
             {activeTab === 'push' && (
-              <motion.div key="push" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-2xl">
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter">Broadcasting Center</h2>
-                <section className="bg-white p-10 rounded-4xl shadow-xl border border-zinc-100 space-y-8">
-                  <div className="space-y-4">
+              <motion.div key="push" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8 max-w-2xl">
+                <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter">Wysyłka Push</h2>
+                <section className="bg-white p-6 md:p-10 rounded-3xl md:rounded-4xl shadow-xl border border-zinc-100 space-y-6 md:space-y-8">
+                  <div className="space-y-3 md:space-y-4">
                     <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest ml-1">Kto ma otrzymać wiadomość?</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {PUSH_CATEGORIES.map(cat => (
-                        <button key={cat.id} type="button" onClick={() => setSelectedTopic(cat.id)} className={`py-3 rounded-xl text-[10px] font-black uppercase transition-all border-2 border-solid outline-none cursor-pointer ${selectedTopic === cat.id ? 'bg-[#0055ff] border-[#0055ff] text-white shadow-md' : 'bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200'}`}>{cat.label}</button>
+                        <button key={cat.id} type="button" onClick={() => setSelectedTopic(cat.id)} className={`py-3 px-2 rounded-xl text-[9px] md:text-[10px] font-black uppercase transition-all border-2 border-solid outline-none cursor-pointer text-center leading-tight ${selectedTopic === cat.id ? 'bg-[#0055ff] border-[#0055ff] text-white shadow-md' : 'bg-white border-zinc-100 text-zinc-400 hover:border-zinc-200'}`}>{cat.label}</button>
                       ))}
                     </div>
                   </div>
 
                   <form onSubmit={handleSendPush} className="space-y-4">
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                         <div className="relative group">
-                            <input required placeholder="Tytuł powiadomienia..." className="w-full p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-[#0055ff] transition-all" value={pushData.title} onChange={e => setPushData(prev => ({ ...prev, title: e.target.value }))} />
-                            <button type="button" onClick={() => setPushData(p => ({ ...p, title: "Pst! Mamy coś nowego! 🧩" }))} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#0055ff] hover:scale-110 transition-transform cursor-pointer border-none bg-transparent"><Wand2 size={20} /></button>
+                            <input required placeholder="Tytuł powiadomienia..." className="w-full p-4 md:p-5 rounded-2xl bg-zinc-50 border-none font-bold text-sm md:text-base text-zinc-900 outline-none focus:ring-2 ring-[#0055ff] transition-all pr-12" value={pushData.title} onChange={e => setPushData(prev => ({ ...prev, title: e.target.value }))} />
+                            <button type="button" onClick={() => setPushData(p => ({ ...p, title: "Pst! Mamy coś nowego! 🧩" }))} className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 text-[#0055ff] hover:scale-110 transition-transform cursor-pointer border-none bg-transparent"><Wand2 size={20} /></button>
                         </div>
-                        <textarea required placeholder="Treść wiadomości..." rows={4} className="w-full p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-[#0055ff] text-sm resize-none" value={pushData.message} onChange={e => setPushData(prev => ({ ...prev, message: e.target.value }))} />
+                        <textarea required placeholder="Treść wiadomości..." rows={4} className="w-full p-4 md:p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-[#0055ff] text-sm resize-none" value={pushData.message} onChange={e => setPushData(prev => ({ ...prev, message: e.target.value }))} />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                       <input type="datetime-local" className="bg-zinc-50 rounded-2xl p-4 border-none font-bold text-xs text-zinc-900" value={pushData.scheduled_for} onChange={e => setPushData(prev => ({ ...prev, scheduled_for: e.target.value }))} />
                       <label className="bg-zinc-50 p-4 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-zinc-100 transition-all border border-dashed border-zinc-200">
-                          {uploading ? <Loader2 className="animate-spin text-[#0055ff]" /> : <span className="text-[10px] font-black uppercase text-zinc-400">{pushData.image_url ? '✅ Zdjęcie gotowe' : 'Dodaj zdjęcie'}</span>}
+                          {uploading ? <Loader2 className="animate-spin text-[#0055ff]" /> : <span className="text-[10px] font-black uppercase text-zinc-400 text-center">{pushData.image_url ? '✅ Zdjęcie gotowe' : 'Dodaj zdjęcie'}</span>}
                           <input type="file" className="hidden" onChange={onPushImageUpload} accept="image/*" />
                       </label>
                     </div>
 
-                    <button disabled={isSendingPush || subscriberCount === 0} className="w-full py-6 bg-[#0055ff] text-white rounded-3xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-700 active:scale-95 transition-all border-none outline-none disabled:opacity-50 cursor-pointer mt-4 italic">
-                      {isSendingPush ? <Loader2 className="animate-spin mx-auto" /> : pushData.scheduled_for ? 'Zaplanuj w kolejce' : `Wyślij do ${subscriberCount} osób teraz 🚀`}
+                    <button disabled={isSendingPush || subscriberCount === 0} className="w-full py-5 md:py-6 bg-[#0055ff] text-white rounded-2xl md:rounded-3xl font-black uppercase tracking-widest md:tracking-[0.2em] shadow-xl hover:bg-blue-700 active:scale-95 transition-all border-none outline-none disabled:opacity-50 cursor-pointer mt-4 italic text-xs md:text-sm">
+                      {isSendingPush ? <Loader2 className="animate-spin mx-auto" /> : pushData.scheduled_for ? 'Zaplanuj w kolejce' : `Wyślij do ${subscriberCount} osób 🚀`}
                     </button>
                   </form>
                 </section>
@@ -444,34 +497,36 @@ export default function AdminDashboard() {
 
             {/* --- HISTORY --- */}
             {activeTab === 'history' && (
-              <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+              <motion.div key="history" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 md:space-y-12">
                 <section>
-                    <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 flex items-center gap-3 text-[#0055ff]"><Clock size={32} /> Zaplanowane</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter mb-4 md:mb-8 flex items-center gap-3 text-[#0055ff]"><Clock size={28} className="md:w-8 md:h-8" /> Zaplanowane</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                     {scheduledPushes.map(s => (
-                        <div key={s.id} className="bg-white p-6 rounded-4xl border border-zinc-100 shadow-sm flex justify-between items-center group">
+                        <div key={s.id} className="bg-white p-5 md:p-6 rounded-3xl md:rounded-4xl border border-zinc-100 shadow-sm flex justify-between items-center group">
                         <div>
-                            <p className="text-[11px] font-black text-[#0055ff] uppercase tracking-widest mb-1">{new Date(s.scheduled_for).toLocaleString()}</p>
-                            <h4 className="text-lg font-black italic uppercase text-zinc-900 line-clamp-1">{s.title}</h4>
+                            <p className="text-[10px] md:text-[11px] font-black text-[#0055ff] uppercase tracking-widest mb-1">{new Date(s.scheduled_for).toLocaleString()}</p>
+                            <h4 className="text-base md:text-lg font-black italic uppercase text-zinc-900 line-clamp-1">{s.title}</h4>
                         </div>
-                        <button onClick={() => { supabase.from('push_history').delete().eq('id', s.id); fetchData(); }} className="p-4 text-red-300 hover:text-red-500 border-none bg-transparent cursor-pointer"><Trash2 size={24} /></button>
+                        <button onClick={() => { supabase.from('push_history').delete().eq('id', s.id); fetchData(); }} className="p-3 md:p-4 text-red-300 hover:text-red-500 border-none bg-transparent cursor-pointer"><Trash2 size={20} className="md:w-6 md:h-6" /></button>
                         </div>
                     ))}
+                    {scheduledPushes.length === 0 && <p className="text-zinc-400 font-bold text-sm">Brak zaplanowanych wysyłek.</p>}
                     </div>
                 </section>
 
                 <section>
-                  <h2 className="text-3xl font-black italic uppercase tracking-tighter mb-8 flex items-center gap-3 text-zinc-400"><History size={32} /> Ostatnie Wysłane</h2>
-                  <div className="space-y-4">
+                  <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter mb-4 md:mb-8 flex items-center gap-3 text-zinc-400"><History size={28} className="md:w-8 md:h-8" /> Ostatnie Wysłane</h2>
+                  <div className="space-y-3 md:space-y-4">
                     {history.map(h => (
-                      <div key={h.id} className="bg-white/60 p-6 rounded-3xl border border-zinc-100 flex items-center justify-between">
+                      <div key={h.id} className="bg-white/60 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                          <div className="flex flex-col gap-1">
-                            <span className="text-[10px] font-black text-zinc-400 uppercase">{new Date(h.created_at).toLocaleString()}</span>
-                            <span className="text-lg font-black uppercase italic text-zinc-700">{h.title}</span>
+                            <span className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase">{new Date(h.created_at).toLocaleString()}</span>
+                            <span className="text-base md:text-lg font-black uppercase italic text-zinc-700">{h.title}</span>
                          </div>
-                         <div className="text-right"><p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">Wysłano do</p><p className="font-black text-xl text-zinc-900">{h.sent_to_count} osób</p></div>
+                         <div className="text-left sm:text-right"><p className="text-[8px] md:text-[9px] font-black text-zinc-400 uppercase tracking-widest">Wysłano do</p><p className="font-black text-lg md:text-xl text-zinc-900">{h.sent_to_count} osób</p></div>
                       </div>
                     ))}
+                    {history.length === 0 && <p className="text-zinc-400 font-bold text-sm">Brak historii wysyłek.</p>}
                   </div>
                 </section>
               </motion.div>
@@ -484,28 +539,28 @@ export default function AdminDashboard() {
       {/* --- MODAL: NOWA PROMOCJA --- */}
       <AnimatePresence>
         {isAddingPromo && (
-          <div className="fixed inset-0 z-10000 flex items-center justify-center p-6 bg-zinc-950/60 backdrop-blur-md">
-            <motion.form initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onSubmit={handleAddPromo} className="bg-white rounded-4xl p-12 max-w-2xl w-full shadow-2xl relative text-zinc-900 border border-zinc-100 overflow-y-auto max-h-[90vh]">
-              <button type="button" onClick={() => setIsAddingPromo(false)} className="absolute top-10 right-10 text-zinc-400 hover:text-zinc-900 border-none bg-transparent outline-none cursor-pointer p-2"><X size={32} /></button>
+          <div className="fixed inset-0 z-[15000] flex items-center justify-center p-4 md:p-6 bg-zinc-950/80 backdrop-blur-md">
+            <motion.form initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onSubmit={handleAddPromo} className="bg-white rounded-3xl md:rounded-4xl p-6 md:p-12 max-w-2xl w-full shadow-2xl relative text-zinc-900 border border-zinc-100 overflow-y-auto max-h-[90vh]">
+              <button type="button" onClick={() => setIsAddingPromo(false)} className="absolute top-4 right-4 md:top-8 md:right-8 text-zinc-400 hover:text-zinc-900 border-none bg-transparent outline-none cursor-pointer p-2"><X size={24} className="md:w-8 md:h-8" /></button>
               
-              <h3 className="text-4xl font-black italic uppercase tracking-tighter mb-10 flex items-center gap-3 text-[#BF2024]"><Flame size={32} /> Nowa Okazja</h3>
+              <h3 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter mb-6 md:mb-10 flex items-center gap-3 text-[#BF2024]"><Flame size={28} className="md:w-8 md:h-8" /> Nowa Okazja</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <input required placeholder="Nazwa produktu..." className="md:col-span-2 w-full p-5 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-red-500" value={promoForm.title} onChange={e => setPromoForm(prev => ({ ...prev, title: e.target.value }))} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+                <input required placeholder="Nazwa produktu..." className="md:col-span-2 w-full p-4 md:p-5 rounded-xl md:rounded-2xl bg-zinc-50 border-none font-bold text-sm md:text-base text-zinc-900 outline-none focus:ring-2 ring-red-500" value={promoForm.title} onChange={e => setPromoForm(prev => ({ ...prev, title: e.target.value }))} />
                 
                 <div className="md:col-span-2">
-                    <label className="flex items-center justify-center w-full h-32 transition bg-zinc-50 border-2 border-zinc-200 border-dashed rounded-2xl cursor-pointer hover:border-red-400">
+                    <label className="flex items-center justify-center w-full h-24 md:h-32 transition bg-zinc-50 border-2 border-zinc-200 border-dashed rounded-xl md:rounded-2xl cursor-pointer hover:border-red-400">
                         {uploading ? (
                             <Loader2 className="animate-spin text-red-500" />
                         ) : promoForm.image_url ? (
                             <div className="flex items-center gap-4">
-                                <img src={promoForm.image_url} alt="Podgląd" className="w-20 h-20 object-cover rounded-xl shadow-md" />
-                                <span className="text-xs font-black uppercase text-green-600 tracking-widest">✅ Zdjęcie Wybrane</span>
+                                <img src={promoForm.image_url} alt="Podgląd" className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg md:rounded-xl shadow-md" />
+                                <span className="text-[10px] md:text-xs font-black uppercase text-green-600 tracking-widest">✅ Zdjęcie Wybrane</span>
                             </div>
                         ) : (
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3">
                                 <ImageIcon className="text-zinc-300" />
-                                <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Kliknij by dodać zdjęcie produktu</span>
+                                <span className="text-[9px] md:text-[10px] font-black uppercase text-zinc-400 tracking-widest text-center">Kliknij by dodać zdjęcie produktu</span>
                             </div>
                         )}
                         <input type="file" className="hidden" accept="image/*" onChange={onPromoImageUpload} />
@@ -513,11 +568,11 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Kategoria produktu</label>
+                  <label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2 mb-1 block">Kategoria produktu</label>
                   {!isCustomCategory ? (
                     <div className="relative">
                       <select 
-                        className="w-full p-5 rounded-2xl bg-zinc-50 font-black border-none outline-none text-zinc-900 cursor-pointer appearance-none" 
+                        className="w-full p-4 md:p-5 rounded-xl md:rounded-2xl bg-zinc-50 font-black border-none outline-none text-sm md:text-base text-zinc-900 cursor-pointer appearance-none" 
                         value={promoForm.category} 
                         onChange={e => {
                           if (e.target.value === "INNA") {
@@ -533,29 +588,29 @@ export default function AdminDashboard() {
                         <option value="Sala Zabaw">Sala Zabaw</option>
                         <option value="INNA" className="text-blue-600 font-bold">➕ Własna / Inna...</option>
                       </select>
-                      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400"><ChevronDown size={18} /></div>
+                      <div className="absolute right-4 md:right-5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400"><ChevronDown size={18} /></div>
                     </div>
                   ) : (
                     <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="relative">
                       <input 
                         autoFocus placeholder="Wpisz nazwę nowej kategorii..." 
-                        className="w-full p-5 rounded-2xl bg-white border-2 border-blue-500 font-black outline-none text-zinc-900 shadow-[0_0_15px_rgba(0,85,255,0.1)]"
+                        className="w-full p-4 md:p-5 rounded-xl md:rounded-2xl bg-white border-2 border-blue-500 font-black outline-none text-sm md:text-base text-zinc-900 shadow-[0_0_15px_rgba(0,85,255,0.1)]"
                         value={promoForm.category} onChange={e => setPromoForm(prev => ({ ...prev, category: e.target.value }))}
                       />
-                      <button type="button" onClick={() => { setIsCustomCategory(false); setPromoForm(prev => ({ ...prev, category: 'Zabawki' })); }} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 rounded-xl transition-all cursor-pointer border-none"><X size={16} strokeWidth={3} /></button>
+                      <button type="button" onClick={() => { setIsCustomCategory(false); setPromoForm(prev => ({ ...prev, category: 'Zabawki' })); }} className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-500 rounded-lg md:rounded-xl transition-all cursor-pointer border-none"><X size={16} strokeWidth={3} /></button>
                     </motion.div>
                   )}
                 </div>
 
-                <input placeholder="Rabat (np. -20%)" className="w-full p-5 rounded-2xl bg-zinc-50 border-none outline-none font-black text-zinc-900 focus:ring-2 ring-red-500" value={promoForm.discount} onChange={e => setPromoForm(prev => ({ ...prev, discount: e.target.value }))} />
-                <div className="space-y-1.5"><label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2">Stara Cena (zł)</label>
-                  <input required placeholder="0.00" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none" value={promoForm.old_price} onChange={e => setPromoForm(prev => ({ ...prev, old_price: e.target.value }))} />
+                <input placeholder="Rabat (np. -20%)" className="w-full p-4 md:p-5 rounded-xl md:rounded-2xl bg-zinc-50 border-none outline-none font-black text-sm md:text-base text-zinc-900 focus:ring-2 ring-red-500" value={promoForm.discount} onChange={e => setPromoForm(prev => ({ ...prev, discount: e.target.value }))} />
+                <div className="space-y-1 md:space-y-1.5"><label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2">Stara Cena (zł)</label>
+                  <input required placeholder="0.00" className="w-full p-4 rounded-xl md:rounded-2xl bg-zinc-50 border-none font-black text-sm md:text-base text-zinc-900 outline-none" value={promoForm.old_price} onChange={e => setPromoForm(prev => ({ ...prev, old_price: e.target.value }))} />
                 </div>
-                <div className="space-y-1.5"><label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2">Cena Promocyjna (zł)</label>
-                  <input required placeholder="0.00" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none focus:ring-2 ring-green-500" value={promoForm.new_price} onChange={e => setPromoForm(prev => ({ ...prev, new_price: e.target.value }))} />
+                <div className="space-y-1 md:space-y-1.5"><label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2">Cena Promocyjna (zł)</label>
+                  <input required placeholder="0.00" className="w-full p-4 rounded-xl md:rounded-2xl bg-zinc-50 border-none font-black text-sm md:text-base text-zinc-900 outline-none focus:ring-2 ring-green-500" value={promoForm.new_price} onChange={e => setPromoForm(prev => ({ ...prev, new_price: e.target.value }))} />
                 </div>
               </div>
-              <button type="submit" disabled={uploading} className="w-full py-6 bg-zinc-900 text-white rounded-3xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-red-600 transition-all border-none outline-none active:scale-95 cursor-pointer italic disabled:opacity-50">
+              <button type="submit" disabled={uploading} className="w-full py-5 md:py-6 bg-zinc-900 text-white rounded-2xl md:rounded-3xl font-black uppercase tracking-widest md:tracking-[0.2em] shadow-xl hover:bg-red-600 transition-all border-none outline-none active:scale-95 cursor-pointer italic disabled:opacity-50 text-xs md:text-sm">
                   {uploading ? 'Wgrywanie...' : 'Opublikuj Teraz 🔥'}
               </button>
             </motion.form>
@@ -566,48 +621,48 @@ export default function AdminDashboard() {
       {/* --- MODAL: NOWY KUPON RABATOWY --- */}
       <AnimatePresence>
         {isAddingKupon && (
-          <div className="fixed inset-0 z-10000 flex items-center justify-center p-6 bg-zinc-950/60 backdrop-blur-md">
-            <motion.form initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onSubmit={handleAddKupon} className="bg-white rounded-4xl p-8 max-w-2xl w-full shadow-2xl relative text-zinc-900 border border-zinc-100 overflow-y-auto max-h-[90vh]">
-              <button type="button" onClick={() => setIsAddingKupon(false)} className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-900 border-none bg-transparent outline-none cursor-pointer"><X size={24} /></button>
+          <div className="fixed inset-0 z-[15000] flex items-center justify-center p-4 md:p-6 bg-zinc-950/80 backdrop-blur-md">
+            <motion.form initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} onSubmit={handleAddKupon} className="bg-white rounded-3xl md:rounded-4xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative text-zinc-900 border border-zinc-100 overflow-y-auto max-h-[90vh]">
+              <button type="button" onClick={() => setIsAddingKupon(false)} className="absolute top-4 right-4 md:top-6 md:right-6 text-zinc-400 hover:text-zinc-900 border-none bg-transparent outline-none cursor-pointer"><X size={24} /></button>
               
-              <h3 className="text-3xl font-black italic uppercase tracking-tighter mb-8 flex items-center gap-3 text-[#0055ff]"><TicketPercent size={28} /> Nowy Kupon</h3>
+              <h3 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter mb-6 md:mb-8 flex items-center gap-3 text-[#0055ff]"><TicketPercent size={24} className="md:w-7 md:h-7" /> Nowy Kupon</h3>
               
-              <div className="space-y-5 mb-8">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4 md:space-y-5 mb-6 md:mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Tytuł Kuponu</label>
-                    <input required placeholder="np. -10% na klocki LEGO" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none focus:ring-2 ring-blue-500" value={kuponForm.title} onChange={e => setKuponForm(prev => ({ ...prev, title: e.target.value }))} />
+                    <label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2 mb-1 block">Tytuł Kuponu</label>
+                    <input required placeholder="np. -10% na LEGO" className="w-full p-4 rounded-xl md:rounded-2xl bg-zinc-50 border-none font-black text-sm md:text-base text-zinc-900 outline-none focus:ring-2 ring-blue-500" value={kuponForm.title} onChange={e => setKuponForm(prev => ({ ...prev, title: e.target.value }))} />
                   </div>
                   <div>
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Kod przy kasie</label>
-                    <input required placeholder="np. LEGO10" className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-black text-zinc-900 outline-none focus:ring-2 ring-blue-500 uppercase tracking-widest" value={kuponForm.code} onChange={e => setKuponForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))} />
+                    <label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2 mb-1 block">Kod przy kasie</label>
+                    <input required placeholder="np. LEGO10" className="w-full p-4 rounded-xl md:rounded-2xl bg-zinc-50 border-none font-black text-sm md:text-base text-zinc-900 outline-none focus:ring-2 ring-blue-500 uppercase tracking-widest" value={kuponForm.code} onChange={e => setKuponForm(prev => ({ ...prev, code: e.target.value.toUpperCase() }))} />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-1 block">Krótki opis warunków</label>
-                  <input placeholder="np. Obowiązuje na zestawy nieprzecenione." className="w-full p-4 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900 outline-none focus:ring-2 ring-blue-500 text-sm" value={kuponForm.description} onChange={e => setKuponForm(prev => ({ ...prev, description: e.target.value }))} />
+                  <label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2 mb-1 block">Krótki opis warunków</label>
+                  <input placeholder="np. Obowiązuje na zestawy nieprzecenione." className="w-full p-4 rounded-xl md:rounded-2xl bg-zinc-50 border-none font-bold text-sm md:text-base text-zinc-900 outline-none focus:ring-2 ring-blue-500 text-sm" value={kuponForm.description} onChange={e => setKuponForm(prev => ({ ...prev, description: e.target.value }))} />
                 </div>
 
-                <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100 space-y-4">
+                <div className="p-4 md:p-5 bg-blue-50 rounded-xl md:rounded-2xl border border-blue-100 space-y-4">
                    <label className="flex items-center gap-3 cursor-pointer select-none">
                      <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${kuponForm.is_reusable ? 'bg-[#0055ff] border-[#0055ff] text-white' : 'bg-white border-zinc-300 text-transparent'}`}>
                         <Repeat size={14} />
                      </div>
                      <input type="checkbox" className="hidden" checked={kuponForm.is_reusable} onChange={e => setKuponForm(prev => ({...prev, is_reusable: e.target.checked}))} />
                      <div className="flex flex-col">
-                       <span className="font-black text-sm uppercase text-blue-900">Kupon Wielorazowy</span>
-                       <span className="text-[10px] font-bold text-blue-700">Odnawia się każdego następnego dozwolonego dnia.</span>
+                       <span className="font-black text-xs md:text-sm uppercase text-blue-900">Kupon Wielorazowy</span>
+                       <span className="text-[9px] md:text-[10px] font-bold text-blue-700">Odnawia się każdego dozwolonego dnia.</span>
                      </div>
                    </label>
 
                    <div>
-                     <span className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2 block">Dni dostępności (Puste = Codziennie)</span>
-                     <div className="flex gap-2">
+                     <span className="text-[9px] md:text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2 block">Dni dostępności (Puste = Codziennie)</span>
+                     <div className="flex flex-wrap gap-1.5 md:gap-2">
                        {DAYS_OF_WEEK.map(day => (
                          <button 
                             key={day.id} type="button" onClick={() => toggleDay(day.id)}
-                            className={`w-10 h-10 rounded-xl font-black text-sm transition-all border-none cursor-pointer ${kuponForm.allowed_days.includes(day.id) ? 'bg-[#0055ff] text-white shadow-md' : 'bg-white text-blue-400 hover:bg-blue-100'}`}
+                            className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl font-black text-xs md:text-sm transition-all border-none cursor-pointer ${kuponForm.allowed_days.includes(day.id) ? 'bg-[#0055ff] text-white shadow-md' : 'bg-white text-blue-400 hover:bg-blue-100'}`}
                          >
                            {day.label}
                          </button>
@@ -617,8 +672,8 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-2 mb-2 block">Kolor Kafelka</label>
-                  <div className="flex gap-3">
+                  <label className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1 md:ml-2 mb-2 block">Kolor Kafelka</label>
+                  <div className="flex flex-wrap gap-2 md:gap-3">
                     {[
                       { val: 'from-[#0055ff] to-blue-500' },
                       { val: 'from-[#BF2024] to-red-500' },
@@ -627,13 +682,13 @@ export default function AdminDashboard() {
                       { val: 'from-emerald-500 to-green-500' },
                       { val: 'from-zinc-800 to-black' }
                     ].map(c => (
-                      <button key={c.val} type="button" onClick={() => setKuponForm(prev => ({...prev, gradient: c.val}))} className={`w-10 h-10 rounded-full bg-gradient-to-br ${c.val} border-4 transition-all cursor-pointer ${kuponForm.gradient === c.val ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
+                      <button key={c.val} type="button" onClick={() => setKuponForm(prev => ({...prev, gradient: c.val}))} className={`w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br ${c.val} border-4 transition-all cursor-pointer ${kuponForm.gradient === c.val ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
                     ))}
                   </div>
                 </div>
               </div>
 
-              <button type="submit" disabled={uploading} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-blue-600 transition-all border-none outline-none active:scale-95 cursor-pointer italic disabled:opacity-50">
+              <button type="submit" disabled={uploading} className="w-full py-4 md:py-5 bg-[#0055ff] text-white rounded-xl md:rounded-2xl font-black uppercase tracking-widest md:tracking-[0.2em] shadow-xl hover:bg-blue-600 transition-all border-none outline-none active:scale-95 cursor-pointer italic disabled:opacity-50 text-xs md:text-sm">
                   {uploading ? 'Wgrywanie...' : 'Utwórz Kupon 🎟️'}
               </button>
             </motion.form>
