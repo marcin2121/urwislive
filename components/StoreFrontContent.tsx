@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, MotionConfig } from "framer-motion";
 import { 
@@ -12,25 +12,41 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// IMPORT TWOICH KOMPONENTÓW
+// 🚀 KOMPONENTY KRYTYCZNE (Ladowane natychmiast dla LCP)
 import Hero from "@/components/Hero";
-import DualBrandSection from "@/components/DualBrandSection";
-import { AcademyPromo } from "@/components/AcademyPromo";
-import AboutSection from "@/components/AboutSection";
-import PoznajUrwisa from "@/components/PoznajUrwisa";
 import UrwisIntro from "@/components/Intro";
-import LoyaltySection from "@/components/LoyaltySection";
-import ColoringBanner from "@/components/ColoringBanner";
-import UrwisAR from "@/components/urwisek/UrwisAR";
-import DemoWheelBanner from "@/components/DemoWheelBanner";
-// HOOK WYDAJNOŚCI GPU
 import { useGpuAcceleration } from "@/lib/useGpu";
 
-// DYNAMICZNE IMPORTY (SSR: FALSE dla stabilności animacji i cząsteczek)
-const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), { ssr: false });
+// 📦 DYNAMICZNE IMPORTY (Ladowane tylko gdy potrzebne, wyłączone SSR dla ciężkich skryptów)
+const DemoWheelBanner = dynamic(() => import("@/components/DemoWheelBanner"), { 
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse bg-zinc-100 rounded-[3rem] mx-6 my-12" />
+});
+
+const UrwisAR = dynamic(() => import("@/components/urwisek/UrwisAR"), { 
+  ssr: false 
+});
+
+const DualBrandSection = dynamic(() => import("@/components/DualBrandSection"), {
+  loading: () => <div className="h-96 animate-pulse bg-zinc-50 mx-6 rounded-[3rem]" />
+});
+
+const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), { 
+  ssr: false,
+  loading: () => <div className="h-[600px] bg-zinc-50 w-full animate-pulse" />
+});
+
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
 
-// 📸 GALERIA: Pełne 16 elementów
+// Mniejsze sekcje
+const LoyaltySection = dynamic(() => import("@/components/LoyaltySection"), { ssr: false });
+const ColoringBanner = dynamic(() => import("@/components/ColoringBanner"), { ssr: false });
+const PoznajUrwisa = dynamic(() => import("@/components/PoznajUrwisa"), { ssr: false });
+//const AcademyPromo = dynamic(() => import("@/components/AcademyPromo").then(mod => mod.AcademyPromo), { 
+// ssr: false 
+// });
+const AboutSection = dynamic(() => import("@/components/AboutSection"), { ssr: false });
+
 const mainPageItems = [
     { id: 1, src: '/gallery/IMG_6032.webp', title: "Plecaki Szkolne", category: "Czas do szkoły", seoAlt: "Plecaki szkolne i tornistry dla dzieci - Sklep Urwis Białobrzegi" },
     { id: 2, src: '/gallery/IMG_6021.webp', title: "Klocki LEGO", category: "Kraina Klocków", isNew: true, seoAlt: "Największy wybór klocków LEGO w Białobrzegach - Sklep Urwis Reymonta 38A" },
@@ -48,92 +64,74 @@ const mainPageItems = [
     { id: 14, src: '/gallery/IMG_5996.webp', title: "Zabawki Edukacyjne", category: "Szef Kuchni", seoAlt: "Zabawki kreatywne i edukacyjne dla przedszkolaków" },
     { id: 15, src: '/gallery/IMG_5995.webp', title: "Gry Planszowe", category: "Rodzinne Granie", seoAlt: "Gry planszowe i towarzyskie - Sklep Urwis Białobrzegi" },
     { id: 16, src: '/gallery/IMG_5994.webp', title: "Artykuły Artystyczne", category: "Mały Artysta", seoAlt: "Przybory plastyczne i artystyczne dla dzieci - oferta Urwis" }
-  ];
+];
 
 export default function StoreFrontContent() {
   const hasGpu = useGpuAcceleration();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   return (
     <MotionConfig reducedMotion={hasGpu ? "user" : "always"}>
       <UrwisIntro>
         <div className="min-h-screen bg-transparent text-zinc-900">
           
-          {/* 🟢 TŁO: Particles (Tylko gdy jest GPU) */}
+          {/* 🟢 TŁO: Particles (Zoptymalizowana liczba na Mobile) */}
           {hasGpu && (
             <div className="fixed inset-0 z-0 pointer-events-none hidden md:block">
               <Particles
-                particleCount={60}
+                particleCount={isMobile ? 20 : 60}
                 particleColors={["#BF2024", "#0055ff"]}
                 alphaParticles
-                particleBaseSize={100}
+                particleBaseSize={isMobile ? 60 : 100}
                 speed={0.03}
               />
             </div>
           )}
 
           <div className="relative z-10">
-            
-            {/* BANER WYDAJNOŚCI - Zoptymalizowany pod Accessibility i nowe klasy Tailwind */}
             {!hasGpu && (
               <div className="w-full bg-zinc-900 text-zinc-400 text-[10px] uppercase font-black tracking-widest text-center py-2 z-50 border-b border-white/5">
                 Uruchomiono w trybie wysokiej wydajności
               </div>
             )}
 
-            {/* SEKCJA HERO: Upewnij się, że w środku Hero obrazek ma 'priority' */}
             <header>
               <Hero />
             </header>
+
+            {/* 🚀 Te komponenty ładują się teraz "na żądanie" */}
             <DemoWheelBanner />
             <UrwisAR />
             <DualBrandSection />
 
-            {/* 🎯 TRZY FILARY */}
             <section className="py-12 px-6" aria-label="Główne działy sklepu">
               <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-                <QuickCard 
-                  icon={ShoppingCart} 
-                  title="LEGO & Zabawki" 
-                  link="/oferta/zabawki"
-                  colorClass="text-[#BF2024]"
-                />
-                <QuickCard 
-                  icon={GraduationCap} 
-                  title="Szkoła & Biuro" 
-                  link="/oferta/szkola-i-biuro"
-                  colorClass="text-[#0055ff]"
-                />
-                <QuickCard 
-                  icon={PartyPopper} 
-                  title="Party & Balony" 
-                  link="/oferta/imprezy"
-                  colorClass="text-amber-500"
-                />
+                <QuickCard icon={ShoppingCart} title="LEGO & Zabawki" link="/oferta/zabawki" colorClass="text-[#BF2024]" />
+                <QuickCard icon={GraduationCap} title="Szkoła & Biuro" link="/oferta/szkola-i-biuro" colorClass="text-[#0055ff]" />
+                <QuickCard icon={PartyPopper} title="Party & Balony" link="/oferta/imprezy" colorClass="text-amber-500" />
               </div>
             </section>
 
             <LoyaltySection />
-            
             <ColoringBanner />
 
-            {/* GALERIA ASORTYMENTU */}
             <section className="py-20" aria-labelledby="gallery-title">
               <div className="container mx-auto px-6 mb-12">
                 <h2 id="gallery-title" className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
                   Twoje Centrum <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">Zabawy</span>
                 </h2>
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm mt-2">
-                  Odkryj najlepsze marki w Białobrzegach
-                </p>
               </div>
               <UrwisGallery items={mainPageItems} />
             </section>
             
             <PoznajUrwisa />
 
-            {/* SEKACJE DODATKOWE */}
             <div className="container mx-auto px-4 py-24 space-y-32">
-              <section><AcademyPromo /></section>
+             {/* <section><AcademyPromo /></section> */}
               <section><AboutSection /></section>
             </div>
           </div>
@@ -143,6 +141,7 @@ export default function StoreFrontContent() {
   );
 }
 
+// QuickCard zostaje jako czysty komponent pomocniczy (jest lekki)
 interface QuickCardProps {
   icon: LucideIcon;
   title: string;

@@ -1,20 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-// Załóżmy, że masz tu swoją funkcję do wysyłania pushy, np:
-// import { sendPushNotification } from '@/lib/push-config'; 
 
-// Używamy Service Role Key, aby mieć dostęp do całej bazy w tle
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// 1. Wymuszamy tryb dynamiczny, aby Next.js nie próbował budować tej trasy statycznie
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  // Weryfikacja nagłówka, aby nikt z zewnątrz nie odpalał Crona
+  // 2. Weryfikacja nagłówka (bezpieczeństwo - zapobiega uruchamianiu przez osoby postronne)
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
+
+  // 3. PRZENIESIONA INICJALIZACJA: Klient tworzy się dopiero w momencie wywołania funkcji.
+  // To rozwiązuje błąd "supabaseKey is required" podczas budowania projektu.
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   try {
     // 1. Znajdź wszystkie Urwisy, które nie były karmione od ponad 4 godzin
@@ -24,15 +26,14 @@ export async function GET(request: Request) {
       .from('urwis_pet')
       .select('user_id, name, hunger_level, last_interaction')
       .lt('last_interaction', fourHoursAgo)
-      .gt('hunger_level', 0); // Pomijamy te, które już mają 0, żeby nie spamować
+      .gt('hunger_level', 0);
 
     if (error || !hungryPets) throw error;
 
     let notificationsSent = 0;
 
-    // 2. Przelicz spadek statystyk i wyślij powiadomienia
+    // 2. Przelicz spadek statystyk i zaktualizuj bazę
     for (const pet of hungryPets) {
-      // Zmniejszamy głód np. o 20 punktów
       const newHunger = Math.max(0, pet.hunger_level - 20);
       
       await supabase
@@ -40,17 +41,10 @@ export async function GET(request: Request) {
         .update({ hunger_level: newHunger })
         .eq('user_id', pet.user_id);
 
-      // Jeśli głód spadł poniżej 30%, wysyłamy Push!
+      // Jeśli głód spadł poniżej 30%, zliczamy powiadomienie
       if (newHunger < 30) {
-        // Tu wywołujesz swoją logikę wysyłania web-push:
-        /*
-        await sendPushNotification(pet.user_id, {
-          title: 'Twój Urwis burczy w brzuchu! 🦖',
-          body: 'Wejdź do Akademii Urwisa, nakarm go i zdobywaj punkty na nowe klocki LEGO!',
-          icon: '/urwis-icon.webp',
-          url: '/akademia'
-        });
-        */
+        // Tu możesz dodać logikę wysyłania Push:
+        // await sendPushNotification(pet.user_id, { ... });
         notificationsSent++;
       }
     }
