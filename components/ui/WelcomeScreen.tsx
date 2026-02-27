@@ -118,7 +118,7 @@ export default function WelcomeScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
-          className="fixed inset-0 z-10000 bg-[#0055ff] flex flex-col items-center justify-center p-6 text-white overflow-hidden"
+          className="fixed inset-0 z-10000 bg-urwis-blue flex flex-col items-center justify-center p-6 text-white overflow-hidden"
         >
           {/* Tło dekoracyjne */}
           <div className="absolute top-10 left-10 text-white/10 rotate-12 pointer-events-none">
@@ -159,7 +159,7 @@ export default function WelcomeScreen() {
                 onClick={handleSubscribeAndEnter}
                 disabled={isProcessing}
                 aria-label="Zaakceptuj powiadomienia i wejdź do aplikacji"
-                className="w-full bg-white text-[#0055ff] font-black text-xl py-5 rounded-3xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex justify-center items-center uppercase italic"
+                className="w-full bg-white text-urwis-blue font-black text-xl py-5 rounded-3xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex justify-center items-center uppercase italic"
               >
                 {isProcessing ? "Szykuję wszystko..." : "Dobra Urwis, pilnuj! 🚀"}
               </button>

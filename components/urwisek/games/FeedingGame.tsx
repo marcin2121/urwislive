@@ -9,13 +9,31 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
   const controls = useAnimation()
   const hasCompleted = useRef(false)
 
+  // 🚀 FUNKCJA SYNCHRONIZACJI (BACKGROUND SYNC READY)
+  const handleSyncPoints = async (xpGain: number) => {
+    try {
+      const response = await fetch("/api/urwis/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "experience", amount: xpGain }),
+      });
+  
+      if (!response.ok) {
+        // Serwist przechwyci to nieudane żądanie i doda do kolejki IndexedDB
+        console.log("Żądanie nieudane - Serwist dodał je do kolejki synchronizacji.");
+      }
+    } catch (err) {
+      // Fetch rzuca wyjątek przy całkowitym braku sieci
+      console.log("Brak sieci. Punkty zostaną wysłane automatycznie w tle po odzyskaniu połączenia.");
+    }
+  };
+
   const handleDragEnd = async (event: any, info: any) => {
     if (hasCompleted.current || isFlying) return;
 
     const vy = info.velocity.y;
     const vx = info.velocity.x;
 
-    // Powrót jabłka przy zbyt słabym rzucie
     if (vy > -200) {
       controls.start({ x: 0, y: 0, transition: { type: 'spring', bounce: 0.6 } });
       return;
@@ -30,7 +48,6 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
     const startPageX = info.point.x - info.offset.x;
     const startPageY = info.point.y - info.offset.y;
 
-    // Celownik: środek obrazka urwiska (X: 50%, Y: 58% wysokości obrazka)
     const mouthPageX = targetRect.left + (targetRect.width * 0.50);
     const mouthPageY = targetRect.top + (targetRect.height * 0.58); 
 
@@ -49,7 +66,7 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
     }
 
     if (isHit) {
-      // Efekt trafienia
+      // 🎯 TRAFIENIE
       await controls.start({
         x: distanceX, 
         y: distanceY,
@@ -60,6 +77,9 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
 
       const next = foodCount + 1;
       setFoodCount(next);
+
+      // 🚀 WYSYŁAMY PUNKTY XP (10 pkt za każde jabłko)
+      handleSyncPoints(10);
       
       if (next >= 3) {
         hasCompleted.current = true;
@@ -69,7 +89,7 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
         setIsFlying(false);
       }
     } else {
-      // Efekt pudła
+      // ❌ PUDŁO
       const missX = info.offset.x + (vx * 0.5);
       const missY = info.offset.y + (vy * 0.5);
 
@@ -88,7 +108,7 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
   return (
     <div className="absolute inset-0 z-40 touch-none flex items-center pointer-events-none">
       
-      {/* 🌟 NOWOCZESNY PIONOWY PASEK POSTĘPU (LEWA STRONA) */}
+      {/* PASEK POSTĘPU */}
       <motion.div 
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -118,7 +138,7 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
         ))}
       </motion.div>
 
-      {/* 🍎 JABŁKO (DOLNA CZĘŚĆ EKRANU) */}
+      {/* JABŁKO */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center w-full">
         <motion.div
           drag={!isFlying} 

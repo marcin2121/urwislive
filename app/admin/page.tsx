@@ -7,16 +7,25 @@ import {
   Bell, Send, Wand2, Clock, Zap, Flame,
   Image as ImageIcon, Coffee, LayoutDashboard, History, ChevronRight,
   Search, Users, ChevronDown, CheckCircle2,
-  Calendar, Repeat, TicketPercent, Menu, Pencil, CircleDashed
+  Calendar, Repeat, TicketPercent, Menu, Pencil, CircleDashed,
+  TrendingUp, MousePointer2
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { PUSH_CATEGORIES, PushTopic } from '@/lib/push-config'
 
+// --- NOWE IMPORTY DLA WYKRESÓW ---
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, Cell, PieChart, Pie, Legend, AreaChart, Area 
+} from 'recharts'
+
 const DAYS_OF_WEEK = [
   { id: 1, label: 'Pn' }, { id: 2, label: 'Wt' }, { id: 3, label: 'Śr' },
   { id: 4, label: 'Cz' }, { id: 5, label: 'Pt' }, { id: 6, label: 'Sb' }, { id: 0, label: 'Nd' }
 ]
+
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function AdminDashboard() {
   const supabase = useMemo(() => createClient(), [])
@@ -36,6 +45,17 @@ export default function AdminDashboard() {
   const [totalSentPushes, setTotalSentPushes] = useState(0) 
   const [pushStats, setPushStats] = useState({ clicks: 0, closes: 0 })
   const [loading, setLoading] = useState(false)
+
+  // --- STATE: NOWE STATYSTYKI ---
+  const [advancedStats, setAdvancedStats] = useState({
+    totalExperience: 0,
+    todaySpins: 0,
+    avgExperience: 0,
+    usedCoupons: 0,
+    activeGlobalCoupons: 0
+  })
+  const [chartData, setChartData] = useState<any[]>([])
+  const [wheelStats, setWheelStats] = useState<any[]>([])
 
   // --- STATE: CLIENTS ---
   const [allUsers, setAllUsers] = useState<any[]>([])
@@ -79,7 +99,7 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [pRes, hRes, sRes, aRes, allHistRes, usersRes, kuponyRes, wheelRes] = await Promise.all([
+      const [pRes, hRes, sRes, aRes, allHistRes, usersRes, kuponyRes, wheelRes, allCouponsRes, loyaltyRes] = await Promise.all([
         supabase.from('promocje').select('*').order('created_at', { ascending: false }),
         supabase.from('push_history').select('*').eq('status', 'sent').order('created_at', { ascending: false }).limit(10),
         supabase.from('push_history').select('*').eq('status', 'scheduled').order('scheduled_for', { ascending: true }),
@@ -87,7 +107,10 @@ export default function AdminDashboard() {
         supabase.from('push_history').select('sent_to_count').eq('status', 'sent'),
         supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at').order('created_at', { ascending: false }),
         supabase.from('kupony').select('*').is('user_id', null).order('created_at', { ascending: false }),
-        supabase.from('wheel_prizes').select('*').order('chance', { ascending: false })
+        supabase.from('wheel_prizes').select('*').order('chance', { ascending: false }),
+        // ZAPYTANIA DO NOWEJ ANALITYKI
+        supabase.from('kupony').select('title, current_usage, user_id, created_at, is_active'),
+        supabase.from('loyalty_cards').select('experience', { count: 'exact' })
       ])
 
       setPromos(pRes?.data || [])
@@ -113,10 +136,56 @@ export default function AdminDashboard() {
       const { count: totalCount } = await supabase.from('push_subscriptions').select('*', { count: 'exact', head: true })
       setTotalSubscriberCount(totalCount || 0)
 
+      // --- PRZETWARZANIE DANYCH DLA NOWYCH WYKRESÓW ---
+      const allCoupons = allCouponsRes?.data || []
+      const loyaltyData = loyaltyRes?.data || []
+      const userCount = loyaltyRes?.count || 0
+
+      const totalUsed = allCoupons.reduce((acc, curr) => acc + (curr.current_usage || 0), 0)
+      const activeGlobal = allCoupons.filter(k => k.is_active && !k.user_id).length
+
+      const today = new Date()
+      today.setHours(0,0,0,0)
+      const spinsToday = allCoupons.filter(k => k.user_id && new Date(k.created_at) >= today).length
+
+      const distributionMap: any = {}
+      allCoupons.filter(k => k.user_id).forEach(p => { distributionMap[p.title] = (distributionMap[p.title] || 0) + 1 })
+      const formattedWheelData = Object.entries(distributionMap).map(([name, value]) => ({ name, value }))
+
+      const chartMap = new Map()
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i)
+        chartMap.set(d.toLocaleDateString('pl-PL', { weekday: 'short' }), 0)
+      }
+      allCoupons.forEach(c => {
+        const day = new Date(c.created_at).toLocaleDateString('pl-PL', { weekday: 'short' })
+        if (chartMap.has(day)) chartMap.set(day, chartMap.get(day) + 1)
+      })
+
+      const totalExp = loyaltyData.reduce((acc, curr) => acc + (curr.experience || 0), 0)
+
+      setAdvancedStats({
+        totalExperience: totalExp,
+        todaySpins: spinsToday,
+        avgExperience: userCount ? Math.floor(totalExp / userCount) : 0,
+        usedCoupons: totalUsed,
+        activeGlobalCoupons: activeGlobal
+      })
+      setChartData(Array.from(chartMap, ([name, aktywnosc]) => ({ name, aktywnosc })))
+      setWheelStats(formattedWheelData)
+
     } catch (error) { toast.error('Błąd połączenia z bazą.') } finally { setLoading(false) }
   }, [supabase, selectedTopic])
 
-  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => { 
+    fetchData()
+    // Nasłuchiwanie na zmiany (opcjonalne, ale dodaje "życia")
+    const channel = supabase.channel('admin-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kupony' }, () => fetchData())
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [fetchData])
 
   const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = '/urwisek' }
 
@@ -274,7 +343,7 @@ export default function AdminDashboard() {
   );
 
   const navItems = [
-    { id: 'stats', label: 'Statystyki', icon: LayoutDashboard },
+    { id: 'stats', label: 'Statystyki & Wykresy', icon: LayoutDashboard },
     { id: 'clients', label: 'Baza Klientów', icon: Users },
     { id: 'kupony', label: 'Kupony Rabatowe', icon: TicketPercent },
     { id: 'wheel', label: 'Koło Fortuny', icon: CircleDashed },
@@ -337,15 +406,94 @@ export default function AdminDashboard() {
         <div className="max-w-6xl mx-auto pb-24 md:pb-20">
           <AnimatePresence mode="wait">
             
-            {/* STATS */}
+            {/* 🚀 NOWE ZAAWANSOWANE STATYSTYKI */}
             {activeTab === 'stats' && (
-              <motion.div key="stats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
-                <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tighter text-zinc-900">Dashboard</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                  <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-4xl shadow-sm border border-zinc-100"><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Baza Odbiorców Push</p><p className="text-3xl md:text-4xl font-black text-[#0055ff] tracking-tighter">{totalSubscriberCount}</p></div>
-                  <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-4xl shadow-sm border border-zinc-100"><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Zarejestrowani Klienci</p><p className="text-3xl md:text-4xl font-black text-green-500 tracking-tighter">{allUsers.length}</p></div>
-                  <div className="bg-white p-6 md:p-8 rounded-3xl md:rounded-4xl shadow-sm border border-zinc-100"><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">Łączna Wysyłka Push</p><p className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tighter">{totalSentPushes}</p></div>
+              <motion.div key="stats" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                
+                <header className="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase flex items-center gap-3 text-zinc-900">
+                      <Zap className="text-amber-500 fill-amber-500" /> Analityka <span className="text-[#0055ff]">Live</span>
+                    </h1>
+                    <p className="text-zinc-500 mt-1 font-bold">Wydajność grywalizacji i PWA.</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-zinc-200 shadow-sm">
+                    <div className="text-center px-4">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase">Dziś w Kole</p>
+                        <p className="text-2xl font-black text-[#0055ff]">{advancedStats.todaySpins}</p>
+                    </div>
+                    <div className="w-px h-10 bg-zinc-200" />
+                    <div className="text-center px-4">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase">Avg XP / User</p>
+                        <p className="text-2xl font-black text-emerald-500">{advancedStats.avgExperience}</p>
+                    </div>
+                  </div>
+                </header>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                  <StatCard title="Baza PWA / Push" value={totalSubscriberCount} icon={<Users />} color="text-blue-500" />
+                  <StatCard title="Aktywne Promocje" value={advancedStats.activeGlobalCoupons} icon={<TicketPercent />} color="text-amber-500" />
+                  <StatCard title="Zrealizowane Kupony" value={advancedStats.usedCoupons} icon={<CheckCircle2 />} color="text-emerald-500" />
+                  <StatCard title="Łączny XP Urwisów" value={advancedStats.totalExperience} icon={<TrendingUp />} color="text-violet-500" />
                 </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                  {/* WYKRES 1 */}
+                  <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-zinc-100 shadow-md">
+                    <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-zinc-700 mb-6">
+                      <TrendingUp className="w-4 h-4 text-[#0055ff]" /> Generowanie Kuponów (7 dni)
+                    </h3>
+                    <div className="h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData}>
+                          <defs>
+                            <linearGradient id="colorAktywnosc" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#0055ff" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#0055ff" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12, fontWeight: 'bold'}} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12, fontWeight: 'bold'}} />
+                          <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                          <Area type="monotone" dataKey="aktywnosc" name="Nowe Kupony" stroke="#0055ff" strokeWidth={4} fillOpacity={1} fill="url(#colorAktywnosc)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* WYKRES 2 */}
+                  <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-md flex flex-col">
+                    <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-zinc-700 mb-6">
+                      <MousePointer2 className="w-4 h-4 text-amber-500" /> Rozkład Nagród (Koło)
+                    </h3>
+                    <div className="h-[200px] flex-1">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie data={wheelStats} innerRadius={50} outerRadius={80} paddingAngle={8} dataKey="value">
+                            {wheelStats.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 space-y-2 max-h-[150px] overflow-y-auto custom-scrollbar pr-2">
+                      {wheelStats.map((s, i) => (
+                        <div key={s.name} className="flex items-center justify-between text-xs font-black">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[i % COLORS.length]}} />
+                              <span className="opacity-80 text-zinc-700 truncate max-w-[120px]">{s.name}</span>
+                            </div>
+                            <span className="text-[#0055ff]">{s.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
               </motion.div>
             )}
 
@@ -766,6 +914,21 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
+    </div>
+  )
+}
+
+function StatCard({ title, value, icon, color }: any) {
+  return (
+    <div className="bg-white border-none shadow-md rounded-3xl p-6 relative overflow-hidden group">
+        <div className={`absolute top-0 right-0 w-24 h-24 bg-current opacity-5 -mr-6 -mt-6 rounded-full blur-xl ${color}`} />
+        <div className="flex items-center justify-between mb-4 relative z-10">
+          <div className={`p-3 rounded-2xl bg-zinc-50 ${color} group-hover:scale-110 transition-transform`}>
+            {icon}
+          </div>
+        </div>
+        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-1 relative z-10">{title}</p>
+        <h3 className="text-3xl font-black tracking-tighter text-zinc-900 relative z-10">{value.toLocaleString()}</h3>
     </div>
   )
 }
