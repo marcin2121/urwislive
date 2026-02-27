@@ -55,3 +55,20 @@ body.game-mode nav,
 body.game-mode footer {
   display: none !important;
 }
+
+/* Wymusza GPU compositing na elementach które się animują */
+.animate-float,
+.animate-ping {
+  will-change: transform, opacity;
+}
+
+/* Smooth scroll zamiast natychmiastowego skoku */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Zapobiega "miganiu" przy hover transitions */
+* {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

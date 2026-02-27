@@ -174,7 +174,7 @@ export default function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4"
       >
-        <div className="w-full max-w-[1200px] bg-white/70 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between">
+        <div className="w-full max-w-[1200px] bg-white/95 shadow-sm border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between">
           
           <div className="relative flex items-center gap-2 md:gap-4 shrink-0" ref={hoursRef}>
             {/* LOGO */}

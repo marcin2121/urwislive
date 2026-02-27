@@ -10,23 +10,18 @@ const withSerwist = withSerwistInit({
 const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
-  }, // ← przecinek był brakujący
-
-  // Turbopack i webpack nie działają razem — zostaw tylko webpack
-  // turbopack: {},  ← USUŃ jeśli używasz webpack poniżej
-
-  transpilePackages: ['three', '@react-three/fiber'],
-
-  webpack(config) {
-    config.module?.rules.push({
-      test: /\.(glb|gltf)$/,
-      type: 'asset/resource',
-      generator: {
-        filename: 'static/[hash][ext]',
+    // ✅ Dodaj zewnętrzne domeny obrazów
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lecewkulki.eu',
+        pathname: '/wp-content/uploads/**',
       },
-    });
-    return config;
+    ],
   },
+
+  turbopack: {},
+  transpilePackages: ['three', '@react-three/fiber'],
 };
 
 export default withSerwist(nextConfig);

@@ -4,35 +4,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function UrwisIntro({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false); // 🚀 Zabezpieczenie przed hydracją
+  const [mounted, setMounted] = useState(false);
   const [shouldShowIntro, setShouldShowIntro] = useState(false);
   const [step, setStep] = useState<'loading' | 'video' | 'done'>('loading');
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    setMounted(true); // Oznaczamy, że jesteśmy po stronie przeglądarki
+    setMounted(true);
 
     const isMobile = window.innerWidth < 768;
     const isBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
     const introShown = sessionStorage.getItem('urwis_intro_shown');
 
-    if (isMobile || isBot) {
+    if (isMobile || isBot || introShown) {
       setStep('done');
       window.dispatchEvent(new Event('urwis_intro_finished'));
-      return; 
+      return;
     }
 
-    if (!introShown) {
-      setShouldShowIntro(true);
-      // Blokada scrolla przeniesiona tutaj, by nie powodować błędów Hydracji
-      document.body.style.overflow = 'hidden';
-      document.body.style.height = '100vh';
-    } else {
-      setStep('done');
-      window.dispatchEvent(new Event('urwis_intro_finished'));
-    }
+    setShouldShowIntro(true);
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100vh';
 
-    // Sprzątanie po odmontowaniu
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.height = 'unset';
@@ -47,21 +40,18 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     document.body.style.height = 'unset';
   };
 
-  const handleVideoEnd = () => finishIntro();
-
   const skipIntro = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (videoRef.current) videoRef.current.pause();
     finishIntro();
   };
 
-  // 🚀 ZAPOBIEGANIE BŁĘDOM HYDRACJI (To psuło Google PSI!)
-  // Zanim React się "zbudzi" na kliencie, renderujemy ukrytą stronę
+  // Przed hydratacją — children niewidoczne ale w DOM (SEO + LCP)
   if (!mounted) {
-    return <div style={{ opacity: 0 }}>{children}</div>;
+    return <div style={{ visibility: 'hidden' }}>{children}</div>;
   }
 
-  // 🚀 Bypassy dla bota i mobile (Czysty render)
+  // Drugi i kolejne wizyty — zero animacji, zero narzutu
   if (!shouldShowIntro) {
     return <>{children}</>;
   }
@@ -78,11 +68,11 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
             key="video-step"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ 
-              opacity: 0, 
-              scale: 1.1, 
-              filter: 'blur(20px)',
-              transition: { duration: 0.8, ease: "easeInOut" }
+            exit={{
+              opacity: 0,
+              scale: 1.05,          // ✅ było 1.1 — mniejszy scale = mniej pracy GPU
+              filter: 'blur(12px)', // ✅ było blur(20px) — blur jest drogi
+              transition: { duration: 0.5, ease: 'easeInOut' } // ✅ było 0.8s
             }}
             className="fixed inset-0 z-[9999] bg-black w-screen h-screen overflow-hidden"
           >
@@ -92,7 +82,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
               muted
               playsInline
               preload="auto"
-              onEnded={handleVideoEnd}
+              onEnded={finishIntro}
               className="absolute inset-0 w-full h-full object-cover"
             >
               <source src="/urwisintro.webm" type="video/webm" />
@@ -112,18 +102,19 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
         )}
       </AnimatePresence>
 
-      <motion.div
-        animate={{ 
-          opacity: step === 'done' ? 1 : 0,
-          scale: step === 'done' ? 1 : 0.98,
-        }}
-        transition={{ duration: 1, ease: "circOut" }}
+      {/* ✅ Zamiast motion.div animującego scale+opacity na całej stronie
+           — prosty fade-in tylko raz po zakończeniu intro */}
+      <div
         style={{
-            pointerEvents: step === 'done' ? 'auto' : 'none' 
+          opacity: step === 'done' ? 1 : 0,
+          // ✅ transition zamiast Framer Motion — przeglądarka obsługuje to na GPU compositor thread
+          // bez angażowania JS thread
+          transition: step === 'done' ? 'opacity 0.4s ease-out' : 'none',
+          pointerEvents: step === 'done' ? 'auto' : 'none',
         }}
       >
         {children}
-      </motion.div>
+      </div>
     </>
   );
 }
