@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Lock, User, Phone, ArrowRight, Loader2, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -8,11 +8,13 @@ import { createClient } from "@/lib/supabase/client";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // 🚀 DODANE: Pozwala określić, która zakładka otworzy się jako pierwsza
+  initialView?: 'login' | 'register' | 'forgot'; 
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, initialView = 'login' }: AuthModalProps) {
   const supabase = createClient();
-  const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
+  const [view, setView] = useState<'login' | 'register' | 'forgot'>(initialView);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -26,6 +28,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   // Zgody
   const [termsConsent, setTermsConsent] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+
+  // 🚀 DODANE: Kiedy modal się otwiera, zresetuj go do odpowiedniego widoku
+  useEffect(() => {
+    if (isOpen) {
+      setView(initialView);
+      setError(null);
+      setSuccessMessage(null);
+    }
+  }, [isOpen, initialView]);
 
   if (!isOpen) return null;
 
@@ -43,7 +54,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         window.location.reload();
       } 
       else if (view === 'register') {
-        // 🚀 WALIDACJA: Tylko regulamin jest tu wymagany!
         if (!termsConsent) throw new Error("Musisz zaakceptować regulamin, aby założyć konto.");
         if (phone && phone.length < 9) throw new Error("Jeśli podajesz numer telefonu, upewnij się, że jest poprawny.");
         
@@ -51,8 +61,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           email, password,
           options: { 
             data: { 
-              full_name: name, // Może być puste
-              phone: phone,    // Może być puste
+              full_name: name,
+              phone: phone,
               marketing_consent: marketingConsent 
             } 
           },
@@ -82,7 +92,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[200000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -121,12 +131,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <div className="flex flex-col gap-4 mb-2">
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                    {/* 🚀 Brak atrybutu 'required' */}
                     <input type="text" placeholder="Imię (opcjonalnie)" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
                   </div>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                    {/* 🚀 Brak atrybutu 'required' */}
                     <input type="tel" placeholder="Nr telefonu (opcjonalnie)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
                   </div>
                 </div>
@@ -180,7 +188,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </div>
               )}
 
-              <button disabled={isLoading} type="submit" className="w-full bg-[#0055ff] text-white rounded-2xl py-4 font-black uppercase text-sm tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4">
+              <button disabled={isLoading} type="submit" className="w-full bg-[#0055ff] text-white rounded-2xl py-4 font-black uppercase text-sm tracking-widest shadow-lg shadow-blue-500/30 hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer">
                 {isLoading ? <Loader2 className="animate-spin" size={20} /> : view === 'login' ? "Zaloguj się" : view === 'register' ? "Zarejestruj się" : "Wyślij link"}
                 {!isLoading && <ArrowRight size={18} />}
               </button>
@@ -192,7 +200,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button 
                   type="button"
                   onClick={() => { setView(view === 'login' ? 'register' : 'login'); setError(null); setSuccessMessage(null); }} 
-                  className="ml-1 text-[#0055ff] hover:underline uppercase tracking-wider"
+                  className="ml-1 text-[#0055ff] hover:underline uppercase tracking-wider cursor-pointer border-none bg-transparent"
                 >
                   {view === 'login' ? "Załóż darmowe konto" : "Zaloguj się"}
                 </button>

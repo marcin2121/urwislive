@@ -121,15 +121,18 @@ export default function Footer() {
   </span>            
   <a 
   href="https://molendadevelopment.pl/" 
-  target="_blank" // Otwiera w nowej karcie, co pomaga w analityce
-  rel="nofollow noopener noreferrer" // SEO + Bezpieczeństwo
+  target="_blank" 
+  rel="nofollow noopener noreferrer" 
   onClick={() => { 
-    // Wywołujemy funkcję śledzącą bez blokowania domyślnej akcji
     trackFooterEvent('click_creator', { location: 'footer' }); 
   }}
-  className="hover:text-orange-600 text-[12px] transition-colors text-orange-600"
+  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black tracking-widest text-orange-600 hover:bg-orange-50 hover:text-orange-700 transition-all active:scale-95"
 >
   DESIGN & CODE BY MARCIN MOLENDA
+  {/* Mała ikonka strzałki (jeśli używasz lucide-react możesz podmienić na <ExternalLink size={12} />) */}
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7 17l9.2-9.2M17 17V7H7"/>
+  </svg>
 </a>
 </div>
             </div>

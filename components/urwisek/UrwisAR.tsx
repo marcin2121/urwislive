@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Script from 'next/script';
-import { ScanFace } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ScanFace, Sparkles, Box } from 'lucide-react';
 declare module "react" {
     namespace JSX {
       interface IntrinsicElements {
@@ -14,28 +15,26 @@ export default function UrwisAR() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Sprawdzamy czy urządzenie to smartfon/tablet (AR działa tylko na urządzeniach mobilnych)
+    // Sprawdzamy czy urządzenie to smartfon/tablet
     const checkMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     setIsMobile(checkMobile);
   }, []);
 
-  if (!isMobile) return null; // Ukrywamy przycisk na komputerach stacjonarnych
+  if (!isMobile) return null;
 
   const triggerAR = () => {
-    // Programowe wywołanie kliknięcia w ukryty natywny przycisk AR wewnątrz model-viewer
     const btn = document.getElementById('ar-trigger-btn');
     if (btn) btn.click();
   };
 
   return (
-    <>
-      {/* Dynamiczne ładowanie silnika Google Model Viewer */}
+    <section className="py-12 px-6 relative z-20"> {/* Padding i z-index zgodny z DualBrandSection */}
       <Script 
         type="module" 
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js" 
       />
       
-      {/* Niewidoczny kontener dla modelu 3D (wymagany przez silnik AR) */}
+      {/* Niewidoczny silnik AR */}
       <div className="fixed opacity-0 pointer-events-none w-px h-px overflow-hidden">
         <model-viewer 
           id="urwis-ar-viewer"
@@ -43,22 +42,62 @@ export default function UrwisAR() {
           ar 
           ar-modes="webxr scene-viewer quick-look" 
           camera-controls 
-          alt="Urwisek 3D w AR"
+          alt="Urwisek 3D"
         >
           <button slot="ar-button" id="ar-trigger-btn"></button>
         </model-viewer>
       </div>
 
-      {/* Przycisk wyzwalający tryb Rozszerzonej Rzeczywistości */}
-      <button 
-        onClick={triggerAR}
-        className="fixed top-4 right-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl p-3 md:p-4 rounded-full shadow-[0_10px_25px_-5px_rgba(0,85,255,0.4)] border-2 border-white dark:border-zinc-800 z-50 text-urwis-blue hover:scale-110 active:scale-95 transition-all flex items-center gap-2 group cursor-pointer"
-      >
-        <ScanFace size={22} className="animate-pulse" />
-        <span className="text-[10px] font-black uppercase tracking-widest hidden sm:group-hover:block transition-all pr-2">
-          Zobacz w pokoju
-        </span>
-      </button>
-    </>
+      {/* 🌈 BANER AR DOPASOWANY DO SZEROKOŚCI STRONY */}
+      <div className="max-w-7xl mx-auto"> {/* Kluczowy kontener ograniczający szerokość */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          whileHover={{ y: -5 }}
+          onClick={triggerAR}
+          className="relative group cursor-pointer overflow-hidden rounded-4xl bg-white/40 backdrop-blur-2xl p-8 md:p-12 border-2 border-white shadow-xl"
+        >
+          {/* Stylizowane tło zgodne z DualBrandSection */}
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-urwis-blue/10 rounded-full blur-3xl group-hover:bg-urwis-blue/20 transition-colors" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex-1 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 bg-urwis-blue/10 backdrop-blur-md px-4 py-1.5 rounded-full mb-6">
+                <Sparkles size={14} className="text-urwis-blue" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-urwis-blue">
+                  Technologia AR
+                </span>
+              </div>
+              
+              <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none mb-6 text-zinc-900">
+                Zobacz Urwiska <br /> 
+                <span className="text-urwis-blue">w swoim pokoju!</span>
+              </h2>
+              
+              <p className="text-lg text-zinc-600 font-bold max-w-md mx-auto md:mx-0 leading-tight uppercase italic">
+                Użyj aparatu i przenieś naszą maskotkę do rzeczywistości. <span className="text-zinc-900">Magia 3D</span> w Twoim telefonie!
+              </p>
+            </div>
+
+            <div className="relative shrink-0">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-zinc-900 text-white px-10 py-5 rounded-full font-black uppercase tracking-widest flex items-center gap-3 shadow-xl group-hover:bg-urwis-blue transition-all"
+              >
+                <ScanFace size={24} />
+                Uruchom AR
+              </motion.div>
+              
+              {/* Dekoracyjna ikonka */}
+              <div className="absolute -top-4 -right-4 bg-amber-400 text-zinc-900 p-2 rounded-xl rotate-12 shadow-lg group-hover:rotate-0 transition-transform">
+                <Box size={20} strokeWidth={3} />
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
   );
 }
