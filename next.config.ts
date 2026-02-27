@@ -1,21 +1,19 @@
 import type { NextConfig } from "next";
-import withPWAInit from "@ducanh2912/next-pwa";
+import withSerwistInit from "@serwist/next";
 
-// 1. Inicjalizacja PWA
-const withPWA = withPWAInit({
-  dest: "public",
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development", // PWA jest wyłączone lokalnie, żeby nie psuć hot-reloadu
+// 1. Inicjalizacja PWA (Serwist)
+const withSerwist = withSerwistInit({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development",
 });
 
-// 2. Twoja obecna konfiguracja (nic z niej nie usuwamy!)
+// 2. Twoja obecna, oryginalna konfiguracja
 const nextConfig: NextConfig = {
   images: { unoptimized: true },
   
   // 🎯 Turbopack dla Next 16
-  turbopack: {},  // Wyłącz warning
+  turbopack: {},
   
   transpilePackages: ['three', '@react-three/fiber'],
   
@@ -32,4 +30,4 @@ const nextConfig: NextConfig = {
 };
 
 // 3. Eksportujemy połączoną konfigurację
-export default withPWA(nextConfig);
+export default withSerwist(nextConfig);
