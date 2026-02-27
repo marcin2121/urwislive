@@ -236,7 +236,7 @@ export default function ClientLobby() {
       </section>
 
       {/* DYSKRETNY TEKST SEO (Czytany przez Google, mało widoczny dla zwykłego usera) */}
-      <section className="max-w-4xl mx-auto px-6 pb-12 text-center opacity-40 hover:opacity-100 transition-opacity">
+      <section className="max-w-4xl mx-auto px-6 pb-12 text-center">
         <h3 className="text-xs font-bold text-zinc-800 uppercase tracking-widest mb-2">Najlepsze kolorowanki do druku i online</h3>
         <p className="text-[10px] text-zinc-600 leading-relaxed">
           Szukasz pomysłu na kreatywną zabawę? W Sklepie Urwis przygotowaliśmy darmowe kolorowanki online dla dziewczynek i chłopców. Znajdziesz tu edukacyjne malowanki z zabawkami, bohaterami i motywami z naszej Sali Zabaw w Białobrzegach. Nasze interaktywne gry dla dzieci rozwijają wyobraźnię i pozwalają na bezpieczną rozrywkę bez instalowania dodatkowych aplikacji. Zapisz gotowy obrazek i stwórz własną galerię sztuki do druku!
