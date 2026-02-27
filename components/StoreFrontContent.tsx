@@ -21,7 +21,7 @@ import PoznajUrwisa from "@/components/PoznajUrwisa";
 import UrwisIntro from "@/components/Intro";
 import LoyaltySection from "@/components/LoyaltySection";
 import ColoringBanner from "@/components/ColoringBanner";
-
+import UrwisAR from "@/components/urwisek/UrwisAR";
 // HOOK WYDAJNOŚCI GPU
 import { useGpuAcceleration } from "@/lib/useGpu";
 
@@ -83,7 +83,7 @@ export default function StoreFrontContent() {
             <header>
               <Hero />
             </header>
-
+            <UrwisAR />
             <DualBrandSection />
 
             {/* 🎯 TRZY FILARY */}
