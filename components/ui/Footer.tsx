@@ -98,9 +98,24 @@ export default function Footer() {
               <nav aria-label="Nawigacja w stopce">
                 <ul className="flex flex-col gap-3">
                   <li><QuickLink href="/oferta">Nasza Oferta</QuickLink></li>
+                  <li><QuickLink href="/aktualnosci">Aktualności</QuickLink></li>
                   <li><QuickLink href="/poznaj-urwisa">Poznaj Urwisa</QuickLink></li>
                   <li><QuickLink href="/kontakt">Kontakt</QuickLink></li>
                   <li><QuickLink href="/regulamin">Regulamin</QuickLink></li>
+                  <li><QuickLink href="/polityka-prywatnosci">Polityka Prywatności</QuickLink></li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('urwis_cookie_accepted');
+                        trackFooterEvent('cookie_reset', { location: 'footer' });
+                        window.location.reload();
+                      }}
+                      className="text-zinc-700 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase cursor-pointer"
+                    >
+                      <div className="w-1.5 h-1.5 rounded-full bg-zinc-400 group-hover:bg-amber-500 transition-colors" aria-hidden="true" />
+                      🍪 Ustawienia Cookies
+                    </button>
+                  </li>
                 </ul>
               </nav>
             </div>

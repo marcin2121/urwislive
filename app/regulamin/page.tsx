@@ -39,7 +39,7 @@ export default function RegulaminPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff]">& Regulaminy</span>
           </motion.h1>
           <p className="text-zinc-500 font-bold uppercase tracking-tight italic">
-            Sklep stacjonarny | Białobrzegi, ul. Reymonta 38A | Stan na: 21 lutego 2026 r.
+            Sklep stacjonarny | Białobrzegi, ul. Reymonta 38A | Stan na: 1 marca 2026 r.
           </p>
         </header>
 
@@ -107,8 +107,14 @@ export default function RegulaminPage() {
             <ul className="list-disc ml-6 mt-4 space-y-2">
               <li><strong>Niezbędne:</strong> Pozwalają na wyświetlenie animacji i działanie menu.</li>
               <li><strong>Funkcjonalne:</strong> Zapamiętują Twoją listę życzeń (serduszka w galerii) w pamięci Twojej przeglądarki.</li>
-              <li><strong>Analityczne:</strong> Anonimowe statystyki (Google Analytics), dzięki którym wiemy, co interesuje mieszkańców Białobrzegów.</li>
+              <li><strong>Analityczne:</strong> Anonimowe statystyki (Google Analytics) — włączane <strong>wyłącznie po Twojej zgodzie</strong>. Jeśli odrzucisz cookies, Google Analytics nie zbiera żadnych danych.</li>
             </ul>
+            <p className="mt-4">
+              Szczegółowe informacje znajdziesz w naszej{' '}
+              <Link href="/polityka-prywatnosci" className="text-blue-600 underline underline-offset-2 hover:text-blue-800 font-bold">
+                Polityce Prywatności
+              </Link>.
+            </p>
           </Section>
 
           {/* 6. TWOJE PRAWA (RODO) - PANCERNE */}
@@ -123,6 +129,12 @@ export default function RegulaminPage() {
               <li>Prawo do <strong>przenoszenia danych</strong>.</li>
               <li>Prawo do skargi do Prezesa Urzędu Ochrony Danych Osobowych (UODO).</li>
             </ul>
+            <p className="mt-4">
+              Pełna treść polityki przetwarzania danych:{' '}
+              <Link href="/polityka-prywatnosci" className="text-blue-600 underline underline-offset-2 hover:text-blue-800 font-bold">
+                Polityka Prywatności
+              </Link>
+            </p>
           </Section>
 
         </div>

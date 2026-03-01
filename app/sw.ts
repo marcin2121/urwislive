@@ -101,3 +101,66 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// ---- PUSH NOTIFICATION ----
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let data: any;
+  try {
+    data = event.data.json();
+  } catch (e) {
+    console.error('[SW] Błąd parsowania push payload:', e);
+    return;
+  }
+
+  const options: NotificationOptions & Record<string, unknown> = {
+    body: data.body || '',
+    icon: data.icon || '/android-chrome-192x192.png',
+    badge: data.badge || '/android-chrome-192x192.png',
+    image: data.image || undefined,
+    data: data.data || {},
+    vibrate: [200, 100, 200],
+    tag: data.tag || 'urwis-notification',
+    renotify: true,
+    requireInteraction: false,
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Sklep Urwis', options)
+  );
+});
+
+// ---- KLIKNIĘCIE W POWIADOMIENIE ----
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data as any)?.url || '/';
+  const fullUrl = new URL(targetUrl, self.location.origin).href;
+
+  // Tracking kliknięcia (fire & forget)
+  fetch('/api/push/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'click', url: targetUrl }),
+  }).catch(() => {});
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Jeśli jest już otwarta karta z naszą stroną — focus na nią
+      for (const client of windowClients) {
+        if (client.url === fullUrl && 'focus' in client) {
+          return (client as WindowClient).focus();
+        }
+      }
+      // Jeśli jest jakakolwiek otwarta karta — nawiguj ją
+      for (const client of windowClients) {
+        if ('navigate' in client && 'focus' in client) {
+          return (client as WindowClient).navigate(fullUrl).then((c) => c?.focus());
+        }
+      }
+      // Jeśli nie ma otwartej karty — otwórz nową
+      return self.clients.openWindow(fullUrl);
+    })
+  );
+});

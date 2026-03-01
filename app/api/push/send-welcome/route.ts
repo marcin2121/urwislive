@@ -14,8 +14,8 @@ export async function POST(req: Request) {
     const payload = JSON.stringify({
         title: 'Przybita piątka! Urwis melduje się 🐾',
         body: 'Kliknij i wybierz: Sklep czy Sala Zabaw? Dopasuj powiadomienia do siebie!',
-        icon: '/icon-192x192.png',
-        badge: '/badge-icon.png',
+        icon: '/android-chrome-192x192.png',
+        badge: '/android-chrome-192x192.png',
         data: {
           url: '/?settings=open' // Ten sam link, który obsłuży automatyczne otwarcie dzwonka
         }

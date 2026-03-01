@@ -135,6 +135,26 @@ const schemas = [
         "@type": "Question",
         "name": "Czy oferujecie balony z helem?",
         "acceptedAnswer": { "@type": "Answer", "text": "Oczywiście! Pompujemy balony helem na miejscu. Mamy szeroki wybór balonów cyfr oraz postaci z bajek." }
+      },
+      {
+        "@type": "Question",
+        "name": "Jakie są godziny otwarcia Sklepu Urwis?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Sklep Urwis jest otwarty od poniedziałku do piątku w godzinach 8:00-18:00 oraz w soboty 8:00-15:00. W niedziele sklep jest zamknięty." }
+      },
+      {
+        "@type": "Question",
+        "name": "Jak działa program lojalnościowy Złote Urwisy?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Za każde 10 zł wydane w Sklepie Urwis otrzymujesz 1 Złotego Urwisa. Punkty wymieniasz w Sali Zabaw Lecę w Kulki na wejściówki, kawę lub żetony. 1 punkt = 1 zł rabatu." }
+      },
+      {
+        "@type": "Question",
+        "name": "Jak korzystać z kuponów rabatowych na stronie?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Zaloguj się na sklep-urwis.pl, przejdź do zakładki Rabaty i zakręć Kołem Fortuny. Aktywuj kupon dopiero przy kasie — znika po 5 minutach od aktywacji." }
+      },
+      {
+        "@type": "Question",
+        "name": "Czym jest Sala Zabaw Lecę w Kulki?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Lecę w Kulki to sala zabaw prowadzona przez właścicieli Sklepu Urwis, znajdująca się przy ul. Targowickiej 4 w Białobrzegach. Oferuje kulkowy basen, zjeżdżalnie i kawę dla rodziców." }
       }
     ]
   }
@@ -146,6 +166,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* ✅ preload obrazka LCP */}
         <link rel="preload" href="/urwis-fallback.webp" as="image" fetchPriority="high" />
+
+        {/* ✅ Geo meta tags — lokalne SEO */}
+        <meta name="geo.region" content="PL-14" />
+        <meta name="geo.placename" content="Białobrzegi" />
+        <meta name="geo.position" content="51.6447;20.9502" />
+        <meta name="ICBM" content="51.6447, 20.9502" />
 
         {/* ✅ NOWE: preconnect do Google Analytics — oszczędność ~300ms na LCP */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
@@ -205,9 +231,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
+
+            // GDPR: Domyślnie blokujemy analitykę do momentu akceptacji cookies
+            var cookieConsent = localStorage.getItem('urwis_cookie_accepted');
+
+            gtag('consent', 'default', {
+              'analytics_storage': cookieConsent === 'true' ? 'granted' : 'denied',
+              'ad_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied'
+            });
+
             gtag('js', new Date());
             gtag('config', '${GA_MEASUREMENT_ID}', {
               page_path: window.location.pathname,
+            });
+
+            // Nasłuchuj zmian zgody (gdy user kliknie "Daj ciacho" lub "Odrzuć zbędne")
+            window.addEventListener('storage', function(e) {
+              if (e.key === 'urwis_cookie_accepted') {
+                gtag('consent', 'update', {
+                  'analytics_storage': e.newValue === 'true' ? 'granted' : 'denied'
+                });
+              }
             });
           `}
         </Script>

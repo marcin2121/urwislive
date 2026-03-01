@@ -102,7 +102,7 @@ export default function CookieModal() {
                   </button>
 
                   <Link 
-                    href="/regulamin"
+                    href="/polityka-prywatnosci"
                     className="flex-1 py-4 bg-zinc-100 text-zinc-400 rounded-[1.2rem] font-black uppercase tracking-widest text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-2 pointer-events-auto"
                   >
                     <Info size={14} strokeWidth={3} /> Co to za ciastka?

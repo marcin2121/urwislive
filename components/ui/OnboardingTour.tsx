@@ -9,13 +9,21 @@ export default function OnboardingTour() {
   const [step, setStep] = useState(1);
 
   useEffect(() => {
-    // Sprawdzamy, czy użytkownik już przeszedł onboarding w tej przeglądarce
     const isDone = localStorage.getItem("urwis_onboarding_done");
-    if (!isDone) {
-      // 2 sekundy opóźnienia, by strona zdążyła się narysować, by nie było tłoku
-      const timer = setTimeout(() => setIsOpen(true), 2000);
-      return () => clearTimeout(timer);
-    }
+    if (isDone) return;
+
+    const tryOpen = () => {
+      // Czekamy aż intro się skończy (tak jak CookieModal)
+      const introShown = sessionStorage.getItem('urwis_intro_shown');
+      if (introShown === 'true') {
+        const timer = setTimeout(() => setIsOpen(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    tryOpen();
+    window.addEventListener('urwis_intro_finished', tryOpen);
+    return () => window.removeEventListener('urwis_intro_finished', tryOpen);
   }, []);
 
   const handleNext = () => {

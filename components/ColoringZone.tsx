@@ -541,6 +541,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = lineWidth;
     if (tool === 'magic') {
       rainbowHue.current = (rainbowHue.current + 5) % 360;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.strokeStyle = `hsl(${rainbowHue.current}, 100%, 50%)`;
     } else {
       ctx.globalCompositeOperation = 'source-over'; 
@@ -603,7 +604,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
           <div className="flex lg:hidden flex-col gap-2 mt-1">
             <button 
               onClick={() => setShowColorPicker(true)} 
-              className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center border-white/30 cursor-pointer outline-none`} 
+              className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center border-white/30 cursor-pointer outline-none relative overflow-hidden`} 
               style={{ backgroundColor: tool === 'magic' ? 'transparent' : selectedColor }}
             >
               {tool === 'magic' ? <div className="absolute inset-0 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)] animate-spin-slow rounded-xl" /> : <Palette size={20} />}
