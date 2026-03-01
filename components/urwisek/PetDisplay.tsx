@@ -10,13 +10,27 @@ import WashingGame from './games/WashingGame'
 import FeedingGame from './games/FeedingGame'
 import PlayingGame from './games/PlayingGame'
 
-export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage, showSmile }: any) {
+export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage, showSmile, state }: any) {
   
   const getPetImageSrc = () => {
     if (showSmile) return "/urwisek/usmiech.webp";
     if (activeMode === 'washing') return "/urwisek/mycie.webp";
     if (activeMode === 'feeding') return "/urwisek/jedzenie.webp";
     return "/urwisek/urwisek.webp"; 
+  };
+
+  const getSpeechBubble = () => {
+    if (showSmile) return "Hura! Uwielbiam to! ✨";
+    if (activeMode === 'washing') return "Pucujemy łuski! 🛁";
+    if (activeMode === 'feeding') return "Mniam, moje ulubione! 🍕";
+    if (activeMode === 'playing') return "Bawmy się! 🚀";
+    
+    if (state?.hunger < 30) return "Burczy mi w brzuchu... Daj coś zjeść! 🥺";
+    if (state?.hygiene < 30) return "Chyba czas na kąpiel! 🧽";
+    if (state?.happiness < 30) return "Pobaw się ze mną, nudzi mi się... 🧸";
+    if (state?.hunger > 80 && state?.happiness > 80) return "Jestem taki szczęśliwy! Grajmy dalej! 🦖";
+    
+    return "Co dzisiaj robimy?";
   };
 
   return (
@@ -50,6 +64,18 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
           {showSmile && (
             <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1.3, opacity: 0.5 }} exit={{ opacity: 0 }} className="absolute z-20">
               <Sparkles className="w-48 h-48 text-yellow-400" />
+            </motion.div>
+          )}
+          {!rewardMessage && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="absolute -top-12 -right-8 md:-right-16 bg-white border-2 border-zinc-200 px-5 py-3 rounded-3xl rounded-bl-none shadow-xl z-40 max-w-[200px]"
+            >
+              <p className="text-sm font-black text-zinc-700 leading-tight italic">
+                "{getSpeechBubble()}"
+              </p>
             </motion.div>
           )}
         </AnimatePresence>

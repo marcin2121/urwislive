@@ -44,9 +44,9 @@ export default function AboutSection() {
               <Heart size={14} className="text-[#BF2024]" aria-hidden="true" /> Białobrzeska historia pasji
             </motion.span>
             
-            <h1 className="text-7xl md:text-9xl font-black text-zinc-900 leading-[0.85] tracking-tight uppercase mb-12 italic">
+            <h1 className="text-7xl md:text-9xl font-black text-zinc-900 leading-[0.85] tracking-tight uppercase mb-12 italic pr-4">
               WIĘCEJ NIŻ <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] pr-4">
                 TYLKO SKLEP
               </span>
             </h1>
@@ -74,7 +74,7 @@ export default function AboutSection() {
                     <Store size={32} strokeWidth={2.5} aria-hidden="true" />
                   </div>
                   {/* 🚀 FIX: H2 zamiast H3 dla zachowania kolejności */}
-                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 italic text-zinc-900 leading-[0.9]">SKLEP <br /> URWIS</h2>
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 italic text-zinc-900 leading-[0.9] pr-2">SKLEP <br /> URWIS</h2>
                   {/* 🚀 POPRAWKA KONTRASTU: text-zinc-800 zamiast zinc-600 */}
                   <p className="text-lg text-zinc-800 font-bold uppercase leading-snug">
                     Najlepsze zabawki oraz pełna gama artykułów szkolnych i biurowych w Białobrzegach.
@@ -103,7 +103,7 @@ export default function AboutSection() {
                   <div className="w-16 h-16 bg-[#0055ff] rounded-3xl flex items-center justify-center text-white mb-8 shadow-xl shadow-blue-500/20">
                     <Coffee size={32} strokeWidth={2.5} aria-hidden="true" />
                   </div>
-                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 text-zinc-900 italic leading-[0.9]">LECĘ <br /> W KULKI</h2>
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 text-zinc-900 italic leading-[0.9] pr-2">LECĘ <br /> W KULKI</h2>
                   <p className="text-lg text-zinc-800 font-bold uppercase leading-snug">
                     Kawiarnia i sala zabaw dla dzieci. Idealne miejsce na kawę dla rodzica i szaleństwo dla urwisa.
                   </p>
@@ -131,7 +131,7 @@ export default function AboutSection() {
                   <div className="w-16 h-16 bg-amber-400 rounded-3xl flex items-center justify-center text-amber-950 mb-8 shadow-xl shadow-amber-500/20">
                     <GraduationCap size={32} strokeWidth={2.5} aria-hidden="true" />
                   </div>
-                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 italic text-zinc-900 leading-[0.9]">AKADEMIA <br /> URWISA</h2>
+                  <h2 className="text-4xl font-black uppercase tracking-tighter mb-6 italic text-zinc-900 leading-[0.9] pr-2">AKADEMIA <br /> URWISA</h2>
                   <div className="space-y-4">
                     <p className="text-xl text-amber-600 font-black uppercase tracking-tight leading-none">
                       NAUKA PRZEZ ZABAWĘ!
@@ -159,8 +159,8 @@ export default function AboutSection() {
         {/* --- KONTAKT CTA --- */}
         <div className="text-center space-y-12 pb-12">
           {/* 🚀 Nagłówek H2 jest tutaj poprawny, bo jest kolejną sekcją główną */}
-          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 italic">
-            WPADNIESZ <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">DO NAS?</span>
+          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 italic pr-4">
+            WPADNIESZ <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] pr-4">DO NAS?</span>
           </h2>
           <Link 
             href="/kontakt" 

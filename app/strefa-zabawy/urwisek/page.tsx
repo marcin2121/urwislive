@@ -4,6 +4,14 @@ import UrwisekLobby from '@/components/UrwisekLobby'
 import DeviceCheckWrapper from '@/components/DeviceCheckWrapper'
 import UrwisekDashboard from '@/components/UrwisekDashboard'
 import { calculateDecay } from '@/lib/urwis/engine'
+import Link from 'next/link'
+import { MoveLeft, Sparkles } from 'lucide-react'
+import CloseWindowButton from '@/components/CloseWindowButton'
+
+export const metadata = {
+  title: 'Wirtualny Urwis | Sklep Urwis',
+  description: 'Zaloguj się i opiekuj się swoim wirtualnym zwierzakiem w Sklepie Urwis!',
+};
 
 export default async function UrwisekPage() {
   const supabase = await createClient()
@@ -16,7 +24,6 @@ export default async function UrwisekPage() {
     if (data) {
       const now = Date.now();
       
-      // NAPRAWA DATY: Wymuszamy format UTC, aby serwer nie gubił się w strefach czasowych
       let dbDate = data.last_interaction;
       if (dbDate && !dbDate.endsWith('Z') && !dbDate.includes('+')) {
         dbDate += 'Z'; 
@@ -25,7 +32,6 @@ export default async function UrwisekPage() {
       const lastUpdate = dbDate ? new Date(dbDate).getTime() : now;
       const secondsPassed = Math.max(0, Math.floor((now - lastUpdate) / 1000));
 
-      // Przeliczamy statystyki raz na serwerze
       pet = {
         ...data,
         hunger_level: Math.round(calculateDecay(data.hunger_level, secondsPassed)),
@@ -37,8 +43,23 @@ export default async function UrwisekPage() {
 
   return (
     <DeviceCheckWrapper>
-      <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-white">
-        <div className="w-full max-w-md relative text-gray-900">
+      <main className="w-full flex justify-center items-start pt-24 pb-12 relative z-10 px-4 min-h-full">
+        <div className="w-full max-w-4xl max-md:hidden mb-8 flex items-center justify-between z-20 absolute top-6 left-1/2 -translate-x-1/2 px-4">
+          <Link href="/strefa-zabawy" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors font-bold uppercase tracking-widest text-xs">
+            <MoveLeft size={16} /> Wróć do Strefy Zabawy
+          </Link>
+          <CloseWindowButton className="hidden standalone:inline-flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors font-bold uppercase tracking-widest text-xs">
+            Wyjdź
+          </CloseWindowButton>
+        </div>
+        
+        <div className="w-full max-w-md relative text-gray-900 bg-white rounded-3xl shadow-xl border border-zinc-100 p-6 mt-16 max-md:mt-0">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-black uppercase italic tracking-tighter text-zinc-900 flex items-center justify-center gap-2 pr-8 pb-2">
+              Mój <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Urwis <Sparkles className="text-orange-500" size={24} /></span>
+            </h1>
+          </div>
+          
           {!user ? (
             <UrwisekAuth />
           ) : !pet ? (

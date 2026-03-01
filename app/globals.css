@@ -16,6 +16,12 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
 }
 
+html, body {
+  max-width: 100dvw;
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   font-family: var(--font-body);
   color: #0f172a;
@@ -40,20 +46,22 @@ body {
   overflow: hidden;
 }
 /* Klasa aktywowana tylko na stronie Urwiska */
-/* app/globals.css */
-body.game-mode {
-  overflow: hidden;
-  height: 100dvh; /* 👈 ZMIEŃ NA dvh: Dynamicznie dostosowuje się do pasków przeglądarki */
-  width: 100vw;
-  position: fixed;
-  padding-top: env(safe-area-inset-top);    /* 👈 Zabezpiecza przed notchem */
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
 /* Ukrywamy standardowy Navbar i Footer, gdy ciało strony ma klasę game-mode */
 body.game-mode nav, 
 body.game-mode footer {
   display: none !important;
+}
+
+/* Wymuszanie pełnego ekranu bez scrolla przydatne jest tylko w PWA na urządzeniach mobilnych */
+@media (max-width: 768px) {
+  body.game-mode {
+    overflow: hidden;
+    height: 100dvh; /* 👈 ZMIEŃ NA dvh: Dynamicznie dostosowuje się do pasków przeglądarki */
+    width: 100vw;
+    position: fixed;
+    padding-top: env(safe-area-inset-top);    /* 👈 Zabezpiecza przed notchem */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 /* Wymusza GPU compositing na elementach które się animują */

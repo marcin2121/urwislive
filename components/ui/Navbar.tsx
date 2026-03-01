@@ -22,7 +22,8 @@ import {
   Smile,
   User,
   BadgePercent,
-  ShieldAlert
+  ShieldAlert,
+  Home
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -42,12 +43,11 @@ const FULL_HOURS_LIST = [
 ];
 
 const NAV_ITEMS = [
-  { name: "O nas", href: "/o-nas", icon: Info },
-  { name: "Oferta", href: "/oferta", icon: ShoppingBag },
-  { name: "Urwisek", href: "/urwisek", icon: Smile },
-  { name: "Kolorowanki", href: "/kolorowanki", icon: Palette }, 
-  { name: "Kontakt", href: "/kontakt", icon: Phone },
-  { name: "Sala Zabaw", href: "/salazabaw", icon: Coffee },
+  { name: "Poznaj Urwisa", href: "/poznaj-urwisa", icon: Info, color: "text-[#BF2024]", bg: "bg-[#BF2024]/10" },
+  { name: "Oferta", href: "/oferta", icon: ShoppingBag, color: "text-[#0055ff]", bg: "bg-[#0055ff]/10" },
+  { name: "Strefa Zabawy", href: "/strefa-zabawy", icon: Smile, color: "text-amber-500", bg: "bg-amber-500/10" },
+  { name: "Kontakt", href: "/kontakt", icon: Phone, color: "text-[#BF2024]", bg: "bg-[#BF2024]/10" },
+  { name: "Sala Zabaw", href: "/salazabaw", icon: Coffee, color: "text-[#0055ff]", bg: "bg-[#0055ff]/10" },
 ];
 
 export default function Navbar() {
@@ -60,6 +60,8 @@ export default function Navbar() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const hoursRef = useRef<HTMLDivElement>(null);
+  
+  const isUrwisekPage = pathname === '/strefa-zabawy/urwisek';
 
   const [shopStatus, setShopStatus] = useState({ 
     isOpen: false, 
@@ -304,13 +306,13 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* MOBILE MENU TOGGLE */}
+            {/* MOBILE MENU TOGGLE (Tylko tablety, na smartfonach używamy Bottom Bar) */}
             <button 
               onClick={() => {
                 setMobileMenuOpen(true);
                 trackEvent('mobile_menu_open');
               }} 
-              className="xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm hover:bg-zinc-100 text-zinc-600 active:scale-90 transition-transform shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="hidden md:flex xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm hover:bg-zinc-100 text-zinc-600 active:scale-90 transition-transform shrink-0 min-w-[44px] min-h-[44px] items-center justify-center"
             >
               <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
@@ -326,7 +328,7 @@ export default function Navbar() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" 
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[120]" 
               onClick={() => {
                 setMobileMenuOpen(false);
                 trackEvent('mobile_menu_close_backdrop');
@@ -336,7 +338,7 @@ export default function Navbar() {
               initial={{ x: "100%" }} 
               animate={{ x: 0 }} 
               exit={{ x: "100%" }} 
-              className="fixed inset-y-0 right-0 z-[70] w-full max-w-sm bg-white shadow-2xl p-6 flex flex-col"
+              className="fixed inset-y-0 right-0 z-[130] w-full max-w-sm bg-white shadow-2xl p-6 flex flex-col"
             >
               
               <div className="flex justify-between items-center mb-8">
@@ -360,71 +362,12 @@ export default function Navbar() {
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
 
-                {/* Strefa Rabatów jako główny przycisk na mobile */}
-                <Link 
-                  href="/rabaty" 
-                  onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_rabaty_click'); }} 
-                  className="flex items-center justify-between p-6 rounded-4xl border shadow-md transition-all bg-gradient-to-br from-red-500 to-red-600 text-white border-red-400"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white"><BadgePercent size={24} /></div>
-                    <div className="flex flex-col">
-                      <span className="text-[12px] font-black uppercase opacity-80 leading-none mb-1">Klub Urwisa</span>
-                      <span className="text-xl font-black italic uppercase leading-none">Strefa Rabatów</span>
-                    </div>
-                  </div>
-                  <ChevronDown className="-rotate-90 opacity-50 size-5" />
-                </Link>
-
-                {/* ADMIN W MENU MOBILNYM */}
-                {isAdmin && (
-                  <Link 
-                    href="/admin" 
-                    onClick={() => setMobileMenuOpen(false)} 
-                    className="flex items-center justify-between p-5 rounded-3xl border shadow-sm transition-all bg-zinc-900 text-white border-zinc-800 hover:bg-zinc-800 mt-2"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><ShieldAlert size={16} /></div>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-1">Zarządzanie Sklepem</span>
-                        <span className="text-lg font-black italic uppercase leading-none">Panel Admina</span>
-                      </div>
-                    </div>
-                  </Link>
-                )}
-
-                {/* LOGOWANIE / PROFIL W MENU MOBILNYM */}
-                {user ? (
-                  <Link 
-                    href="/profil" 
-                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_profile_click'); }} 
-                    className="flex items-center justify-between p-5 rounded-3xl border shadow-sm transition-all bg-zinc-50 text-zinc-900 border-zinc-200 hover:bg-zinc-100"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#0055ff]"><User size={16} /></div>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-1">Zarządzaj kontem</span>
-                        <span className="text-lg font-black italic uppercase leading-none">Mój Profil</span>
-                      </div>
-                    </div>
-                  </Link>
-                ) : (
-                  <button 
-                    onClick={() => { setMobileMenuOpen(false); setIsAuthModalOpen(true); }}
-                    className="w-full flex items-center justify-between p-5 rounded-3xl border shadow-sm transition-all bg-zinc-900 text-white border-zinc-800"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300"><User size={16} /></div>
-                      <div className="flex flex-col text-left">
-                        <span className="text-[10px] font-black uppercase opacity-70 leading-none mb-1">Dołącz do nas</span>
-                        <span className="text-lg font-black italic uppercase leading-none">Zaloguj się</span>
-                      </div>
-                    </div>
-                  </button>
-                )}
+                {/* Usunięto dublujące się z Bottom Navbar elementy: Strefę Rabatów i Profil.
+                    Panel Admina pozostaje w Hamburgerze. */}
 
                 <nav className="flex flex-col gap-1 mt-2">
-                  {NAV_ITEMS.filter(item => item.name !== "Kolorowanki").map((item) => (
+                  <div className="text-[10px] font-black uppercase text-zinc-400 px-4 py-2">Działy Zabawek</div>
+                  {NAV_ITEMS.filter(item => item.name !== "Strona Główna").map((item) => (
                     <Link 
                       key={item.name} 
                       href={item.href} 
@@ -444,19 +387,19 @@ export default function Navbar() {
 
                 <div className="flex flex-col gap-3">
                   <Link 
-                    href="/kolorowanki" 
-                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_kolorowanki'); }} 
+                    href="/strefa-zabawy" 
+                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_strefa-zabawy'); }} 
                     className="flex flex-col relative overflow-hidden p-6 rounded-4xl bg-zinc-900 text-white border border-zinc-800 shadow-xl"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#BF2024]/40 to-[#0055ff]/40 opacity-80" />
                     <div className="relative flex items-center justify-between z-10 mb-2">
                        <div className="flex items-center gap-3">
-                         <Palette size={24} className="text-yellow-400" />
-                         <div className="font-black italic uppercase tracking-tighter text-xl">Studio Kreatywne</div>
+                         <Smile size={24} className="text-yellow-400" />
+                         <div className="font-black italic uppercase tracking-tighter text-xl">Strefa Zabawy</div>
                        </div>
                     </div>
                     <p className="relative z-10 text-[10px] font-bold uppercase text-zinc-300 opacity-90 leading-tight">
-                      Twórzcie, bawcie się i zapisujcie najpiękniejsze wspólne chwile.
+                      Kolorowanki, gry z Urwiskiem, aplikacja UrwisAR. Znajdziesz to wszystko tutaj!
                     </p>
                   </Link>
                 </div>
@@ -465,6 +408,46 @@ export default function Navbar() {
           </>
         )}
       </AnimatePresence>
+
+      {/* MOBILE BOTTOM NAVIGATION (Native App Feel) */}
+      {!isUrwisekPage && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-around px-2 relative">
+            <Link href="/" onClick={() => trackEvent('bottom_nav_home')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+              <Home size={24} className={pathname === '/' ? 'fill-current' : ''} />
+              <span className="text-[9px] font-black uppercase tracking-tighter">Start</span>
+            </Link>
+            <Link href="/strefa-zabawy" onClick={() => trackEvent('bottom_nav_strefa')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname.startsWith('/strefa-zabawy') ? 'text-yellow-500' : 'text-zinc-500'}`}>
+              <Smile size={24} />
+              <span className="text-[9px] font-black uppercase tracking-tighter">Zabawa</span>
+            </Link>
+
+            {/* Fab Button: Rabaty */}
+            <Link href="/rabaty" onClick={() => trackEvent('bottom_nav_rabaty')} className="relative flex flex-col items-center gap-1 w-16 -mt-8 mx-2 z-10 group">
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl border-[5px] border-white/80 backdrop-blur-sm transition-transform group-active:scale-95 ${pathname === '/rabaty' ? 'bg-[#BF2024] text-white shadow-red-500/40' : 'bg-gradient-to-tr from-amber-400 to-orange-500 text-white'}`}>
+                <BadgePercent size={28} className={pathname === '/rabaty' ? 'fill-current' : ''} />
+              </div>
+              <span className={`text-[10px] font-black uppercase tracking-tighter ${pathname === '/rabaty' ? 'text-[#BF2024]' : 'text-zinc-900'}`}>Rabaty</span>
+            </Link>
+
+            {user ? (
+              <Link href="/profil" onClick={() => trackEvent('bottom_nav_profile')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+                <User size={24} className={pathname === '/profil' ? 'fill-current' : ''} />
+                <span className="text-[9px] font-black uppercase tracking-tighter">Profil</span>
+              </Link>
+            ) : (
+              <button onClick={() => { trackEvent('bottom_nav_login'); setIsAuthModalOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500">
+                <User size={24} />
+                <span className="text-[9px] font-black uppercase tracking-tighter">Konto</span>
+              </button>
+            )}
+            <button onClick={() => { trackEvent('bottom_nav_menu'); setMobileMenuOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none">
+              <Menu size={24} />
+              <span className="text-[9px] font-black uppercase tracking-tighter">Menu</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </header>

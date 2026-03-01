@@ -6,9 +6,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Definiujemy główne ścieżki, które mają być indeksowane
   const routes = [
     '',
-    '/o-nas',
-    '/kontakt',
-    '/salazabaw',
+    '/poznaj-urwisa',
+    '/strefa-zabawy',
+    '/strefa-zabawy/urwisek',
+    '/strefa-zabawy/kolorowanki',
+    '/strefa-zabawy/urwisar',
     '/oferta',
     '/oferta/zabawki',
     '/oferta/gry',

@@ -223,7 +223,7 @@ export default function AdminDashboard() {
     return () => { supabase.removeChannel(channel) }
   }, [fetchData])
 
-  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = '/urwisek' }
+  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = '/strefa-zabawy/urwisek' }
 
   async function handleFileUpload(file: File, folder: 'broadcasts' | 'promos' | 'kupony') {
     setUploading(true)

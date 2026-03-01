@@ -20,7 +20,7 @@ export default function DeviceCheckWrapper({ children }: { children: React.React
 
   if (!isAllowed) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="fixed inset-0 min-h-screen bg-gray-900 flex items-center justify-center p-4 z-50">
         <Card className="max-w-md w-full p-8 text-center bg-linear-to-b from-orange-50 to-white border-4 border-orange-200 rounded-[32px] shadow-2xl relative overflow-hidden">
           <MonitorSmartphone className="w-16 h-16 text-orange-500 mx-auto mb-4 relative z-10" />
           <h2 className="text-2xl font-black text-gray-800 mb-4 relative z-10">Urwisek śpi w aplikacji! 🦖</h2>

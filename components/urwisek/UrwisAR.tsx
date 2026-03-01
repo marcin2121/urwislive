@@ -129,7 +129,16 @@ export default function UrwisAR() {
         </div>
       )}
 
-      {/* ✅ Na desktop — sekcja jest pusta ale zajmuje 280px, zero CLS */}
+      {/* ✅ Na desktop — sekcja z jasnym wytłumaczeniem dlaczego nie ma skanera */}
+      {isMobile === false && (
+        <div className="max-w-3xl mx-auto text-center py-10">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-zinc-100 rounded-full mb-6 text-zinc-400">
+            <ScanFace size={48} />
+          </div>
+          <h2 className="text-3xl font-black tracking-tighter uppercase italic text-zinc-900 mb-4">Urwis AR jest na telefony!</h2>
+          <p className="text-zinc-500 font-bold uppercase text-sm tracking-widest max-w-lg mx-auto leading-relaxed">Rozszerzoną Rzeczywistość obsługujemy tylko poprzez kamerę w urządzeniach mobilnych. Wejdź na tę stronę ze swojego smartfona, aby zobaczyć magię!</p>
+        </div>
+      )}
     </section>
   );
 }

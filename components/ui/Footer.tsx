@@ -98,7 +98,7 @@ export default function Footer() {
               <nav aria-label="Nawigacja w stopce">
                 <ul className="flex flex-col gap-3">
                   <li><QuickLink href="/oferta">Nasza Oferta</QuickLink></li>
-                  <li><QuickLink href="/o-nas">O nas</QuickLink></li>
+                  <li><QuickLink href="/poznaj-urwisa">Poznaj Urwisa</QuickLink></li>
                   <li><QuickLink href="/kontakt">Kontakt</QuickLink></li>
                   <li><QuickLink href="/regulamin">Regulamin</QuickLink></li>
                 </ul>

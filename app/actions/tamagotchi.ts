@@ -125,7 +125,7 @@ export async function claimDailyLogin() {
 
   if (error) return { error: 'Błąd.' }
 
-  revalidatePath('/urwisek')
+  revalidatePath('/strefa-zabawy/urwisek')
   return { success: true, amount: 50 }
 }
 
@@ -166,7 +166,7 @@ if (!playerName || playerName.trim().length < 3 || playerName.length > 30) {
     return { error: 'Błąd zapisu.' }
   }
 
-  revalidatePath('/urwisek')
+  revalidatePath('/strefa-zabawy/urwisek')
   return { success: true }
 }
 

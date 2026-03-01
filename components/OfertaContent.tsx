@@ -68,7 +68,7 @@ const categories = [
     icon: Zap,
     color: "#7a4f85",
     size: "md", 
-    href: "/o-nas"
+    href: "/poznaj-urwisa"
   },
 ]
 

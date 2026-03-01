@@ -12,6 +12,7 @@ import { Suspense } from "react";
 import Script from "next/script";
 import WelcomeScreen from "@/components/ui/WelcomeScreen";
 import { AuthProvider } from "@/components/AuthProvider";
+import OnboardingTour from "@/components/ui/OnboardingTour";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -160,7 +161,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
 
-      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
+      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white overflow-x-hidden">
         <AuthProvider>
           <Suspense fallback={null}>
             <WelcomeScreen />
@@ -172,7 +173,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
 
-          <div className="relative z-20 flex flex-col min-h-screen bg-transparent">
+          <div className="relative z-20 flex flex-col min-h-screen bg-transparent overflow-x-hidden w-full max-w-full">
             <Navbar />
 
             <Suspense fallback={null}>
@@ -193,6 +194,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Suspense fallback={null}>
             <CookieModal />
           </Suspense>
+          <OnboardingTour />
         </AuthProvider>
 
         <Script

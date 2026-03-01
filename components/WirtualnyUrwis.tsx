@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import JellyButton from '@/components/ui/JellyButton'
 import { Card } from '@/components/ui/card'
@@ -10,18 +10,28 @@ import { interactWithUrwis } from '@/app/actions/tamagotchi'
 // Wykorzystujemy istniejący styl JellyButton do interakcji
 // Gra promuje lokalizację w Białobrzegach poprzez system nagród
 
-export default function UrwisTamagotchi() {
+export default function WirtualnyUrwis() {
   const [hunger, setHunger] = useState(80)
   const [happiness, setHappiness] = useState(70)
   const [points, setPoints] = useState(0)
   const [isFeeding, setIsFeeding] = useState(false)
+  
+  const lastTickRef = useRef<number>(0)
 
   // Logika spadku statystyk w czasie (wymaga internetu do synchronizacji z serwerem)
   useEffect(() => {
+    lastTickRef.current = Date.now()
     const timer = setInterval(() => {
-      setHunger((prev) => Math.max(0, prev - 1))
-      setHappiness((prev) => Math.max(0, prev - 0.5))
-    }, 5000)
+      const now = Date.now()
+      const elapsed = (now - lastTickRef.current) / 1000 // sekundy
+      if (elapsed >= 5) {
+        const ticks = Math.floor(elapsed / 5)
+        lastTickRef.current += ticks * 5000
+        
+        setHunger((prev) => Math.max(0, prev - (1 * ticks)))
+        setHappiness((prev) => Math.max(0, prev - (0.5 * ticks)))
+      }
+    }, 1000)
     return () => clearInterval(timer)
   }, [])
 

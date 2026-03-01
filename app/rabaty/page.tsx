@@ -439,29 +439,7 @@ export default function RabatyPage() {
 
               {activeTab === 'dostepne' && (
                 <div className="space-y-4">
-                  <AnimatePresence>
-                    {currentActiveData && (
-                      <motion.div initial={{ opacity: 0, scale: 0.95, height: 0 }} animate={{ opacity: 1, scale: 1, height: 'auto' }} exit={{ opacity: 0, scale: 0.95, height: 0 }} className="bg-white border-4 border-[#0055ff] rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 left-0 right-0 bg-[#0055ff] text-white text-[10px] font-black uppercase tracking-widest text-center py-1">
-                          Pokaż ten ekran kasjerce
-                        </div>
-                        <div className="text-center mt-6 mb-4">
-                          <Timer size={40} className={`mx-auto mb-2 ${timeLeft < 60 ? 'text-red-500 animate-pulse' : 'text-[#0055ff]'}`} />
-                          <div className={`text-5xl font-black font-mono tracking-tighter ${timeLeft < 60 ? 'text-red-500' : 'text-zinc-900'}`}>
-                            {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
-                          </div>
-                          <p className="text-xs font-bold text-zinc-400 uppercase mt-1">Czas do wygaśnięcia</p>
-                        </div>
-                        <div className={`bg-gradient-to-br ${currentActiveData.gradient || 'from-[#0055ff] to-blue-500'} p-6 rounded-3xl text-white text-center shadow-inner`}>
-                           <h3 className="text-2xl font-black italic uppercase mb-4">{currentActiveData.title}</h3>
-                           <div className="bg-white text-zinc-900 py-3 px-6 rounded-2xl inline-block border-2 border-white/20 shadow-lg">
-                             <span className="block text-[10px] uppercase font-black text-zinc-400 mb-1">Twój Kod:</span>
-                             <span className="text-3xl font-black tracking-widest">{currentActiveData.code}</span>
-                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+
 
                   {availableCouponsList.length === 0 && !activeCoupon && (
                     <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-zinc-200">
@@ -652,6 +630,46 @@ export default function RabatyPage() {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* PEŁNOEKRANOWY TIMER KUPONU */}
+      <AnimatePresence>
+        {currentActiveData && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[6000] bg-white text-zinc-900 flex flex-col items-center justify-center p-6 text-center"
+          >
+            <div className={`absolute top-0 left-0 right-0 h-10 flex items-center justify-center text-white ${timeLeft < 60 ? 'bg-red-500 animate-pulse' : 'bg-[#0055ff]'}`}>
+              <span className="text-sm md:text-xl font-black uppercase tracking-widest">Pokaż ten ekran kasjerce</span>
+            </div>
+            
+            <motion.div 
+              animate={{ scale: timeLeft < 60 ? [1, 1.05, 1] : 1 }}
+              transition={{ repeat: timeLeft < 60 ? Infinity : 0, duration: 1 }}
+              className="mt-12 mb-8"
+            >
+              <Timer size={80} className={`mx-auto mb-4 ${timeLeft < 60 ? 'text-red-500' : 'text-[#0055ff]'}`} />
+              <div className={`text-8xl md:text-[10rem] font-black font-mono tracking-tighter leading-none ${timeLeft < 60 ? 'text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'text-zinc-900'}`}>
+                {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
+              </div>
+              <p className="text-xl md:text-2xl font-black text-zinc-400 uppercase mt-4">Czas do wygaśnięcia</p>
+            </motion.div>
+
+            <div className={`w-full max-w-2xl bg-gradient-to-br ${currentActiveData.gradient || 'from-[#0055ff] to-blue-600'} p-8 md:p-12 rounded-[3rem] text-white shadow-2xl`}>
+               <h3 className="text-3xl md:text-5xl font-black italic uppercase mb-8 leading-tight">{currentActiveData.title}</h3>
+               <div className="bg-white text-zinc-900 py-6 px-10 rounded-3xl inline-block border-4 border-white/20 shadow-xl">
+                 <span className="block text-sm uppercase font-black text-zinc-400 mb-2">Twój Kod Rabatu:</span>
+                 <span className="text-5xl md:text-6xl font-black tracking-widest">{currentActiveData.code}</span>
+               </div>
+            </div>
+            
+            <p className="absolute bottom-8 text-zinc-400 font-bold text-sm">
+              Prosimy nie zamykać okna. Kupon po upływie czasu przepadnie.
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

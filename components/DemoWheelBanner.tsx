@@ -114,9 +114,8 @@ export default function DemoWheelBanner() {
   if (isLoadingSession || wheelPrizes.length === 0) return null;
 
   return (
-    <section className="py-12 px-6 relative z-[100]">
-      <div className="max-w-7xl mx-auto">
-        <div className="relative overflow-hidden rounded-[3rem] bg-white/60 backdrop-blur-3xl border-2 border-white shadow-xl">
+    <>
+      <div className="relative overflow-hidden rounded-[3rem] bg-white/60 backdrop-blur-3xl border-2 border-white shadow-xl h-full flex flex-col justify-center w-full z-10 transition-transform overflow-hidden">
           
           <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-urwis-blue/10 rounded-full blur-3xl pointer-events-none" />
@@ -197,7 +196,6 @@ export default function DemoWheelBanner() {
                 <CircleDashed size={20} className="text-zinc-400 animate-spin-slow" />
               </div>
             </div>
-          </div>
         </div>
       </div>
 
@@ -254,6 +252,6 @@ export default function DemoWheelBanner() {
         onClose={() => setIsAuthModalOpen(false)} 
         initialView="register" 
       />
-    </section>
+    </>
   );
 }

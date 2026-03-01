@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
     !user
   ) {
     const url = request.nextUrl.clone()
-    url.pathname = '/urwisek' // Odsyłamy na stronę logowania do Urwiska
+    url.pathname = '/strefa-zabawy/urwisek' // Odsyłamy na stronę logowania do Urwiska
     return NextResponse.redirect(url)
   }
 

@@ -6,8 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   RotateCcw, Download, Smartphone, ChevronLeft, 
   Eraser, Palette, Pipette, Trash2, Eye, EyeOff,
-  Wand2, Star, Sun, Heart, Smile, X, Plus, Hand, Paintbrush,
-  Volume2, VolumeX, Volume1, ChevronRight, PaintBucket
+  Wand2, Star, Sun, Heart, Smile, X, Plus, Minus, Hand, Paintbrush,
+  Volume2, VolumeX, Volume1, ChevronRight, PaintBucket, Printer
 } from 'lucide-react';
 
 export interface Template { 
@@ -30,13 +30,12 @@ const trackEvent = (action: string, params?: object) => {
   }
 };
 
-const PRESET_PALETTE = ['#BF2024', '#EF4444', '#F97316', '#FACC15', '#22C55E', '#10B981', '#0055ff', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E', '#71717A', '#000000', '#FFFFFF', '#4B0082'];
+const PRESET_PALETTE = ['#BF2024', '#EF4444', '#F97316', '#FACC15', '#22C55E', '#10B981', '#0055ff', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#745239', '#EC4899', '#F43F5E', '#71717A', '#000000', '#FFFFFF', '#FCCEAD'];
 const STAMP_LIST = [{ id: 'urwis', icon: Smile }, { id: 'star', icon: Star }, { id: 'sun', icon: Sun }, { id: 'heart', icon: Heart }];
 
 export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const sliderContainerRef = useRef<HTMLDivElement>(null);
   const ghostCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const rainbowHue = useRef(0);
   
@@ -49,9 +48,9 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [selectedStamp, setSelectedStamp] = useState(STAMP_LIST[0]);
   
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showMobileSizePicker, setShowMobileSizePicker] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [zenMode, setZenMode] = useState(false);
-  const [isSliderDragging, setIsSliderDragging] = useState(false);
 
   // --- AUDIO ---
   const [ambientVolume, setAmbientVolume] = useState(15);
@@ -82,39 +81,10 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [showBrushPreview, setShowBrushPreview] = useState(false);
   const brushPreviewTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // --- LOGIKA SUWAKA (POINTER EVENTS) ---
-  const handleSliderInteraction = useCallback((clientY: number) => {
-    if (!sliderContainerRef.current) return;
-    const rect = sliderContainerRef.current.getBoundingClientRect();
-    const relativeY = (rect.bottom - clientY) / rect.height;
-    const val = Math.round(relativeY * 60);
-    const clampedVal = Math.max(1, Math.min(60, val));
-    
-    setLineWidth(clampedVal);
-    setShowBrushPreview(true);
-    if (brushPreviewTimer.current) clearTimeout(brushPreviewTimer.current);
-    brushPreviewTimer.current = setTimeout(() => setShowBrushPreview(false), 800);
-  }, []);
-
-  const onSliderPointerDown = (e: React.PointerEvent) => {
-    setIsSliderDragging(true);
-    handleSliderInteraction(e.clientY);
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const onSliderPointerMove = (e: React.PointerEvent) => {
-    if (isSliderDragging) handleSliderInteraction(e.clientY);
-  };
-
-  const onSliderPointerUp = (e: React.PointerEvent) => {
-    setIsSliderDragging(false);
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-  };
-
   // --- FUNKCJE POMOCNICZE ---
   const selectColor = useCallback((color: string) => {
     setSelectedColor(color);
-    if (tool === 'eraser') setTool('brush');
+    if (tool === 'eraser' || tool === 'picker') setTool('brush');
     setShowColorPicker(false);
     setRecentColors(prev => [color, ...prev.filter(c => c !== color)].slice(0, 5));
   }, [tool]);
@@ -144,6 +114,19 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       playSfx('click');
     };
   }, [undoStack, playSfx]);
+
+  const resetCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, 1280, 720);
+      setUndoStack([canvas.toDataURL()]);
+      playSfx('erase');
+    }
+  }, [playSfx]);
 
   const toggleMute = () => setIsMuted(prev => !prev);
   
@@ -249,16 +232,22 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     playSfx('paint');
   }, [selectedColor, saveState, playSfx]);
 
+  const cursorCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
   // --- EFEKTY ---
   useEffect(() => {
     if (isTouchDevice) return; 
     const activeTool = isTemporaryPan ? 'pan' : tool;
     if (['brush', 'magic', 'eraser'].includes(activeTool)) {
-      const cursorCanvas = document.createElement('canvas');
+      if (!cursorCanvasRef.current) {
+        cursorCanvasRef.current = document.createElement('canvas');
+      }
+      const cursorCanvas = cursorCanvasRef.current;
       const size = Math.max(4, lineWidth * scale); 
       cursorCanvas.width = size + 4; cursorCanvas.height = size + 4;
       const ctx = cursorCanvas.getContext('2d');
       if (ctx) {
+        ctx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
         ctx.beginPath(); ctx.arc(cursorCanvas.width / 2, cursorCanvas.height / 2, size / 2, 0, Math.PI * 2);
         if (activeTool === 'eraser') {
           ctx.strokeStyle = 'black'; ctx.lineWidth = 1.5; ctx.stroke();
@@ -275,6 +264,17 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       setDynamicCursor(activeTool === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'crosshair');
     }
   }, [tool, lineWidth, selectedColor, scale, isPanning, isTouchDevice, isTemporaryPan]);
+
+  // --- BLOKADA SCROLL'a POD SPODEM ---
+  useEffect(() => {
+    document.body.classList.add('overflow-hidden');
+    // Jeżeli mamy globalną klasę do ukrywania UI (NavBar itp), możemy jej użyć:
+    document.body.classList.add('game-mode');
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove('game-mode');
+    };
+  }, []);
 
   useEffect(() => {
     const audio = new Audio('/sfx/ambient.mp3');
@@ -372,6 +372,103 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     };
   };
 
+  const handlePrint = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = 1280; exportCanvas.height = 720;
+    const eCtx = exportCanvas.getContext('2d')!;
+    eCtx.drawImage(canvas, 0, 0);
+    const img = new window.Image();
+    img.src = template.src;
+    img.onload = () => {
+      eCtx.globalCompositeOperation = 'multiply'; eCtx.drawImage(img, 0, 0, 1280, 720);
+      const dataUrl = exportCanvas.toDataURL('image/png');
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        const logoUrl = `${window.location.origin}/logo.png`;
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Wydrukuj Kolorowankę Urwisa</title>
+              <style>
+                body {
+                  margin: 0;
+                  padding: 20px;
+                  display: flex;
+                  flex-direction: column;
+                  height: 100vh;
+                  box-sizing: border-box;
+                  font-family: sans-serif;
+                }
+                .img-container {
+                  flex: 1;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  min-height: 0;
+                  margin-bottom: 20px;
+                }
+                .img-container img {
+                  max-width: 100%;
+                  max-height: 100%;
+                  object-fit: contain;
+                }
+                .footer {
+                  display: flex;
+                  flex-direction: row;
+                  align-items: flex-end;
+                  height: 80px; 
+                  border-top: 2px solid #eee;
+                  padding-top: 10px;
+                }
+                .title-section {
+                  width: 66.66%;
+                  font-size: 24px;
+                  font-weight: bold;
+                  text-transform: uppercase;
+                  color: #333;
+                }
+                .logo-section {
+                  width: 33.33%;
+                  display: flex;
+                  flex-direction: row;
+                  align-items: center;
+                  justify-content: flex-end;
+                  font-size: 18px;
+                  font-weight: bold;
+                  color: #666;
+                  gap: 12px;
+                }
+                .logo-section img {
+                  height: 40px;
+                }
+                @media print {
+                  @page { margin: 0; size: landscape; }
+                  body { margin: 0; padding: 10mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="img-container">
+                <img src="${dataUrl}" onload="setTimeout(() => { window.print(); window.close(); }, 500);"/>
+              </div>
+              <div class="footer">
+                <div class="title-section">${template.title}</div>
+                <div class="logo-section">
+                  <div>sklep-urwis.pl</div>
+                  <img src="${logoUrl}" onerror="this.style.display='none'"/>
+                </div>
+              </div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        playSfx('success');
+      }
+    };
+  };
+
   const getPos = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current; if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
@@ -394,13 +491,28 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     const cy = e.touches ? e.touches[0].clientY : e.clientY;
     const pos = getPos(cx, cy);
     
+    if (tool === 'picker') {
+        const ctx = canvasRef.current?.getContext('2d');
+        if (ctx) {
+            const pixel = ctx.getImageData(pos.x, pos.y, 1, 1).data;
+            if (pixel[3] > 0) {
+                const hex = `#${[pixel[0], pixel[1], pixel[2]].map(x => x.toString(16).padStart(2, '0')).join('')}`;
+                selectColor(hex);
+            } else {
+                selectColor('#FFFFFF');
+            }
+            playSfx('click');
+        }
+        return;
+    }
+
     if (tool === 'pan' || e.button === 1) {
       setIsPanning(true); setPanStart({ x: cx - offset.x, y: cy - offset.y });
     } else if (tool === 'fill') {
       fillCanvas(pos.x, pos.y);
     } else {
       setIsDrawing(true); setLastPoint(pos);
-      if (tool !== 'stamp' && tool !== 'picker') {
+      if (tool !== 'stamp') {
           playSfx(tool === 'eraser' ? 'erase' : 'paint');
       }
     }
@@ -444,7 +556,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 overflow-hidden touch-none select-none flex flex-row p-2 gap-2 text-white font-sans">
+    <div className="fixed inset-0 z-[9999] bg-zinc-950 overflow-hidden touch-none select-none flex flex-row p-2 gap-2 text-white font-sans">
       
       {/* 📱 BLOKADA ORIENTACJI */}
       <AnimatePresence>
@@ -490,26 +602,26 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             </button>
             <button onClick={() => setTool('brush')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'brush' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Paintbrush size={20}/></button>
             <button onClick={() => setTool('fill')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'fill' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><PaintBucket size={20}/></button>
+            <button onClick={() => setTool('picker')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'picker' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Pipette size={20}/></button>
             <button onClick={() => setTool('pan')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'pan' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Hand size={20}/></button>
           </div>
 
           <div className="hidden lg:flex flex-col gap-8 p-4">
              <div className="grid grid-cols-2 gap-3">
-               {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'fill',n:'Wiadro',i:PaintBucket}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
+               {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'fill',n:'Wiadro',i:PaintBucket}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'picker',n:'Pipeta',i:Pipette}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
                  <button key={t.id} onClick={() => setTool(t.id as any)} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all cursor-pointer outline-none ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
                    <t.i size={24} /><span className="text-[10px] font-black uppercase">{t.n}</span>
                  </button>
                ))}
              </div>
              
-             <div className="grid grid-cols-6 gap-2 bg-white/5 p-4 rounded-3xl border border-white/10">
+             <div className="grid grid-cols-6 gap-2 bg-white/5 px-4 pt-4 pb-2 rounded-t-3xl border border-white/10 border-b-0">
                 {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 cursor-pointer outline-none ${selectedColor===c?'border-white scale-110 shadow-md':'border-white/10'}`} style={{ backgroundColor: c }} />)}
-                
-                <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 relative cursor-pointer hover:border-white/50 transition-colors" title="Własny kolor">
-                  <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => selectColor(e.target.value)} />
-                  <Plus size={16} />
-                </label>
              </div>
+             <label className="w-full py-4 mb-2 bg-white/10 rounded-b-3xl border border-white/10 flex items-center justify-center gap-2 font-black uppercase text-xs cursor-pointer outline-none hover:bg-white/20 transition-all relative overflow-hidden group">
+               <input type="color" className="absolute inset-0 opacity-0 cursor-pointer w-[200%] h-[200%] -top-1/2 -left-1/2" onChange={(e) => selectColor(e.target.value)} />
+               <Pipette size={18} className="group-hover:scale-110 transition-transform" /> Własny kolor
+             </label>
           </div>
         </motion.div>
       )}
@@ -545,28 +657,18 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
           
           {/* MOBILE UI */}
           <div className="lg:hidden flex flex-col gap-2 h-full select-none">
-             <div 
-                ref={sliderContainerRef}
-                onPointerDown={onSliderPointerDown}
-                onPointerMove={onSliderPointerMove}
-                onPointerUp={onSliderPointerUp}
-                onPointerLeave={onSliderPointerUp}
-                className="flex-1 bg-white/5 rounded-4xl border border-white/10 flex flex-col items-center py-4 relative overflow-hidden touch-none cursor-ns-resize"
-             >
-                <div className="w-2 h-full bg-white/10 rounded-full overflow-hidden flex flex-col justify-end pointer-events-none">
-                    <motion.div className="w-full bg-[#0055ff] shadow-[0_0_15px_rgba(0,85,255,0.6)]" animate={{ height: `${(lineWidth / 60) * 100}%` }} />
-                </div>
-                {isSliderDragging && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: -45 }} className="absolute top-1/2 left-0 bg-[#0055ff] text-white font-black px-2 py-1 rounded-lg text-[10px] shadow-2xl border border-white/20">
-                    {lineWidth}
-                  </motion.div>
-                )}
-                <div className="mt-2 text-zinc-500 font-black text-[8px] uppercase tracking-tighter">Size</div>
-             </div>
+             <div className="flex-1"></div>
+             
+             <button onClick={() => setShowMobileSizePicker(true)} className="w-full aspect-square bg-white/5 border border-white/20 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-lg cursor-pointer outline-none hover:bg-white/10 transition-colors">
+                <div className="rounded-full bg-white mb-1 shadow-md transition-all duration-300" style={{ width: Math.min(24, Math.max(4, lineWidth/2)), height: Math.min(24, Math.max(4, lineWidth/2)) }} />
+                <div className="text-[9px] font-black uppercase text-zinc-300">Rozmiar</div>
+             </button>
              
              <button onClick={() => { setTool('eraser'); playSfx('click'); }} className={`w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border transition-all cursor-pointer outline-none ${tool === 'eraser' ? 'bg-white text-zinc-900 border-white shadow-xl scale-110' : 'bg-white/5 border-white/10 text-white'}`}><Eraser size={20}/></button>
-             <button onClick={undo} disabled={undoStack.length <= 1} className="w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/5 text-white disabled:opacity-20 cursor-pointer outline-none"><RotateCcw size={18}/></button>
-             <button onClick={handleDownload} className="w-full aspect-square bg-[#0055ff] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg active:scale-90 transition-transform cursor-pointer outline-none"><Download size={20} /></button>
+             <button onClick={resetCanvas} className="w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/5 text-white cursor-pointer outline-none hover:bg-red-600 transition-colors"><Trash2 size={20}/></button>
+             <button onClick={undo} disabled={undoStack.length <= 1} className="w-full aspect-square rounded-2xl flex items-center justify-center shrink-0 border border-white/10 bg-white/5 text-white disabled:opacity-20 cursor-pointer outline-none hover:bg-white/20 transition-colors"><RotateCcw size={18}/></button>
+             <button onClick={handlePrint} className="w-full aspect-square bg-[#0055ff] text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg active:scale-90 transition-transform cursor-pointer outline-none mb-1"><Printer size={20} /></button>
+             <button onClick={handleDownload} className="w-full aspect-square bg-green-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg active:scale-90 transition-transform cursor-pointer outline-none"><Download size={20} /></button>
           </div>
 
           {/* DESKTOP UI */}
@@ -583,8 +685,12 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
                 </div>
               </div>
               <div className="mt-auto space-y-3">
-                <button onClick={undo} disabled={undoStack.length <= 1} className="w-full py-4 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs disabled:opacity-30 cursor-pointer outline-none"><RotateCcw size={16}/> Cofnij <span className="text-[9px] opacity-50 font-normal ml-1">(Ctrl+Z)</span></button>
-                <button onClick={handleDownload} className="w-full py-5 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 shadow-xl hover:bg-blue-600 transition-all cursor-pointer outline-none"><Download size={20} /> Pobierz</button>
+                <button onClick={resetCanvas} className="w-full py-3 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs cursor-pointer outline-none hover:bg-red-600 transition-colors"><Trash2 size={16}/> Urwis Zmywa farbę!</button>
+                <button onClick={undo} disabled={undoStack.length <= 1} className="w-full py-3 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-xs disabled:opacity-30 cursor-pointer outline-none hover:bg-white/20 transition-colors"><RotateCcw size={16}/> Cofnij <span className="text-[9px] opacity-50 font-normal ml-1">(Ctrl+Z)</span></button>
+                <div className="flex gap-2 w-full">
+                  <button onClick={handlePrint} className="flex-1 py-4 bg-[#0055ff] text-white rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-2 shadow-xl hover:bg-blue-600 transition-all cursor-pointer outline-none"><Printer size={18} /> Drukuj</button>
+                  <button onClick={handleDownload} className="flex-1 py-4 bg-green-500 text-white rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-2 shadow-xl hover:bg-green-600 transition-all cursor-pointer outline-none"><Download size={18} /> Zapisz</button>
+                </div>
               </div>
           </div>
         </motion.div>
@@ -605,6 +711,34 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         )}
       </AnimatePresence>
 
+      {/* MODAL: SIZE PICKER (Mobile) */}
+      <AnimatePresence>
+        {showMobileSizePicker && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[1100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 lg:hidden" onClick={() => setShowMobileSizePicker(false)}>
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-zinc-900 border border-white/10 p-6 rounded-[2.5rem] w-full max-w-sm" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-black uppercase italic tracking-tighter">Rozmiar Pędzla: {lineWidth}px</h3>
+                <button onClick={() => setShowMobileSizePicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
+              </div>
+              
+              <div className="flex items-center gap-4 mb-8 bg-zinc-950 p-4 rounded-3xl border border-white/5">
+                <button onClick={() => setLineWidth(Math.max(1, lineWidth - 1))} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 text-white font-black hover:bg-white/10 active:scale-95 transition-all outline-none"><Minus size={20} /></button>
+                <input type="range" min="1" max="60" value={lineWidth} onChange={(e) => setLineWidth(parseInt(e.target.value))} className="w-full accent-[#0055ff] h-8" />
+                <button onClick={() => setLineWidth(Math.min(60, lineWidth + 1))} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 text-white font-black hover:bg-white/10 active:scale-95 transition-all outline-none"><Plus size={20} /></button>
+              </div>
+
+              <div className="flex justify-between">
+                 {[5, 15, 30, 45, 60].map(val => (
+                   <button key={val} onClick={() => setLineWidth(val)} className={`w-12 h-12 rounded-full flex items-center justify-center border-2 cursor-pointer outline-none transition-all ${lineWidth === val ? 'border-[#0055ff] bg-[#0055ff]/10 scale-110' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}>
+                      <div className="rounded-full bg-white" style={{ width: Math.max(4, val/2.5), height: Math.max(4, val/2.5) }} />
+                   </button>
+                 ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* MODAL: COLOR PICKER (Mobile) */}
       <AnimatePresence>
         {showColorPicker && (
@@ -614,14 +748,16 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
                 <h3 className="font-black uppercase italic tracking-tighter">Paleta Urwisa</h3>
                 <button onClick={() => setShowColorPicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
               </div>
-              <div className="grid grid-cols-6 gap-3 mb-8">
+              <div className="grid grid-cols-6 gap-3 mb-4">
                 {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 cursor-pointer outline-none ${selectedColor === c ? 'border-white scale-110 shadow-lg' : 'border-white/10'}`} style={{ backgroundColor: c }} />)}
-                <label className="aspect-square rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/5 relative cursor-pointer hover:bg-white/10 transition-colors">
-                  <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => selectColor(e.target.value)} />
-                  <Plus size={16} />
-                </label>
               </div>
-              <button onClick={() => { setTool('magic'); setShowColorPicker(false); }} className="w-full py-4 bg-linear-to-r from-red-500 to-blue-500 rounded-2xl font-black uppercase text-xs shadow-lg cursor-pointer outline-none">Tęcza ✨</button>
+              
+              <label className="w-full py-4 mb-3 bg-white/10 rounded-2xl flex items-center justify-center gap-2 font-black uppercase text-sm border border-white/20 shadow-lg cursor-pointer outline-none hover:bg-white/20 transition-all relative overflow-hidden">
+                <input type="color" className="absolute inset-0 opacity-0 cursor-pointer w-[200%] h-[200%] -top-1/2 -left-1/2" onChange={(e) => selectColor(e.target.value)} />
+                <Pipette size={20} /> WŁASNY KOLOR
+              </label>
+
+              <button onClick={() => { setTool('magic'); setShowColorPicker(false); }} className="w-full py-4 bg-linear-to-r from-red-500 to-blue-500 rounded-2xl font-black uppercase text-sm shadow-lg cursor-pointer outline-none flex justify-center items-center gap-2 hover:opacity-90 transition-opacity"><Wand2 size={20} /> TĘCZOWY PĘDZEL</button>
             </motion.div>
           </motion.div>
         )}

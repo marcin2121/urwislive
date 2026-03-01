@@ -5,18 +5,15 @@ import { Coins, ArrowRight, Zap, Trophy, Smile, Store, Sparkles } from 'lucide-r
 
 export default function LoyaltySection() {
   return (
-    <section className="relative py-24 px-6 overflow-hidden bg-transparent">
-      
+    <div className="h-full w-full relative">
       {/* 🚀 ZMIANA WYDAJNOŚCIOWA: Usunięto zacinające na telefonach blur-[130px] na rzecz gradientów radialnych */}
-      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(191,32,36,0.08)_0%,transparent_60%)] rounded-full -z-10 animate-pulse" />
-      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(0,85,255,0.08)_0%,transparent_60%)] rounded-full -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
-
-      <div className="max-w-7xl mx-auto">
+      <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[150%] md:w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(191,32,36,0.08)_0%,transparent_60%)] rounded-full -z-10 animate-pulse pointer-events-none" />
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[150%] md:w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(0,85,255,0.08)_0%,transparent_60%)] rounded-full -z-10 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }} // Uruchomi się chwilę przed przewinięciem do sekcji
-          className="relative bg-white/30 backdrop-blur-xl border-2 border-white/70 rounded-[3rem] md:rounded-[4rem] p-6 md:p-20 shadow-2xl overflow-hidden will-change-transform"
+          className="relative bg-white/30 backdrop-blur-xl border-2 border-white/70 rounded-[3rem] md:rounded-[4rem] p-6 md:p-12 shadow-2xl overflow-hidden will-change-transform h-full w-full box-border"
         >
           {/* Watermark w brandowym kolorze */}
           <Zap className="absolute -top-12 -right-12 text-[#0055ff]/5 rotate-12 pointer-events-none w-[300px] h-[300px] md:w-[400px] md:h-[400px]" />
@@ -105,7 +102,6 @@ export default function LoyaltySection() {
 
           </div>
         </motion.div>
-      </div>
-    </section>
+    </div>
   )
 }

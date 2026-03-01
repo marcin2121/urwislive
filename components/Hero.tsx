@@ -80,28 +80,16 @@ export default function HeroSection() {
           Prawdziwy sklep stacjonarny, w którym rządzisz Ty i Twoja wyobraźnia!
         </motion.p>
 
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-6">
+        <div className="flex justify-center items-center mt-4">
           <Link 
-            href="/oferta" 
-            className="group relative w-full sm:w-auto px-14 py-6 bg-zinc-900 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl"
+            href="/rabaty" 
+            className="group relative w-full sm:w-auto px-12 py-6 md:px-16 md:py-8 bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white rounded-full font-black text-2xl md:text-3xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl hover:shadow-[0_0_40px_rgba(0,85,255,0.4)]"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity" />
-            <span className="relative z-10 flex items-center justify-center gap-3 italic tracking-tight uppercase">
-              Odkryj ofertę <ArrowRight size={22} strokeWidth={3} />
+            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="relative z-10 flex items-center justify-center gap-4 italic tracking-tight uppercase">
+              Odbierz rabat! <ArrowRight size={28} strokeWidth={3} className="group-hover:translate-x-2 transition-transform" />
             </span>
           </Link>
-
-          <button 
-            onClick={() => setIsMapOpen(true)}
-            className="w-full sm:w-auto px-14 py-6 bg-white/40 backdrop-blur-md border-2 border-white/60 text-zinc-900 rounded-[2rem] font-black text-xl transition-all flex items-center justify-center gap-3 italic tracking-tight uppercase shadow-xl cursor-pointer group hover:bg-white/80 hover:border-[#0055ff]/50 active:scale-95"
-          >
-            <MapPin 
-              size={22} 
-              strokeWidth={3} 
-              className="group-hover:text-[#0055ff] transition-colors" 
-            /> 
-            Lokalizacja
-          </button>
         </div>
       </div>
 

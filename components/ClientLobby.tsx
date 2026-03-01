@@ -7,10 +7,18 @@ import { Play, Sparkles, Trophy, Heart, Smartphone, Share, PlusSquare, MoreVerti
 import ColoringZone, { Template } from '@/components/ColoringZone';
 
 const TEMPLATES: Template[] = [
-  { id: 'lego', title: 'Zabawki', brand: 'Sklep Urwis', difficulty: 'Normalny', thumb: '/coloring/thumb-lego.webp', src: '/coloring/urwis-lego.webp' },
+  { id: 'super', title: 'SuperUrwisek', brand: 'Urwis Bohater', difficulty: 'Łatwy', thumb: '/coloring/thumb-super.webp', src: '/coloring/urwis-super.webp' },
   { id: 'urwis', title: 'Mój Urwis', brand: 'Superbohater', difficulty: 'Łatwy', thumb: '/coloring/thumb-urwis.webp', src: '/coloring/urwis-urwis.webp' },
   { id: 'kulki', title: 'Sala Lecę w Kulki', brand: 'Białobrzegi', difficulty: 'Łatwy', thumb: '/coloring/thumb-projektor.webp', src: '/coloring/urwis-projektor.webp' },
   { id: 'urodziny', title: 'Przyjęcie Marzeń', brand: 'Lecę w Kulki', difficulty: 'Trudny', thumb: '/coloring/thumb-urodziny.webp', src: '/coloring/urwis-urodziny.webp' },
+  { id: 'kosmos', title: 'Podróż w Kosmos', brand: 'Urwis w kosmosie', difficulty: 'Normalny', thumb: '/coloring/thumb-kosmos.webp', src: '/coloring/urwis-kosmos.webp' },
+  { id: 'rower', title: 'Rowerowy Raj', brand: 'Urwis na rowerze', difficulty: 'Łatwy', thumb: '/coloring/thumb-rower.webp', src: '/coloring/urwis-rower.webp' },
+  { id: 'marysia', title: 'Urwis z Marysią', brand: 'Balony', difficulty: 'Normalny', thumb: '/coloring/thumb-marysia.webp', src: '/coloring/urwis-marysia.webp' },
+  { id: 'balon', title: 'Urwis w parku', brand: 'Park', difficulty: 'Łatwy', thumb: '/coloring/thumb-balon.webp', src: '/coloring/urwis-balon.webp' },
+  { id: 'pies', title: 'Urwis głaszcze psa', brand: 'Pies', difficulty: 'Trudny', thumb: '/coloring/thumb-pies.webp', src: '/coloring/urwis-pies.webp' },
+  { id: 'klocki', title: 'Urwis buduje z klocków', brand: 'Minecraft', difficulty: 'Łatwy', thumb: '/coloring/thumb-minecraft.webp', src: '/coloring/urwis-minecraft.webp' },
+  { id: 'zabawa', title: 'Zabawa w pokoju', brand: 'Zabawa', difficulty: 'Normalny', thumb: '/coloring/thumb-zabawa.webp', src: '/coloring/urwis-zabawa.webp' },
+  { id: 'kotek', title: 'Urwis z kotkiem', brand: 'Kotek', difficulty: 'Łatwy', thumb: '/coloring/thumb-kotek.webp', src: '/coloring/urwis-kotek.webp' },
 ];
 
 export default function ClientLobby() {
