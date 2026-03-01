@@ -556,7 +556,15 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-zinc-950 overflow-hidden touch-none select-none flex flex-row p-2 gap-2 text-white font-sans">
+    <div 
+      className="fixed inset-0 z-[9999] bg-zinc-950 overflow-hidden touch-none select-none flex flex-row gap-2 text-white font-sans"
+      style={{ 
+        paddingTop: 'max(0.5rem, env(safe-area-inset-top))', 
+        paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(0.5rem, env(safe-area-inset-left))',
+        paddingRight: 'max(0.5rem, env(safe-area-inset-right))' 
+      }}
+    >
       
       {/* 📱 BLOKADA ORIENTACJI */}
       <AnimatePresence>

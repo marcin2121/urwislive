@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image'; // 🚀 IMPORT DLA OPTYMALIZACJI
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Sparkles } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -23,7 +23,7 @@ export default function WelcomeScreen() {
   useEffect(() => {
     setMounted(true);
     
-    // 1. Sprawdzamy czy to PWA (Standalone)
+    // Sprawdzamy czy to PWA (Standalone)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          (window.navigator as any).standalone === true;
 
@@ -61,13 +61,34 @@ export default function WelcomeScreen() {
 
     try {
       if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-        throw new Error('Brak wsparcia dla powiadomień');
+        throw new Error('Brak wsparcia dla powiadomień na Twoim urządzeniu.');
       }
 
-      const permission = await Notification.requestPermission();
+      let permission = Notification.permission;
+      
+      if (permission === 'default') {
+        permission = await new Promise((resolve) => {
+          try {
+            const req = Notification.requestPermission((res) => resolve(res));
+            if (req && typeof req.then === 'function') {
+              req.then(resolve).catch(() => resolve('denied'));
+            }
+          } catch (e) {
+            resolve('denied');
+          }
+        });
+      }
       
       if (permission === 'granted') {
-        const registration = await navigator.serviceWorker.ready;
+        // Timeout 5s — jeśli SW nie stanie się active w ciągu 5s, 
+        // nie blokujemy użytkownika. Push zarejestruje się przy następnej wizycie.
+        const registration = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Service Worker nie gotowy — timeout')), 5000)
+          )
+        ]);
+        
         const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
         
         if (!vapidPublicKey) throw new Error("Brak klucza VAPID");
@@ -77,7 +98,6 @@ export default function WelcomeScreen() {
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
         });
 
-        // Zapis subskrypcji do Supabase
         await supabase
           .from('push_subscriptions')
           .upsert({ 
@@ -86,10 +106,9 @@ export default function WelcomeScreen() {
             topics: ['wszystkie']
           }, { onConflict: 'endpoint' });
 
-        // Sygnał do Navbara
         window.dispatchEvent(new Event('push-permission-changed'));
 
-        // Welcome Push
+        // Welcome Push bez await, żeby nie spowalniać zamknięcia ekranu
         fetch('/api/push/send-welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -101,11 +120,21 @@ export default function WelcomeScreen() {
             event_category: 'PWA'
           });
         }
+      } else if (permission === 'denied') {
+        alert("Powiadomienia są zablokowane 🔕\nAby otrzymywać kody rabatowe, włącz je w ustawieniach przeglądarki lub systemu.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Błąd subskrypcji:', error);
+      // Nie pokazujemy alertu dla timeoutu SW — to nie wina usera
+      if (error?.message && !error.message.includes('timeout')) {
+        alert(error.message || "Nie udało się uruchomić powiadomień. Możesz je włączyć później.");
+      }
     } finally {
-      closeScreen('accepted');
+      // 🚀 ZMIANA KRYTYCZNA: always close
+      // Bez względu na to czy try się powiódł, czy złapał błąd, czy powiadomienia są 'denied'
+      // zdejmujemy blokadę processing i zamykamy okno, puszczając usera do aplikacji!
+      setIsProcessing(false);
+      closeScreen('accepted'); 
     }
   };
 
@@ -118,7 +147,7 @@ export default function WelcomeScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.05 }}
-          className="fixed inset-0 z-10000 bg-urwis-blue flex flex-col items-center justify-center p-6 text-white overflow-hidden"
+          className="fixed inset-0 z-[100000] bg-urwis-blue flex flex-col items-center justify-center p-6 text-white overflow-hidden"
         >
           {/* Tło dekoracyjne */}
           <div className="absolute top-10 left-10 text-white/10 rotate-12 pointer-events-none">
@@ -134,7 +163,6 @@ export default function WelcomeScreen() {
             transition={{ delay: 0.2, type: 'spring', damping: 25 }}
             className="relative z-10 flex flex-col items-center text-center max-w-sm px-6"
           >
-            {/* 🚀 ZOPTYMALIZOWANY OBRAZEK URWISA */}
             <div className="w-80 h-80 relative mb-4 drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
               <Image 
                 src="/urwis-proszący.webp" 
@@ -168,7 +196,7 @@ export default function WelcomeScreen() {
                 onClick={() => closeScreen('skipped')}
                 disabled={isProcessing}
                 aria-label="Pomiń włączanie powiadomień"
-                className="text-blue-200 text-[10px] font-black uppercase tracking-[0.2em] p-2 hover:text-white transition-colors"
+                className="text-blue-200 text-[10px] font-black uppercase tracking-[0.2em] p-2 hover:text-white transition-colors cursor-pointer"
               >
                 Może innym razem, koleżko.
               </button>
