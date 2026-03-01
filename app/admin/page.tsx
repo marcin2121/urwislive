@@ -45,6 +45,30 @@ export default function AdminDashboard() {
   const [totalSentPushes, setTotalSentPushes] = useState(0) 
   const [pushStats, setPushStats] = useState({ clicks: 0, closes: 0 })
   const [loading, setLoading] = useState(false)
+  
+  // --- STATE: SZCZEGÓŁY UŻYTKOWNIKA ---
+  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [userCoupons, setUserCoupons] = useState<any[]>([])
+  const [loadingUserCoupons, setLoadingUserCoupons] = useState(false)
+
+  const handleSelectUser = async (user: any) => {
+    setSelectedUser(user)
+    setLoadingUserCoupons(true)
+    try {
+      const { data, error } = await supabase
+        .from('kupony')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      setUserCoupons(data || [])
+    } catch (err) {
+      toast.error('Błąd pobierania kuponów użytkownika')
+    } finally {
+      setLoadingUserCoupons(false)
+    }
+  }
 
   // --- STATE: NOWE STATYSTYKI ---
   const [advancedStats, setAdvancedStats] = useState({
@@ -56,6 +80,7 @@ export default function AdminDashboard() {
   })
   const [chartData, setChartData] = useState<any[]>([])
   const [wheelStats, setWheelStats] = useState<any[]>([])
+  const [wheelDailyChart, setWheelDailyChart] = useState<any[]>([]) // <--- NOWY STAN WYKRESU DNI KOŁA
 
   // --- STATE: CLIENTS ---
   const [allUsers, setAllUsers] = useState<any[]>([])
@@ -105,10 +130,9 @@ export default function AdminDashboard() {
         supabase.from('push_history').select('*').eq('status', 'scheduled').order('scheduled_for', { ascending: true }),
         supabase.from('push_analytics').select('action'),
         supabase.from('push_history').select('sent_to_count').eq('status', 'sent'),
-        supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at').order('created_at', { ascending: false }),
+        supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at, user_id, email').order('created_at', { ascending: false }), // Zwróć uwagę, dodałem email jeśli jest w tabeli (albo zostaw bez zmian)
         supabase.from('kupony').select('*').is('user_id', null).order('created_at', { ascending: false }),
         supabase.from('wheel_prizes').select('*').order('chance', { ascending: false }),
-        // ZAPYTANIA DO NOWEJ ANALITYKI
         supabase.from('kupony').select('title, current_usage, user_id, created_at, is_active'),
         supabase.from('loyalty_cards').select('experience', { count: 'exact' })
       ])
@@ -162,6 +186,18 @@ export default function AdminDashboard() {
         if (chartMap.has(day)) chartMap.set(day, chartMap.get(day) + 1)
       })
 
+      // 🚀 TWOJA NOWA LOGIKA DLA WYKRESU DNI KOŁA FORTUNY:
+      const wheelSpinsByDay = new Map()
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i)
+        wheelSpinsByDay.set(d.toLocaleDateString('pl-PL', { weekday: 'short' }), 0)
+      }
+      // Zakładamy, że kupony z przypisanym user_id to te wylosowane w kole
+      allCoupons.filter(k => k.user_id).forEach(c => {
+        const day = new Date(c.created_at).toLocaleDateString('pl-PL', { weekday: 'short' })
+        if (wheelSpinsByDay.has(day)) wheelSpinsByDay.set(day, wheelSpinsByDay.get(day) + 1)
+      })
+
       const totalExp = loyaltyData.reduce((acc, curr) => acc + (curr.experience || 0), 0)
 
       setAdvancedStats({
@@ -173,13 +209,13 @@ export default function AdminDashboard() {
       })
       setChartData(Array.from(chartMap, ([name, aktywnosc]) => ({ name, aktywnosc })))
       setWheelStats(formattedWheelData)
+      setWheelDailyChart(Array.from(wheelSpinsByDay, ([name, spins]) => ({ name, spins }))) // Zapis nowego stanu
 
     } catch (error) { toast.error('Błąd połączenia z bazą.') } finally { setLoading(false) }
   }, [supabase, selectedTopic])
 
   useEffect(() => { 
     fetchData()
-    // Nasłuchiwanie na zmiany (opcjonalne, ale dodaje "życia")
     const channel = supabase.channel('admin-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kupony' }, () => fetchData())
@@ -492,6 +528,27 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   </div>
+
+                  {/* 🚀 NOWY WYKRES 3: Aktywność Koła Fortuny na przestrzeni dni */}
+                  <div className="lg:col-span-3 bg-white p-6 rounded-3xl border border-zinc-100 shadow-md">
+                    <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-zinc-700 mb-6">
+                      <CircleDashed className="w-4 h-4 text-emerald-500" /> Losowania w Kole Fortuny (7 dni)
+                    </h3>
+                    <div className="h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={wheelDailyChart}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12, fontWeight: 'bold'}} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12, fontWeight: 'bold'}} />
+                          <Tooltip 
+                            cursor={{fill: '#f4f4f5'}}
+                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} 
+                          />
+                          <Bar dataKey="spins" name="Liczba Losowań" fill="#10b981" radius={[8, 8, 0, 0]} barSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                 </div>
 
               </motion.div>
@@ -513,12 +570,15 @@ export default function AdminDashboard() {
                     </div>
                     <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 md:ml-0">Baza: {filteredClients.length} osób</p>
                   </div>
+                  
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-zinc-50/30 text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b border-zinc-50">
                         <tr>
-                          <th className="p-4 md:p-6 whitespace-nowrap">Imię / Telefon</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap">Imię / Email</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap">Telefon</th>
                           <th className="p-4 md:p-6 whitespace-nowrap">Rejestracja</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap text-right">Akcje</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-50">
@@ -527,21 +587,72 @@ export default function AdminDashboard() {
                             <td className="p-4 md:p-6">
                               <div className="flex flex-col">
                                 <span className="font-black text-zinc-900 uppercase italic text-sm md:text-base">{u.full_name || 'Brak Imienia'}</span>
-                                <span className="text-[10px] md:text-xs font-bold text-zinc-400">{u.phone_number || 'Brak Telefonu'}</span>
+                                <span className="text-[10px] md:text-xs font-bold text-zinc-400">{u.email || 'brak emaila'}</span>
                               </div>
                             </td>
+                            <td className="p-4 md:p-6 text-sm font-bold text-zinc-600">{u.phone_number || '---'}</td>
                             <td className="p-4 md:p-6 text-[10px] md:text-xs font-bold text-zinc-500 uppercase whitespace-nowrap">
                               {u.created_at ? new Date(u.created_at).toLocaleDateString('pl-PL') : '---'}
+                            </td>
+                            <td className="p-4 md:p-6 text-right">
+                              <button 
+                                onClick={() => handleSelectUser(u)} 
+                                className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-xl text-xs font-black uppercase transition-colors border-none cursor-pointer"
+                              >
+                                Szczegóły
+                              </button>
                             </td>
                           </tr>
                         ))}
                         {filteredClients.length === 0 && (
-                          <tr><td colSpan={2} className="p-10 text-center text-zinc-400 font-bold">Brak wyników.</td></tr>
+                          <tr><td colSpan={4} className="p-10 text-center text-zinc-400 font-bold">Brak wyników.</td></tr>
                         )}
                       </tbody>
                     </table>
                   </div>
                 </div>
+
+                {/* MODAL SZCZEGÓŁÓW UŻYTKOWNIKA */}
+                <AnimatePresence>
+                  {selectedUser && (
+                    <div className="fixed inset-0 z-[15000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-white rounded-3xl p-6 w-full max-w-3xl max-h-[85vh] overflow-y-auto relative shadow-2xl border border-white">
+                        <button onClick={() => setSelectedUser(null)} className="absolute top-6 right-6 p-2 bg-zinc-100 hover:bg-zinc-200 rounded-full border-none cursor-pointer"><X size={20}/></button>
+                        
+                        <h2 className="text-2xl font-black italic uppercase text-green-600 mb-2">{selectedUser.full_name || 'Użytkownik'}</h2>
+                        <p className="text-sm font-bold text-zinc-500 mb-6">{selectedUser.phone_number || 'Brak Telefonu'} | Zarejestrowany: {new Date(selectedUser.created_at).toLocaleDateString()}</p>
+
+                        <h3 className="text-sm font-black uppercase text-zinc-400 tracking-widest mb-4">Historia Kuponów Użytkownika</h3>
+                        
+                        {loadingUserCoupons ? (
+                          <div className="flex justify-center p-8"><Loader2 className="animate-spin text-green-500" /></div>
+                        ) : userCoupons.length === 0 ? (
+                          <div className="p-8 bg-zinc-50 rounded-2xl text-center text-zinc-400 font-bold">Użytkownik nie posiada żadnych kuponów.</div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {userCoupons.map(coupon => (
+                              <div key={coupon.id} className={`p-4 rounded-2xl border-2 flex flex-col gap-2 ${coupon.current_usage > 0 ? 'bg-zinc-50 border-zinc-200 opacity-70' : 'bg-white border-green-200 shadow-sm'}`}>
+                                <div className="flex justify-between items-start">
+                                  <span className="font-black uppercase text-sm leading-none mt-1">{coupon.title}</span>
+                                  {coupon.current_usage > 0 ? (
+                                    <span className="text-[9px] bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold uppercase">Wykorzystano</span>
+                                  ) : (
+                                    <span className="text-[9px] bg-green-100 text-green-700 px-2 py-1 rounded-md font-bold uppercase">Dostępny</span>
+                                  )}
+                                </div>
+                                <div className="text-xl font-black tracking-widest bg-zinc-100 py-2 px-3 rounded-lg text-center mt-2">{coupon.code}</div>
+                                <div className="flex justify-between text-[10px] text-zinc-400 font-bold mt-1">
+                                  <span>Wylosowano: {new Date(coupon.created_at).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    </div>
+                  )}
+                </AnimatePresence>
+
               </motion.div>
             )}
 

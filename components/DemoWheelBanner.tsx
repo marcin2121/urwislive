@@ -2,28 +2,50 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CircleDashed, PartyPopper, UserPlus, Gift } from 'lucide-react';
+import { CircleDashed, PartyPopper, UserPlus, Gift, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation'; // Dodano useRouter
+import Link from 'next/link';
 
-// 🚀 IMPORTUJEMY TWÓJ ZAKTUALIZOWANY MODAL AUTORYZACJI
+// IMPORT MODALA AUTORYZACJI
 import AuthModal from '@/components/ui/AuthModal'; 
 
 const WHEEL_COLORS = ['#0055ff', '#BF2024', '#FACC15', '#22C55E', '#A855F7', '#F97316', '#EC4899', '#06B6D4'];
 
 export default function DemoWheelBanner() {
   const supabase = createClient();
+  const router = useRouter();
   const [wheelPrizes, setWheelPrizes] = useState<any[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinResult, setSpinResult] = useState<any>(null);
   
-  // Stany dla dwóch modalów
+  // Stany logowania / weryfikacji
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  // Stany modali
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   const wheelCurrentAngle = useRef(0);
   const [wheelRotation, setWheelRotation] = useState(0);
 
-  // Pobieranie prawdziwych nagród z bazy (aby demo było wiarygodne)
+  // 1. Sprawdzanie sesji użytkownika
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsLoggedIn(!!session);
+      } catch (error) {
+        console.error("Błąd podczas sprawdzania sesji:", error);
+      } finally {
+        setIsLoadingSession(false);
+      }
+    };
+    checkSession();
+  }, [supabase.auth]);
+
+  // 2. Pobieranie nagród z bazy (demo musi być wiarygodne)
   useEffect(() => {
     const fetchPrizes = async () => {
       const { data } = await supabase.from('wheel_prizes').select('*').eq('is_active', true);
@@ -34,25 +56,31 @@ export default function DemoWheelBanner() {
     fetchPrizes();
   }, [supabase]);
 
-  // 🚀 BLOKADA SCROLLOWANIA GDY JAKIKOLWIEK MODAL JEST OTWARTY
+  // Blokada scrollowania gdy jest modal
   useEffect(() => {
     if (showPrizeModal || isAuthModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    
-    // Cleanup w przypadku odmontowania komponentu
     return () => {
       document.body.style.overflow = '';
     };
   }, [showPrizeModal, isAuthModalOpen]);
 
-  const handleDemoSpin = () => {
+  // Obsługa kliknięcia "Zakręć"
+  const handleAction = () => {
+    // 🚀 ZMIANA: Jeżeli użytkownik JEST ZALOGOWANY, przekieruj go do /rabaty
+    if (isLoggedIn) {
+      router.push('/rabaty');
+      return;
+    }
+
+    // W przeciwnym razie odpal demo
     if (isSpinning || wheelPrizes.length === 0) return;
     setIsSpinning(true);
 
-    // Losowanie Frontend-only (brak zapisu w bazie danych)
+    // Symulacja losowania
     const totalWeight = wheelPrizes.reduce((sum, p) => sum + Number(p.chance), 0);
     let randomNum = Math.random() * totalWeight;
     let winningPrize = wheelPrizes[0];
@@ -65,18 +93,16 @@ export default function DemoWheelBanner() {
       randomNum -= Number(prize.chance);
     }
 
-    // Obliczanie kąta obrotu
     const prizeIndex = wheelPrizes.findIndex(p => p.id === winningPrize.id);
     const sliceAngle = 360 / wheelPrizes.length;
     const targetAngle = 360 - (prizeIndex * sliceAngle) - (sliceAngle / 2);
-    const spins = 5 * 360; // 5 pełnych obrotów dla efektu
+    const spins = 5 * 360; 
     
     const newAbsoluteRotation = wheelCurrentAngle.current + spins + targetAngle - (wheelCurrentAngle.current % 360);
     
     wheelCurrentAngle.current = newAbsoluteRotation;
     setWheelRotation(newAbsoluteRotation);
 
-    // Po 5.5s (czas trwania animacji) pokaż modal
     setTimeout(() => {
       setIsSpinning(false);
       setSpinResult(winningPrize);
@@ -84,43 +110,48 @@ export default function DemoWheelBanner() {
     }, 5500);
   };
 
-  // Jeśli brak nagród w bazie, ukrywamy sekcję
-  if (wheelPrizes.length === 0) return null;
+  // Nie renderuj, dopóki ładujemy sesję lub nie ma nagród
+  if (isLoadingSession || wheelPrizes.length === 0) return null;
 
   return (
     <section className="py-12 px-6 relative z-[100]">
       <div className="max-w-7xl mx-auto">
         <div className="relative overflow-hidden rounded-[3rem] bg-white/60 backdrop-blur-3xl border-2 border-white shadow-xl">
           
-          {/* Tło ozdobne */}
           <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 bg-urwis-blue/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-10">
             
-            {/* LEWA STRONA: Tekst */}
+            {/* LEWA STRONA: Tekst (zależny od tego czy jest zalogowany) */}
             <div className="flex-1 text-center md:text-left">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-600 px-4 py-1.5 rounded-full mb-6 shadow-sm">
                 <Gift size={14} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Wersja Demonstracyjna</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  {isLoggedIn ? 'Klub Urwisa' : 'Wersja Demonstracyjna'}
+                </span>
               </div>
               
               <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none mb-4 text-zinc-900">
-                Zakręć darmowym <br /> 
+                Zakręć {isLoggedIn ? 'swoim' : 'darmowym'} <br /> 
                 <span className="text-amber-500">Kołem Fortuny!</span>
               </h2>
               
               <p className="text-lg text-zinc-600 font-bold max-w-md mx-auto md:mx-0 leading-tight mb-8">
-                Przetestuj naszą zabawę. Zakręć kołem, sprawdź co możesz wygrać, a następnie odbierz prawdziwą szansę po założeniu konta!
+                {isLoggedIn 
+                  ? 'Jesteś zalogowany! Przejdź do panelu rabatowego, aby wykorzystać swoją codzienną szansę i zdobyć super zniżki na zabawki.' 
+                  : 'Przetestuj naszą zabawę. Zakręć kołem, sprawdź co możesz wygrać, a następnie odbierz prawdziwą szansę po założeniu konta!'}
               </p>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                 <button 
-                  onClick={handleDemoSpin}
+                  onClick={handleAction}
                   disabled={isSpinning}
-                  className="w-full sm:w-auto px-8 py-4 bg-amber-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-amber-600 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 cursor-pointer"
+                  className={`w-full sm:w-auto px-8 py-4 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 cursor-pointer flex items-center justify-center gap-2
+                    ${isLoggedIn ? 'bg-[#0055ff] hover:bg-blue-600' : 'bg-amber-500 hover:bg-amber-600'}`}
                 >
-                  {isSpinning ? 'Losowanie...' : 'Zakręć na próbę!'}
+                  {isSpinning ? 'Losowanie...' : isLoggedIn ? 'Przejdź do losowania' : 'Zakręć na próbę!'}
+                  {isLoggedIn && <ArrowRight size={18} />}
                 </button>
               </div>
             </div>
@@ -170,9 +201,8 @@ export default function DemoWheelBanner() {
         </div>
       </div>
 
-      {/* 🚀 MODAL Z WYNIKIEM DEMO */}
       <AnimatePresence>
-        {showPrizeModal && spinResult && (
+        {showPrizeModal && spinResult && !isLoggedIn && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
@@ -200,11 +230,10 @@ export default function DemoWheelBanner() {
               </div>
 
               <div className="flex flex-col gap-3">
-                {/* 🚀 PRZYCISK OTWIERAJĄCY MODAL REJESTRACJI */}
                 <button 
                   onClick={() => {
                     setShowPrizeModal(false);
-                    setTimeout(() => setIsAuthModalOpen(true), 200); // Małe opóźnienie dla płynniejszej animacji wymiany modali
+                    setTimeout(() => setIsAuthModalOpen(true), 200); 
                   }} 
                   className="w-full bg-[#0055ff] text-white py-4 rounded-2xl font-black uppercase text-sm shadow-xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 outline-none cursor-pointer"
                 >
@@ -220,7 +249,6 @@ export default function DemoWheelBanner() {
         )}
       </AnimatePresence>
 
-      {/* 🚀 NASZ ZAKTUALIZOWANY MODAL REJESTRACJI/LOGOWANIA */}
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 

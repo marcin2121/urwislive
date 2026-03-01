@@ -1,54 +1,54 @@
 'use client'
 
 import Link from 'next/link';
-import { useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
+import { useRef, useState, useEffect, ComponentType } from 'react';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { HeartHandshake, Zap, Palette, ChevronRight, Sparkles } from 'lucide-react';
-
-// Dynamiczne ładowanie modelu tylko na kliencie
-const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { 
-  ssr: false,
-  loading: () => <div className="w-full h-full" /> 
-});
+import type { ViewerProps } from '@/components/ModelViewer';
 
 export default function PoznajUrwisa() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // ← domyślnie true (mobile-first, brak flasha)
   const [mounted, setMounted] = useState(false);
+  // ✅ ModelViewer trzymany w stanie — importowany tylko gdy desktop
+  const [ModelViewer, setModelViewer] = useState<ComponentType<ViewerProps> | null>(null);
 
   useEffect(() => {
+    const isDesktop = window.innerWidth >= 1024;
+    setIsMobile(!isDesktop);
     setMounted(true);
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    // ✅ Three.js pobierany TYLKO na desktop — na mobile chunk nigdy nie istnieje
+    if (isDesktop) {
+      import('@/components/ModelViewer').then((mod) => {
+        setModelViewer(() => mod.default);
+      });
+    }
   }, []);
 
   const features = [
     { icon: HeartHandshake, title: 'Zawsze pomocny', desc: 'Podpowie najlepsze produkty dla Twojego dziecka.', color: '#BF2024' },
-    { icon: Zap, title: 'Pełen energii', desc: 'Zakupy z nim to czysta radość i dynamiczna zabawa.', color: '#f59e0b' },
-    { icon: Palette, title: 'Kreatywny', desc: 'Pokaże Ci inspiracje, o których nawet nie śniłeś.', color: '#0055ff' }
+    { icon: Zap,            title: 'Pełen energii',  desc: 'Zakupy z nim to czysta radość i dynamiczna zabawa.', color: '#f59e0b' },
+    { icon: Palette,        title: 'Kreatywny',      desc: 'Pokaże Ci inspiracje, o których nawet nie śniłeś.', color: '#0055ff' }
   ];
 
   if (!mounted) return null;
 
   return (
-    <section 
+    <section
       id="poznaj-urwisa"
       ref={containerRef}
       className="relative min-h-screen py-24 lg:py-32 overflow-hidden bg-transparent"
     >
       <div className="container mx-auto px-6 relative z-10">
-        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-center">
-          
+
           {/* LEWA STRONA: Teksty */}
           <div className="order-1 lg:col-start-1 lg:row-start-1 space-y-12 w-full text-center lg:text-left">
             <div className="space-y-6">
-              <motion.span 
+              <motion.span
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -75,55 +75,48 @@ export default function PoznajUrwisa() {
             </div>
           </div>
 
-          {/* PRAWA STRONA: Model 3D / Image Fallback (Klucz do LCP) */}
+          {/* PRAWA STRONA */}
           <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3 relative w-full h-[450px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
-            
             <div className="relative w-full h-full flex items-center justify-center">
-              
-              {/* Efekty tła: Radial gradient (wydajniejszy niż blur) */}
+
+              {/* Efekt tła */}
               <motion.div
                 animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute w-[300px] h-[300px] md:w-[550px] md:h-[550px] bg-[radial-gradient(circle,rgba(0,85,255,0.2)_0%,transparent_70%)] rounded-full z-0 will-change-transform"
               />
-
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <motion.div 
-                  animate={{ rotate: 360 }} 
-                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }} 
-                  className="absolute w-[320px] h-[320px] md:w-[550px] md:h-[550px] border-2 border-dashed border-[#BF2024]/10 rounded-full will-change-transform" 
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                  className="absolute w-[320px] h-[320px] md:w-[550px] md:h-[550px] border-2 border-dashed border-[#BF2024]/10 rounded-full will-change-transform"
                 />
               </div>
 
-              {/* Kontener wizualny */}
               <div className="relative z-10 w-full h-full flex items-center justify-center">
-                
-                {/* 1. OBRAZEK FALLBACK (LCP FIX) - Widoczny natychmiast na obu urządzeniach */}
-                <motion.div
-                  initial={false}
-                  animate={{ 
-                    opacity: (isMobile || !modelLoaded) ? 1 : 0,
-                    scale: (isMobile || !modelLoaded) ? 1 : 0.95 
-                  }}
-                  transition={{ duration: 0.8 }}
-                  className="absolute inset-0 z-20"
-                >
-                  <Image 
-                    src="/urwis-fallback.webp" 
+
+                {/* Obrazek — zawsze widoczny, na desktop chowany gdy model gotowy */}
+                <div className={`absolute inset-0 z-20 transition-opacity duration-1000 ${
+                  !isMobile && modelLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}>
+                  <Image
+                    src="/urwis-fallback.webp"
                     alt="Maskotka Sklepu Urwis"
                     fill
                     className="object-contain"
-                    priority // Gwarantuje szybki wynik LCP w Lighthouse
+                    priority
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
-                </motion.div>
+                </div>
 
-                {/* 2. MODEL 3D (Tylko Desktop) - Nakłada się na obrazek po załadowaniu */}
-                {!isMobile && (
-                  <div className={`relative z-30 w-full h-full transition-opacity duration-1000 ${modelLoaded ? 'opacity-100' : 'opacity-0'}`}>
-                    <ModelViewer 
+                {/* ✅ Model 3D — tylko desktop, tylko gdy chunk załadowany */}
+                {ModelViewer && (
+                  <div className={`relative z-30 w-full h-full transition-opacity duration-1000 ${
+                    modelLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}>
+                    <ModelViewer
                       url="/urwis.glb"
-                      width="100%" 
+                      width="100%"
                       height="100%"
                       defaultZoom={2}
                       defaultRotationX={0}
@@ -132,21 +125,22 @@ export default function PoznajUrwisa() {
                       onModelLoaded={() => setModelLoaded(true)}
                       autoRotate={true}
                       autoRotateSpeed={0.3}
-                      enableManualZoom={false}       
-                      showScreenshotButton={false}          
+                      enableManualZoom={false}
+                      showScreenshotButton={false}
                     />
                   </div>
                 )}
               </div>
 
-              {/* Dyskretny Loader dymek */}
+              {/* Loader — tylko desktop, tylko gdy model się wczytuje */}
               {!isMobile && !modelLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
                   <div className="bg-white/40 backdrop-blur-xl px-8 py-4 rounded-3xl border border-white/50 shadow-2xl">
-                     <span className="text-sm font-black italic uppercase animate-pulse">Budzę Urwisa...</span>
+                    <span className="text-sm font-black italic uppercase animate-pulse">Budzę Urwisa...</span>
                   </div>
                 </div>
               )}
+
             </div>
           </div>
 
@@ -159,13 +153,13 @@ export default function PoznajUrwisa() {
 
           {/* DOLNA CZĘŚĆ: Przycisk */}
           <div className="order-4 lg:col-start-1 lg:row-start-3 pt-4 lg:pt-8 w-full text-center lg:text-left">
-          <Link 
-  href="/oferta" 
-  onClick={() => {
-    if ((window as any).gtag) {
-      (window as any).gtag('event', 'hero_cta_click', { destination: 'oferta_urwisa' });
-    }
-  }} 
+            <Link
+              href="/oferta"
+              onClick={() => {
+                if ((window as any).gtag) {
+                  (window as any).gtag('event', 'hero_cta_click', { destination: 'oferta_urwisa' });
+                }
+              }}
               className="group relative inline-flex items-center gap-4 px-12 py-6 bg-zinc-900 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 shadow-2xl uppercase tracking-tighter italic"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -191,7 +185,10 @@ function FeatureCard({ icon: Icon, title, desc, color, index }: any) {
       whileHover={{ x: 10 }}
       className="flex items-start gap-6 p-6 rounded-[2.5rem] bg-white/20 backdrop-blur-xl border-2 border-white/70 shadow-xl hover:bg-white/40 transition-all duration-500 group will-change-transform"
     >
-      <div className="p-4 rounded-2xl shadow-lg shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20" style={{ backgroundColor: color }}>
+      <div
+        className="p-4 rounded-2xl shadow-lg shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20"
+        style={{ backgroundColor: color }}
+      >
         <Icon size={28} className="text-white" strokeWidth={2.5} />
       </div>
       <div className="text-left">

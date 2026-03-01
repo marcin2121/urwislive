@@ -54,14 +54,7 @@ export const metadata: Metadata = {
     description: "Wszystko dla Twojego dziecka w jednym miejscu. Najlepsze marki, balony z helem i Sala Zabaw Lecę w Kulki!",
     url: "https://www.sklep-urwis.pl",
     siteName: "Sklep Urwis",
-    images: [
-      {
-        url: "/og-image.webp",
-        width: 1200,
-        height: 630,
-        alt: "Sklep Urwis Białobrzegi - LEGO i Zabawki",
-      },
-    ],
+    images: [{ url: "/og-image.webp", width: 1200, height: 630, alt: "Sklep Urwis Białobrzegi - LEGO i Zabawki" }],
     locale: "pl_PL",
     type: "website",
   },
@@ -82,7 +75,6 @@ export const viewport: Viewport = {
 
 const GA_MEASUREMENT_ID = "G-FE44ZTQ7GT";
 
-// ✅ Schematy poza komponentem — generowane raz, nie przy każdym renderze
 const schemas = [
   {
     "@context": "https://schema.org",
@@ -131,26 +123,17 @@ const schemas = [
       {
         "@type": "Question",
         "name": "Gdzie znajduje się Sklep Urwis w Białobrzegach?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Sklep stacjonarny Urwis znajduje się przy ulicy Reymonta 38A w Białobrzegach (26-800)."
-        }
+        "acceptedAnswer": { "@type": "Answer", "text": "Sklep stacjonarny Urwis znajduje się przy ulicy Reymonta 38A w Białobrzegach (26-800)." }
       },
       {
         "@type": "Question",
         "name": "Czy w Sklepie Urwis kupię klocki LEGO?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Tak, Sklep Urwis posiada największy wybór klocków LEGO w regionie, w tym serie Technic, City, Ninjago, Star Wars i wiele innych."
-        }
+        "acceptedAnswer": { "@type": "Answer", "text": "Tak, Sklep Urwis posiada największy wybór klocków LEGO w regionie, w tym serie Technic, City, Ninjago, Star Wars i wiele innych." }
       },
       {
         "@type": "Question",
         "name": "Czy oferujecie balony z helem?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Oczywiście! Pompujemy balony helem na miejscu. Mamy szeroki wybór balonów cyfr oraz postaci z bajek."
-        }
+        "acceptedAnswer": { "@type": "Answer", "text": "Oczywiście! Pompujemy balony helem na miejscu. Mamy szeroki wybór balonów cyfr oraz postaci z bajek." }
       }
     ]
   }
@@ -160,13 +143,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
       <head>
-        {/* ✅ preload jako natywny <link> zamiast ReactDOM.preload() wewnątrz komponentu */}
-        <link
-          rel="preload"
-          href="/urwis-fallback.webp"
-          as="image"
-          fetchPriority="high"
-        />
+        {/* ✅ preload obrazka LCP */}
+        <link rel="preload" href="/urwis-fallback.webp" as="image" fetchPriority="high" />
+
+        {/* ✅ NOWE: preconnect do Google Analytics — oszczędność ~300ms na LCP */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://region1.google-analytics.com" />
 
         {/* ✅ Schematy JSON-LD */}
         {schemas.map((schema, index) => (
@@ -180,7 +162,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white">
         <AuthProvider>
-          {/* ✅ WelcomeScreen w Suspense */}
           <Suspense fallback={null}>
             <WelcomeScreen />
           </Suspense>
@@ -214,7 +195,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Suspense>
         </AuthProvider>
 
-        {/* ✅ GA przeniesione poza <head> — Next.js i tak wstrzykuje <Script> w odpowiednie miejsce */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="afterInteractive"

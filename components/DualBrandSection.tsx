@@ -6,8 +6,8 @@ import Link from 'next/link'
 
 export default function DualBrandSection() {
   return (
-    <section className="py-24 px-6 relative z-20">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
+<section className="py-24 px-6 relative z-20 min-h-[400px]">
+<div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8">
         
         {/* KARTA: SKLEP URWIS */}
         <motion.div 

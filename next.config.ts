@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
+import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
@@ -7,10 +8,14 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development",
 });
 
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+// next.config.ts
 const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
-    // ✅ Dodaj zewnętrzne domeny obrazów
     remotePatterns: [
       {
         protocol: 'https',
@@ -21,7 +26,7 @@ const nextConfig: NextConfig = {
   },
 
   turbopack: {},
-  transpilePackages: ['three', '@react-three/fiber'],
 };
 
-export default withSerwist(nextConfig);
+
+export default withAnalyzer(withSerwist(nextConfig));

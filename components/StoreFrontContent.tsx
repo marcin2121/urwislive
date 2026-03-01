@@ -40,10 +40,26 @@ const UrwisGallery = dynamic(() => import("@/components/UrwisGallery"), {
 // ✅ Particles bez osobnej dywizji — komponent sam zarządza widocznością
 const Particles = dynamic(() => import("@/components/Particles"), { ssr: false });
 
-const LoyaltySection = dynamic(() => import("@/components/LoyaltySection"), { ssr: false });
-const ColoringBanner = dynamic(() => import("@/components/ColoringBanner"), { ssr: false });
-const PoznajUrwisa = dynamic(() => import("@/components/PoznajUrwisa"), { ssr: false });
-const AboutSection = dynamic(() => import("@/components/AboutSection"), { ssr: false });
+const LoyaltySection = dynamic(() => import('@/components/LoyaltySection'), {
+  ssr: false,
+  loading: () => <div className="min-h-[500px]" />,
+});
+
+const ColoringBanner = dynamic(() => import('@/components/ColoringBanner'), {
+  ssr: false,
+  loading: () => <div className="min-h-[300px]" />,
+});
+
+const PoznajUrwisa = dynamic(() => import('@/components/PoznajUrwisa'), {
+  ssr: false,
+  loading: () => <div className="min-h-[800px]" />,
+});
+
+const AboutSection = dynamic(() => import('@/components/AboutSection'), {
+  ssr: false,
+  // ✅ Placeholder rezerwuje miejsce — zero CLS
+  loading: () => <div className="min-h-[400px]" />,
+});
 
 // ─── DANE STATYCZNE POZA KOMPONENTEM (nie odtwarzane przy każdym renderze) ────
 
