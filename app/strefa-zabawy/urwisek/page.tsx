@@ -53,12 +53,7 @@ export default async function UrwisekPage() {
           </CloseWindowButton>
         </div>
         
-        <div className="w-full max-w-md relative text-gray-900 bg-white rounded-3xl shadow-xl border border-zinc-100 p-6 mt-16 max-md:mt-0">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-black uppercase italic tracking-tighter text-zinc-900 flex items-center justify-center gap-2 pr-8 pb-2">
-              Mój <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Urwis <Sparkles className="text-orange-500" size={24} /></span>
-            </h1>
-          </div>
+        <div className="w-full max-w-md relative mt-16 max-md:mt-0 flex justify-center">
           
           {!user ? (
             <UrwisekAuth />

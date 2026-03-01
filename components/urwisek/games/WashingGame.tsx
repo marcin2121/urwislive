@@ -57,9 +57,14 @@ export default function WashingGame({ onComplete }: { onComplete: () => void }) 
       className="absolute inset-0 z-40 touch-none cursor-none"
       onPointerMove={handlePointerMove}
     >
-      {/* 🪥 Szczoteczka podążająca za palcem/myszką */}
-      <motion.div style={{ x: cursorX, y: cursorY }} className="absolute pointer-events-none z-50 -ml-8 -mt-8">
-        <span className="text-6xl rotate-12 block drop-shadow-md">🪥</span>
+      {/* 🪥 Szczoteczka podążająca za palcem/myszką (Ujednolicone wektorowe Twemoji) */}
+      <motion.div style={{ x: cursorX, y: cursorY }} className="absolute pointer-events-none z-50 -ml-7 -mt-7 flex items-center justify-center w-14 h-14">
+        <img 
+          src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1faa5.svg" 
+          alt="Szczoteczka"
+          draggable={false}
+          className="w-12 h-12 rotate-12 drop-shadow-md pointer-events-none select-none" 
+        />
       </motion.div>
       
       {/* 📊 Pasek postępu mycia na samej górze gry */}
