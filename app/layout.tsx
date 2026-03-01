@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     description: "Wszystko dla Twojego dziecka w jednym miejscu. Najlepsze marki, balony z helem i Sala Zabaw Lecę w Kulki!",
     url: "https://www.sklep-urwis.pl",
     siteName: "Sklep Urwis",
-    images: [{ url: "/og-image.webp", width: 1200, height: 630, alt: "Sklep Urwis Białobrzegi - LEGO i Zabawki" }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Sklep Urwis Białobrzegi - LEGO i Zabawki" }],
     locale: "pl_PL",
     type: "website",
   },
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Sklep Urwis Białobrzegi",
     description: "Zabawki, LEGO, balony z helem i wyprawka szkolna. Najlepszy sklep stacjonarny w regionie!",
-    images: ["/og-image.webp"],
+    images: ["/og-image.jpg"],
   },
 };
 
@@ -81,7 +81,7 @@ const schemas = [
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "ToyStore"],
     "name": "Sklep Urwis",
-    "image": "https://www.sklep-urwis.pl/og-image.webp",
+    "image": "https://www.sklep-urwis.pl/og-image.jpg",
     "@id": "https://www.sklep-urwis.pl",
     "url": "https://www.sklep-urwis.pl",
     "telephone": "+48604208183",

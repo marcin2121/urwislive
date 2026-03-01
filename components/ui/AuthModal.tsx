@@ -182,7 +182,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                     </div>
                     <input type="checkbox" className="hidden" checked={marketingConsent} onChange={() => setMarketingConsent(!marketingConsent)} />
                     <span className="text-[10px] text-zinc-600 leading-tight">
-                      Chcę dołączyć do Klubu Urwisa! Zaznaczenie tej zgody daje Ci dostęp do unikalnych kodów w zakładce Rabaty.
+                      Chcę otrzymywać powiadomienia push o nowych promocjach, kuponach i nowościach w Sklepie Urwis.
                     </span>
                   </label>
                 </div>

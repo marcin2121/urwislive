@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     siteName: 'Sklep Urwis Białobrzegi',
     images: [
       {
-        url: '/og-image.webp',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Front Sklepu Urwis w Białobrzegach przy ul. Reymonta 38A',

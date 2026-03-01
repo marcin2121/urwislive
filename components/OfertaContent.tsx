@@ -48,7 +48,7 @@ const categories = [
     href: "/oferta/gry"
   },
   {
-    title: "Usługi dla Rodziców",
+    title: "Nasze usługi",
     desc: (
       <div className="flex flex-col gap-3">
         <div className="flex items-start gap-2 group/line">

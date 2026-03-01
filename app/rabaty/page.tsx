@@ -9,7 +9,7 @@ import {
   BadgePercent, LockKeyhole, ArrowRight, Timer, Ticket, History, 
   AlertCircle, CheckCircle2, Repeat, Calendar, Flame, ImageIcon, 
   Share, PlusSquare, Smartphone, ArrowDownCircle, TicketPercent,
-  CircleDashed, PartyPopper, Clock
+  CircleDashed, PartyPopper, Clock, Bell, X
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { spinWheel } from "@/app/actions/spin-wheel";
@@ -259,6 +259,15 @@ export default function RabatyPage() {
   const usedCouponsList = dbCoupons.filter(c => usedCoupons.some(uc => uc.id === c.id));
   const currentActiveData = dbCoupons.find(c => c.id === activeCoupon?.id);
   const hasConsent = user?.user_metadata?.marketing_consent === true;
+  const [showNotifBanner, setShowNotifBanner] = useState(true);
+
+  // Filtrujemy nagrody - z koła losowania (szansy) uciekają kupony, które już zdobyliśmy
+  const filteredWheelPrizes = wheelPrizes.filter(prize => 
+    !availableCouponsList.some(coupon => coupon.title === prize.title)
+  );
+  
+  // Jesli zdobyliśmy już wszystko tzn. brakuje nagród - wyswietlamy jedno pole zastępcze
+  const displayPrizes = filteredWheelPrizes.length > 0 ? filteredWheelPrizes : [{ id: 'empty', title: '"Ojej! Zdobyłeś już wszystkie dostępne zniżki! 🦖 Zużyj coś przy kasie, żeby zrobić mi trochę miejsca!"' }];
 
   if (!mounted) return null;
 
@@ -310,7 +319,7 @@ export default function RabatyPage() {
           </motion.div>
         )}
 
-        {user && hasConsent && wheelPrizes.length > 0 && (!isMobile || isPWA) && (
+        {user && wheelPrizes.length > 0 && (!isMobile || isPWA) && (
           <section className="bg-white p-6 md:p-8 rounded-[2rem] shadow-xl border border-zinc-100 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 to-orange-500" />
             
@@ -349,19 +358,19 @@ export default function RabatyPage() {
 
               {/* Obracające się Koło */}
               <motion.div
-                className="w-full h-full rounded-full border-[6px] border-zinc-900 overflow-hidden shadow-inner relative"
+                className={`w-full h-full rounded-full border-[6px] border-zinc-900 overflow-hidden shadow-inner relative ${filteredWheelPrizes.length === 0 ? 'grayscale opacity-70' : ''}`}
                 animate={{ rotate: wheelRotation }}
                 transition={{ duration: 5, ease: [0.15, 0.9, 0.2, 1] }}
                 style={{ 
-                   background: `conic-gradient(${wheelPrizes.map((p, i) => {
-                     const start = i * (360 / wheelPrizes.length);
-                     const end = (i + 1) * (360 / wheelPrizes.length);
-                     return `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${start}deg ${end}deg`;
+                   background: `conic-gradient(${displayPrizes.map((p, i) => {
+                     const start = i * (360 / displayPrizes.length);
+                     const end = (i + 1) * (360 / displayPrizes.length);
+                     return `${filteredWheelPrizes.length === 0 ? '#d4d4d8' : WHEEL_COLORS[i % WHEEL_COLORS.length]} ${start}deg ${end}deg`;
                    }).join(', ')})`
                 }}
               >
-                {wheelPrizes.map((p, i) => {
-                   const sliceAngle = 360 / wheelPrizes.length;
+                {displayPrizes.map((p, i) => {
+                   const sliceAngle = 360 / displayPrizes.length;
                    const rotation = (i * sliceAngle) + (sliceAngle / 2);
                    return (
                      <div
@@ -386,14 +395,14 @@ export default function RabatyPage() {
             <div className="text-center">
               <button 
                 onClick={handleSpinWheel}
-                disabled={!canSpin || isSpinning}
+                disabled={!canSpin || isSpinning || filteredWheelPrizes.length === 0}
                 className={`px-8 py-4 rounded-2xl font-black uppercase text-sm shadow-xl transition-all w-full md:w-auto ${
-                  canSpin && !isSpinning 
+                  canSpin && !isSpinning && filteredWheelPrizes.length > 0
                   ? 'bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 active:scale-95 cursor-pointer outline-none' 
                   : 'bg-zinc-100 text-zinc-400 cursor-not-allowed border-2 border-zinc-200 shadow-none'
                 }`}
               >
-                {isSpinning ? 'Losowanie w toku...' : canSpin ? 'ZAKRĘĆ KOŁEM!' : 'Zablokowane do Jutra 🔒'}
+                {filteredWheelPrizes.length === 0 ? 'Zrób miejsce na tarczy!' : isSpinning ? 'Losowanie w toku...' : canSpin ? 'ZAKRĘĆ KOŁEM!' : 'Zablokowane do Jutra 🔒'}
               </button>
             </div>
           </section>
@@ -412,18 +421,6 @@ export default function RabatyPage() {
               <LockKeyhole size={48} className="mx-auto text-zinc-300 mb-4" />
               <h2 className="text-2xl font-black text-zinc-800 mb-2">Zaloguj się, by zobaczyć rabaty</h2>
               <p className="text-zinc-500 mb-6 max-w-md mx-auto">Dostęp do unikalnych kodów rabatowych i promocji mają tylko zarejestrowani członkowie Klubu Urwisa.</p>
-            </motion.div>
-          ) : !hasConsent ? (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-8 rounded-[2rem] shadow-xl border border-red-100 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-500 to-orange-500" />
-              <BadgePercent size={56} className="mx-auto text-red-400 mb-4" />
-              <h2 className="text-2xl font-black text-zinc-800 mb-2">Odbierz swoje zniżki!</h2>
-              <p className="text-zinc-500 mb-6 max-w-md mx-auto">
-                Aby uzyskać dostęp do kuponów rabatowych, musisz wyrazić zgodę na oferty w swoim profilu. Zrób to teraz i oszczędzaj na zakupach!
-              </p>
-              <Link href="/profil" className="inline-flex items-center gap-2 px-8 py-4 bg-[#0055ff] text-white font-black uppercase text-sm rounded-full shadow-lg hover:scale-105 transition-transform">
-                Włącz Rabaty w Profilu <ArrowRight size={18} />
-              </Link>
             </motion.div>
           ) : (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -520,6 +517,40 @@ export default function RabatyPage() {
           )}
         </section>
 
+        {/* 🔔 Miękki baner — zachęta do powiadomień (non-blocking) */}
+        {user && !hasConsent && showNotifBanner && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            className="bg-white p-6 rounded-[2rem] shadow-lg border border-blue-100 relative overflow-hidden"
+          >
+            <button 
+              onClick={() => setShowNotifBanner(false)} 
+              className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-50 text-[#0055ff] rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                <Bell size={24} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-black uppercase text-zinc-800 tracking-tight mb-1">Nie przegap nowych kuponów!</h3>
+                <p className="text-xs text-zinc-500 mb-3">Włącz powiadomienia, a wyślemy Ci info kiedy pojawią się nowe promocje i kupony.</p>
+                <button 
+                  onClick={async () => {
+                    const supabaseClient = createClient();
+                    await supabaseClient.auth.updateUser({ data: { marketing_consent: true } });
+                    setShowNotifBanner(false);
+                  }}
+                  className="px-4 py-2 bg-[#0055ff] text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-blue-600 transition-colors cursor-pointer"
+                >
+                  🔔 Włącz powiadomienia
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {promos.length > 0 && (
           <section className="pt-8 border-t-2 border-dashed border-zinc-200">
             <div className="text-center mb-8">
@@ -614,7 +645,7 @@ export default function RabatyPage() {
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center"
             >
-              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle size={32} />
               </div>
               <h3 className="text-xl font-black uppercase italic mb-2">Czy stoisz przy kasie?</h3>

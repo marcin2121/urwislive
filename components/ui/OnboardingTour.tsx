@@ -60,8 +60,8 @@ export default function OnboardingTour() {
       icon: Smartphone,
       title: "3. Tylko przy Kasie!",
       desc: "Uwaga! Kupon po odblokowaniu znika w ciągu 5 minut. Uruchom go dopiero przy stanowisku kasowym.",
-      color: "text-[#BF2024]",
-      bg: "bg-red-100",
+      color: "text-amber-500",
+      bg: "bg-amber-100",
       button: "Zaczynamy!",
     },
   ];

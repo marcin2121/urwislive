@@ -5,14 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus, Trash2, X, Tag, LogOut, Loader2,
   Bell, Send, Wand2, Clock, Zap, Flame,
-  Image as ImageIcon, Coffee, LayoutDashboard, History, ChevronRight,
+  Image as ImageIcon, Coffee, LayoutDashboard, History, ChevronRight, Home,
   Search, Users, ChevronDown, CheckCircle2,
   Calendar, Repeat, TicketPercent, Menu, Pencil, CircleDashed,
-  TrendingUp, MousePointer2
+  TrendingUp, MousePointer2, Smartphone
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { PUSH_CATEGORIES, PushTopic } from '@/lib/push-config'
+import { getAdminUsersDetails } from '@/app/actions/get-admin-users'
 
 // --- NOWE IMPORTY DLA WYKRESÓW ---
 import { 
@@ -130,11 +131,11 @@ export default function AdminDashboard() {
         supabase.from('push_history').select('*').eq('status', 'scheduled').order('scheduled_for', { ascending: true }),
         supabase.from('push_analytics').select('action'),
         supabase.from('push_history').select('sent_to_count').eq('status', 'sent'),
-        supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at, user_id, email').order('created_at', { ascending: false }), // Zwróć uwagę, dodałem email jeśli jest w tabeli (albo zostaw bez zmian)
+        getAdminUsersDetails(),
         supabase.from('kupony').select('*').is('user_id', null).order('created_at', { ascending: false }),
         supabase.from('wheel_prizes').select('*').order('chance', { ascending: false }),
         supabase.from('kupony').select('title, current_usage, user_id, created_at, is_active'),
-        supabase.from('loyalty_cards').select('experience', { count: 'exact' })
+        supabase.from('loyalty_cards').select('id', { count: 'exact' })
       ])
 
       setPromos(pRes?.data || [])
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
       setWheelPrizes(wheelRes?.data || [])
       setHistory(hRes?.data || [])
       setScheduledPushes(sRes?.data || [])
-      setAllUsers(usersRes?.data || [])
+      setAllUsers((usersRes as any)?.success ? (usersRes as any).users || [] : [])
       
       if (aRes?.data) {
         setPushStats({
@@ -198,7 +199,7 @@ export default function AdminDashboard() {
         if (wheelSpinsByDay.has(day)) wheelSpinsByDay.set(day, wheelSpinsByDay.get(day) + 1)
       })
 
-      const totalExp = loyaltyData.reduce((acc, curr) => acc + (curr.experience || 0), 0)
+      const totalExp = 0;
 
       setAdvancedStats({
         totalExperience: totalExp,
@@ -374,9 +375,11 @@ export default function AdminDashboard() {
     } catch (error) { toast.error('Błąd wysyłki Push') } finally { setIsSendingPush(false) }
   }
 
-  const filteredClients = allUsers.filter(u => 
-    u.phone_number?.includes(clientSearchQuery) || u.full_name?.toLowerCase().includes(clientSearchQuery.toLowerCase())
-  );
+  const filteredClients = allUsers.filter(u => {
+    if (!clientSearchQuery) return true;
+    const query = clientSearchQuery.toLowerCase();
+    return (u.email || '').toLowerCase().includes(query);
+  });
 
   const navItems = [
     { id: 'stats', label: 'Statystyki & Wykresy', icon: LayoutDashboard },
@@ -412,7 +415,10 @@ export default function AdminDashboard() {
             </button>
           ))}
         </nav>
-        <button onClick={handleLogout} className="flex items-center gap-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all mt-auto border-none bg-transparent cursor-pointer"><LogOut size={20} /> Wyloguj się</button>
+        <div className="mt-auto space-y-2">
+          <button onClick={() => window.location.href = '/'} className="w-full flex items-center gap-3 p-4 rounded-2xl font-bold text-zinc-500 hover:text-[#0055ff] hover:bg-blue-50 transition-all border-none bg-transparent cursor-pointer"><Home size={20} /> Sklep Urwis</button>
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 p-4 rounded-2xl font-bold text-zinc-500 hover:text-red-500 hover:bg-red-50 transition-all border-none bg-transparent cursor-pointer"><LogOut size={20} /> Wyloguj się</button>
+        </div>
       </aside>
 
       {/* 🚀 MODAL: MENU MOBILNE */}
@@ -432,7 +438,10 @@ export default function AdminDashboard() {
                   </button>
                 ))}
               </nav>
-              <button onClick={handleLogout} className="flex items-center gap-3 p-4 rounded-2xl font-bold text-red-500 hover:bg-red-50 transition-all mt-8 border-none bg-transparent cursor-pointer"><LogOut size={20} /> Wyloguj się</button>
+              <div className="mt-8 space-y-2">
+                <button onClick={() => window.location.href = '/'} className="w-full flex items-center gap-3 p-4 rounded-2xl font-bold text-zinc-500 hover:text-[#0055ff] hover:bg-blue-50 transition-all border-none bg-transparent cursor-pointer"><Home size={20} /> Sklep Urwis</button>
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 p-4 rounded-2xl font-bold text-zinc-500 hover:text-red-500 hover:bg-red-50 transition-all border-none bg-transparent cursor-pointer"><LogOut size={20} /> Wyloguj się</button>
+              </div>
             </motion.div>
           </>
         )}
@@ -576,8 +585,8 @@ export default function AdminDashboard() {
                       <thead className="bg-zinc-50/30 text-[10px] font-black uppercase text-zinc-400 tracking-widest border-b border-zinc-50">
                         <tr>
                           <th className="p-4 md:p-6 whitespace-nowrap">Imię / Email</th>
-                          <th className="p-4 md:p-6 whitespace-nowrap">Telefon</th>
-                          <th className="p-4 md:p-6 whitespace-nowrap">Rejestracja</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap">Telefon / PWA</th>
+                          <th className="p-4 md:p-6 whitespace-nowrap">Daty konta</th>
                           <th className="p-4 md:p-6 whitespace-nowrap text-right">Akcje</th>
                         </tr>
                       </thead>
@@ -590,9 +599,21 @@ export default function AdminDashboard() {
                                 <span className="text-[10px] md:text-xs font-bold text-zinc-400">{u.email || 'brak emaila'}</span>
                               </div>
                             </td>
-                            <td className="p-4 md:p-6 text-sm font-bold text-zinc-600">{u.phone_number || '---'}</td>
-                            <td className="p-4 md:p-6 text-[10px] md:text-xs font-bold text-zinc-500 uppercase whitespace-nowrap">
-                              {u.created_at ? new Date(u.created_at).toLocaleDateString('pl-PL') : '---'}
+                            <td className="p-4 md:p-6">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-sm font-bold text-zinc-600">{u.phone_number || 'Brak telefonu'}</span>
+                                {u.has_pwa ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-[#0055ff] bg-blue-50 px-2 py-0.5 rounded-md w-fit"><Smartphone size={10}/> PWA / PUSH Aktywne</span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md w-fit">Brak App PWA</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-4 md:p-6">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase whitespace-nowrap">Utworzono: {u.created_at ? new Date(u.created_at).toLocaleDateString() : '---'}</span>
+                                <span className="text-[10px] md:text-xs font-bold text-[#0055ff] uppercase whitespace-nowrap flex items-center gap-1"><Clock size={12}/> {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString() : '---'}</span>
+                              </div>
                             </td>
                             <td className="p-4 md:p-6 text-right">
                               <button 

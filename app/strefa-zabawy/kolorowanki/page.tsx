@@ -8,6 +8,13 @@ export const metadata: Metadata = {
   description: 'Odkryj interaktywne kolorowanki dla dzieci. Maluj online, baw się i pobieraj darmowe obrazki do druku. Idealna kreatywna zabawa edukacyjna w Akademii Urwisa!',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function KolorowankiPage() {
   return (
     <div className="min-h-screen bg-transparent pt-24 pb-12 relative z-10">

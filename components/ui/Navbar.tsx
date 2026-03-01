@@ -23,7 +23,8 @@ import {
   User,
   BadgePercent,
   ShieldAlert,
-  Home
+  Home,
+  Newspaper
 } from "lucide-react";
 
 const OPENING_HOURS_TEXT = {
@@ -45,6 +46,7 @@ const FULL_HOURS_LIST = [
 const NAV_ITEMS = [
   { name: "Poznaj Urwisa", href: "/poznaj-urwisa", icon: Info, color: "text-[#BF2024]", bg: "bg-[#BF2024]/10" },
   { name: "Oferta", href: "/oferta", icon: ShoppingBag, color: "text-[#0055ff]", bg: "bg-[#0055ff]/10" },
+  { name: "Aktualności", href: "/aktualnosci", icon: Newspaper, color: "text-emerald-500", bg: "bg-emerald-500/10" },
   { name: "Strefa Zabawy", href: "/strefa-zabawy", icon: Smile, color: "text-amber-500", bg: "bg-amber-500/10" },
   { name: "Kontakt", href: "/kontakt", icon: Phone, color: "text-[#BF2024]", bg: "bg-[#BF2024]/10" },
   { name: "Sala Zabaw", href: "/salazabaw", icon: Coffee, color: "text-[#0055ff]", bg: "bg-[#0055ff]/10" },
@@ -240,13 +242,13 @@ export default function Navbar() {
           </div>
 
           {/* DESKTOP NAV ITEMS */}
-          <nav className="hidden xl:flex items-center gap-1 bg-zinc-100/50 p-1.5 rounded-full border border-white/20">
+          <nav className="hidden xl:flex items-center gap-0 bg-zinc-100/50 p-1.5 rounded-full border border-white/20">
             {NAV_ITEMS.map((item) => (
               <Link 
                 key={item.name} 
                 href={item.href} 
                 onClick={() => trackEvent('nav_link_click', { name: item.name })}
-                className={`px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
+                className={`px-3 py-2 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${
                   item.name === "Kolorowanki" 
                     ? 'bg-linear-to-r from-red-500 to-blue-500 text-white shadow-md hover:scale-105'
                     : pathname === item.href 
@@ -268,7 +270,7 @@ export default function Navbar() {
               <Link 
                 href="/rabaty" 
                 onClick={() => trackEvent('nav_rabaty_click')}
-                className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-red-50 hover:bg-red-100 text-red-600 border-red-200 shadow-sm"
+                className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-400 shadow-md shadow-amber-500/20 hover:shadow-lg hover:scale-105"
               >
                 <span className="text-[11px] font-black uppercase mr-1.5">Rabaty</span>
                 <BadgePercent size={16} />
@@ -367,7 +369,7 @@ export default function Navbar() {
 
                 <nav className="flex flex-col gap-1 mt-2">
                   <div className="text-[10px] font-black uppercase text-zinc-400 px-4 py-2">Działy Zabawek</div>
-                  {NAV_ITEMS.filter(item => item.name !== "Strona Główna").map((item) => (
+                  {NAV_ITEMS.filter(item => item.name !== "Strona Główna" && item.name !== "Strefa Zabawy").map((item) => (
                     <Link 
                       key={item.name} 
                       href={item.href} 

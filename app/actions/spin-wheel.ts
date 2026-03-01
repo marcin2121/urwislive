@@ -39,12 +39,29 @@ export async function spinWheel() {
       return { error: 'Koło jest w trakcie naprawy. Brak nagród.' }
     }
 
-    // 4. ALGORYTM LOSOWANIA (Ważony)
-    const totalWeight = prizes.reduce((sum, p) => sum + Number(p.chance), 0)
-    let randomNum = Math.random() * totalWeight
-    let winningPrize = prizes[0]
+    // Dodatek: SPRAWDZENIE CO MA UŻYTKOWNIK
+    const { data: userCurrentCoupons } = await supabase
+      .from('kupony')
+      .select('title, current_usage, usage_limit')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
 
-    for (const prize of prizes) {
+    const unspentCoupons = userCurrentCoupons?.filter(c => (c.current_usage || 0) < (c.usage_limit || 1)) || [];
+    const usedTitles = unspentCoupons.map(c => c.title);
+    
+    // Filtrujemy nagrody
+    const availablePrizes = prizes.filter((p: any) => !usedTitles.includes(p.title));
+
+    if (availablePrizes.length === 0) {
+      return { error: 'Posiadasz już wszystkie rabaty! Zużyj przynajmniej jeden z nich pod kasą, by zwolnić miejsce.' }
+    }
+
+    // 4. ALGORYTM LOSOWANIA (Ważony) z puli tylko dostępnych nagród
+    const totalWeight = availablePrizes.reduce((sum: number, p: any) => sum + Number(p.chance), 0)
+    let randomNum = Math.random() * totalWeight
+    let winningPrize = availablePrizes[0]
+
+    for (const prize of availablePrizes) {
       if (randomNum < Number(prize.chance)) {
         winningPrize = prize
         break

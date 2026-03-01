@@ -15,15 +15,26 @@ export default function StrefaZabawyPage() {
           <MoveLeft size={16} /> Wróć do sklepu
         </Link>
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-          <img src="/urwis-icon.webp" alt="Wesoły sympatyczny dinozaur Urwis" className="w-32 h-32 md:w-48 md:h-48 drop-shadow-2xl animate-bounce-slow object-contain" />
-          <div className="text-center md:text-left">
+          <img src="/urwis-icon.webp" alt="Wesoły sympatyczny dinozaur Urwis" className="w-32 h-32 md:w-48 md:h-48 drop-shadow-2xl animate-bounce-slow object-contain order-2 md:order-1 shrink-0 md:mt-12" />
+          <div className="order-1 md:order-2 text-center md:text-left">
             <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter pr-4">
               Strefa <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 pr-4">Zabawy <Sparkles className="inline-block text-orange-500 mb-2" size={48} /></span>
             </h1>
-            <div className="bg-white/90 backdrop-blur-md p-6 border-2 border-yellow-200 shadow-xl rounded-3xl mt-6 relative inline-block text-left">
-               <div className="hidden md:block absolute -left-4 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[16px] border-y-transparent border-r-[24px] border-r-white"></div>
-               <div className="md:hidden absolute -top-4 left-1/2 -translate-x-1/2 w-0 h-0 border-x-[16px] border-x-transparent border-b-[24px] border-b-white"></div>
-               <p className="text-xl md:text-2xl text-zinc-800 font-bold italic leading-tight">
+            {/* Desktop speech bubble — pod tytułem, obok ikony */}
+            <div className="hidden md:inline-block bg-white p-6 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/10 rounded-3xl mt-6 relative text-left">
+               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[16px] border-y-transparent border-r-[24px] border-r-yellow-400"></div>
+               <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-0 h-0 border-y-[14px] border-y-transparent border-r-[22px] border-r-white"></div>
+               <p className="text-2xl text-zinc-800 font-bold italic leading-tight">
+                 "Cześć! Jestem Urwis! 🦖 Przygotowałem dla Ciebie mnóstwo niespodzianek na tej stronie. W co zagramy dzisiaj? Ty wybierasz!"
+               </p>
+            </div>
+          </div>
+          {/* Mobile speech bubble — pod ikonką */}
+          <div className="order-3 md:hidden">
+            <div className="bg-white p-6 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/10 rounded-3xl relative inline-block text-left">
+               <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-0 h-0 border-x-[16px] border-x-transparent border-b-[24px] border-b-yellow-400"></div>
+               <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-[14px] border-x-transparent border-b-[22px] border-b-white"></div>
+               <p className="text-xl text-zinc-800 font-bold italic leading-tight">
                  "Cześć! Jestem Urwis! 🦖 Przygotowałem dla Ciebie mnóstwo niespodzianek na tej stronie. W co zagramy dzisiaj? Ty wybierasz!"
                </p>
             </div>

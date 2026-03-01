@@ -22,7 +22,7 @@ function GuestView() {
   const benefits = [
     { icon: Tag, label: "Kody rabatowe i kupony", color: "text-amber-500", bg: "bg-amber-50" },
     { icon: Bell, label: "Powiadomienia o nowościach LEGO", color: "text-blue-500", bg: "bg-blue-50" },
-    { icon: Gift, label: "Koło Fortuny z nagrodami", color: "text-red-500", bg: "bg-red-50" },
+    { icon: Gift, label: "Koło Fortuny z nagrodami", color: "text-amber-500", bg: "bg-amber-50" },
     { icon: Heart, label: "Urwisek — wirtualny pupil", color: "text-pink-500", bg: "bg-pink-50" },
   ];
 
@@ -185,7 +185,7 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-red-500 hover:text-red-600 font-bold text-xs uppercase bg-red-50 border border-red-100 shadow-sm px-4 py-2.5 rounded-xl transition-colors shrink-0"
+            className="flex items-center gap-2 text-zinc-500 hover:text-zinc-800 font-bold text-xs uppercase bg-white border border-zinc-200 shadow-sm px-4 py-2.5 rounded-xl transition-colors shrink-0"
           >
             <LogOut size={14} /> Wyloguj
           </button>
@@ -281,10 +281,10 @@ export default function ProfilePage() {
 
                 <hr className="border-zinc-100" />
 
-                {/* Zgody marketingowe */}
+                {/* Powiadomienia push */}
                 <div>
                   <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <ShieldCheck size={16} /> Prywatność i Rabaty
+                    <ShieldCheck size={16} /> Powiadomienia
                   </h3>
                   <div className={`flex flex-col sm:flex-row items-start gap-4 p-5 rounded-3xl border transition-colors ${marketingConsent ? 'border-green-200 bg-green-50' : 'border-zinc-200 bg-zinc-50'}`}>
                     <div className="mt-1 hidden sm:block">
@@ -292,19 +292,19 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1 w-full">
                       <p className={`font-black text-sm uppercase mb-1 ${marketingConsent ? 'text-green-800' : 'text-zinc-700'}`}>
-                        {marketingConsent ? "Zgoda Marketingowa Aktywna" : "Zgoda Marketingowa Nieaktywna"}
+                        {marketingConsent ? "Powiadomienia Aktywne" : "Powiadomienia Wyłączone"}
                       </p>
                       <p className="text-xs font-medium text-zinc-600 opacity-80 leading-relaxed mb-4">
                         {marketingConsent 
-                          ? "Masz dostęp do ukrytych rabatów i ofert specjalnych dla członków Klubu Urwisa!" 
-                          : "Obecnie nie masz dostępu do ukrytych rabatów. Włącz zgodę, aby odblokować kody zniżkowe widoczne w zakładce Rabaty."}
+                          ? "Otrzymujesz powiadomienia push o nowych kuponach, promocjach i nowościach w sklepie." 
+                          : "Włącz powiadomienia, aby dostawać informacje o nowych kuponach i promocjach."}
                       </p>
                       <button 
                         onClick={toggleMarketingConsent}
                         disabled={updatingConsent}
-                        className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs uppercase transition-all flex justify-center items-center gap-2 ${marketingConsent ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-500 text-white hover:bg-green-600 shadow-md shadow-green-500/30'}`}
+                        className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs uppercase transition-all flex justify-center items-center gap-2 ${marketingConsent ? 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200' : 'bg-green-500 text-white hover:bg-green-600 shadow-md shadow-green-500/30'}`}
                       >
-                        {updatingConsent ? "Zapisywanie..." : (marketingConsent ? "Zrezygnuj z rabatów" : "Odblokuj Rabaty i Promocje")}
+                        {updatingConsent ? "Zapisywanie..." : (marketingConsent ? "Wyłącz powiadomienia" : "Włącz powiadomienia")}
                       </button>
                     </div>
                   </div>
