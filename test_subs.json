@@ -1,0 +1,50 @@
+[
+  {
+    "id": "499a39b1-4381-4640-a51e-4ec88377a5a4",
+    "subscription_data": {
+      "keys": {
+        "auth": "VFzhM6xYaSbYyUyoXcxB9A",
+        "p256dh": "BAIZ2zisBCfjy09YxnAzkOr3TLiu_8YpFAHGiuzalDnaIkUkyeWS4U3f9Tt4c29S37q685ul0rVnBjgbRo3nmNs"
+      },
+      "endpoint": "https://web.push.apple.com/QCfwX_ZIc3U0r5o6LNYl5hrYpfsUy4jzUzobMAnmjheZgwI1cY2pyoGXOflJVQVjpUOK8bDNYuXzQi6dVdI1Fx0hNgrXSXXlcQ7XtRjn6MnJOPDJhDQ_PPsSgOTVVKhBJIBc9VX_oq28vIO8454MoKu3K279os5W-MF5HBCOfww"
+    },
+    "user_agent": null,
+    "created_at": "2026-02-20T11:30:45.337145+00:00",
+    "topics": [
+      "wszystkie"
+    ],
+    "endpoint": "https://web.push.apple.com/QCfwX_ZIc3U0r5o6LNYl5hrYpfsUy4jzUzobMAnmjheZgwI1cY2pyoGXOflJVQVjpUOK8bDNYuXzQi6dVdI1Fx0hNgrXSXXlcQ7XtRjn6MnJOPDJhDQ_PPsSgOTVVKhBJIBc9VX_oq28vIO8454MoKu3K279os5W-MF5HBCOfww"
+  },
+  {
+    "id": "9b9adb7c-09bc-4705-a848-867290fe54de",
+    "subscription_data": {
+      "keys": {
+        "auth": "zB5SDYG9FgK8l2UzGRn7Fw",
+        "p256dh": "BGWfxDt1GyvAfbintePJGr0Nl6e2wFZcWS3bnsKpTTqIOhOdwmDjp6PzRUToy7vBqr2obNzqgPk0OtMjHFAj4og"
+      },
+      "endpoint": "https://web.push.apple.com/QJVkMKU0yDpm0_SEdunrDyj8Aazdm_7Pg3fbSGggxOQ_ZbscRp1Kt6ZXlnyQMp2wYAPK7ZQxyfuYvcVxIsr0Dlx8dM9zWTFXKmZ49gjaiJRoC6cLaMv6bTPfOic7NbxGdtPNVgSwfHnp6RqZiAQl0DT3N7rQJJ4ybFnTmrsa5n4"
+    },
+    "user_agent": null,
+    "created_at": "2026-02-20T11:31:47.408025+00:00",
+    "topics": [
+      "wszystkie"
+    ],
+    "endpoint": "https://web.push.apple.com/QJVkMKU0yDpm0_SEdunrDyj8Aazdm_7Pg3fbSGggxOQ_ZbscRp1Kt6ZXlnyQMp2wYAPK7ZQxyfuYvcVxIsr0Dlx8dM9zWTFXKmZ49gjaiJRoC6cLaMv6bTPfOic7NbxGdtPNVgSwfHnp6RqZiAQl0DT3N7rQJJ4ybFnTmrsa5n4"
+  },
+  {
+    "id": "4d7607a1-6aac-494e-b806-3ae4f645b7a4",
+    "subscription_data": {
+      "keys": {
+        "auth": "k-VcqhsGiynh16MVRdsNSw",
+        "p256dh": "BLMFpRg16MEUT6JX8sc2etq3hlL5G3iRhBpME3t5XxKvE-t8z5QXUQKG8gafET7h9Wy71C5YM-MZmndfzbwoVxU"
+      },
+      "endpoint": "https://web.push.apple.com/QM-SckX0Dp5rn4U0ZwYnL5K3-z5yUTSoFs6I1q8Xu-8ND-7X9ayMSZGo7q-uvvFuVH3EfXW48IKbiNUuiyHaxVoppb5DK5M0lbbb7TkSu5m2vc11ADALCDxBmOnG5YisPrXZiBPGsRi4NkJJFNiECofPDZi4J1mWwZ0li6Cru2w"
+    },
+    "user_agent": null,
+    "created_at": "2026-02-20T11:48:19.101209+00:00",
+    "topics": [
+      "wszystkie"
+    ],
+    "endpoint": "https://web.push.apple.com/QM-SckX0Dp5rn4U0ZwYnL5K3-z5yUTSoFs6I1q8Xu-8ND-7X9ayMSZGo7q-uvvFuVH3EfXW48IKbiNUuiyHaxVoppb5DK5M0lbbb7TkSu5m2vc11ADALCDxBmOnG5YisPrXZiBPGsRi4NkJJFNiECofPDZi4J1mWwZ0li6Cru2w"
+  }
+]

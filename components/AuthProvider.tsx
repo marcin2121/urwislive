@@ -56,6 +56,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe()
   }, [supabase])
+
+  // --- REJESTRACJA INSTALACJI PWA / APP ---
+  useEffect(() => {
+    const updatePwaStatus = async () => {
+      if (!session || !user) return;
+      
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+      
+      if (isPWA && !user.user_metadata?.has_pwa) {
+         try {
+           await supabase.auth.updateUser({
+             data: { has_pwa: true }
+           });
+         } catch(e) { console.error('PWA Update error', e) }
+      }
+    }
+    updatePwaStatus()
+  }, [session, user, supabase])
+
   return (
     <AuthContext.Provider value={{ user, session, isLoading }}>
       {children}

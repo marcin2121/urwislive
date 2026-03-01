@@ -17,19 +17,7 @@ export default function AboutSection() {
   };
 
   return (
-    <main className="min-h-screen bg-transparent pt-40 pb-24 relative overflow-hidden text-zinc-900">
-      
-      {/* 🔴🔵 TŁO */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <Particles
-          particleCount={30}
-          particleColors={["#BF2024", "#0055ff"]}
-          alphaParticles
-          particleBaseSize={200}
-          speed={0.05}
-        />
-      </div>
-
+    <main className="bg-transparent py-24 relative overflow-hidden text-zinc-900 border-t border-zinc-100/50">
       <div className="container mx-auto px-6 relative z-10">
         
         {/* --- HERO SECTION --- */}
@@ -43,15 +31,14 @@ export default function AboutSection() {
             >
               <Heart size={14} className="text-[#BF2024]" aria-hidden="true" /> Białobrzeska historia pasji
             </motion.span>
-            
-            <h1 className="text-7xl md:text-9xl font-black text-zinc-900 leading-[0.85] tracking-tight uppercase mb-12 italic pr-4">
+            <h1 className="text-6xl md:text-8xl font-black text-zinc-800 leading-[0.85] tracking-tight uppercase mb-8 italic pr-4">
               WIĘCEJ NIŻ <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] pr-4">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] pr-4 drop-shadow-sm">
                 TYLKO SKLEP
               </span>
             </h1>
 
-            <p className="text-2xl md:text-4xl text-zinc-900 font-black leading-[1.1] uppercase tracking-tighter max-w-3xl">
+            <p className="text-xl md:text-3xl text-zinc-700 font-bold leading-tight uppercase tracking-tight max-w-3xl">
               Urwis to <span className="text-[#BF2024]">energia Białobrzegów</span>, najlepsze artykuły szkolne i biurowe oraz bezkompromisowa <span className="text-[#0055ff]">radość odkrywania</span>.
             </p>
           </div>

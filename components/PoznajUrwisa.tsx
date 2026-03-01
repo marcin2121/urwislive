@@ -10,22 +10,16 @@ import type { ViewerProps } from '@/components/ModelViewer';
 export default function PoznajUrwisa() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [modelLoaded, setModelLoaded] = useState(false);
-  const [isMobile, setIsMobile] = useState(true); // ← domyślnie true (mobile-first, brak flasha)
   const [mounted, setMounted] = useState(false);
   // ✅ ModelViewer trzymany w stanie — importowany tylko gdy desktop
   const [ModelViewer, setModelViewer] = useState<ComponentType<ViewerProps> | null>(null);
 
   useEffect(() => {
-    const isDesktop = window.innerWidth >= 1024;
-    setIsMobile(!isDesktop);
     setMounted(true);
 
-    // ✅ Three.js pobierany TYLKO na desktop — na mobile chunk nigdy nie istnieje
-    if (isDesktop) {
-      import('@/components/ModelViewer').then((mod) => {
-        setModelViewer(() => mod.default);
-      });
-    }
+    import('@/components/ModelViewer').then((mod) => {
+      setModelViewer(() => mod.default);
+    });
   }, []);
 
   const features = [
@@ -49,17 +43,17 @@ export default function PoznajUrwisa() {
           <div className="order-1 lg:col-start-1 lg:row-start-1 space-y-12 w-full text-center lg:text-left">
             <div className="space-y-6">
               <motion.span
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                className="inline-flex items-center gap-2 px-6 py-2 bg-white/40 backdrop-blur-md text-zinc-500 rounded-full text-[12px] font-black uppercase tracking-[0.3em]"
+                className="inline-flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-red-500/10 to-blue-500/10 backdrop-blur-xl text-zinc-700 rounded-full text-[12px] font-black uppercase tracking-[0.3em] shadow-sm border border-black/5"
               >
-                <Sparkles size={14} className="text-[#BF2024]" /> Poznaj naszą maskotkę
+                <Sparkles size={14} className="text-[#BF2024] animate-pulse" /> Poznaj naszą maskotkę
               </motion.span>
 
               <h2 className="text-6xl md:text-8xl lg:text-9xl font-black leading-[0.85] tracking-tighter text-zinc-900 uppercase">
                 POZNAJ <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] pr-4">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] via-purple-500 to-[#0055ff] pr-4 drop-shadow-sm">
                   URWISA
                 </span>
               </h2>
@@ -95,9 +89,9 @@ export default function PoznajUrwisa() {
 
               <div className="relative z-10 w-full h-full flex items-center justify-center">
 
-                {/* Obrazek — zawsze widoczny, na desktop chowany gdy model gotowy */}
+                {/* Obrazek — zawsze widoczny początkowo, chowany gdy model gotowy na wszystkich urządzeniach */}
                 <div className={`absolute inset-0 z-20 transition-opacity duration-1000 ${
-                  !isMobile && modelLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                  modelLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 }`}>
                   <Image
                     src="/urwis-fallback.webp"
@@ -109,7 +103,7 @@ export default function PoznajUrwisa() {
                   />
                 </div>
 
-                {/* ✅ Model 3D — tylko desktop, tylko gdy chunk załadowany */}
+                {/* ✅ Model 3D — na wszystkich urządzeniach */}
                 {ModelViewer && (
                   <div className={`relative z-30 w-full h-full transition-opacity duration-1000 ${
                     modelLoaded ? 'opacity-100' : 'opacity-0'
@@ -132,8 +126,8 @@ export default function PoznajUrwisa() {
                 )}
               </div>
 
-              {/* Loader — tylko desktop, tylko gdy model się wczytuje */}
-              {!isMobile && !modelLoaded && (
+              {/* Loader — gdy model się wczytuje */}
+              {!modelLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
                   <div className="bg-white/40 backdrop-blur-xl px-8 py-4 rounded-3xl border border-white/50 shadow-2xl">
                     <span className="text-sm font-black italic uppercase animate-pulse">Budzę Urwisa...</span>
@@ -160,11 +154,11 @@ export default function PoznajUrwisa() {
                   (window as any).gtag('event', 'hero_cta_click', { destination: 'oferta_urwisa' });
                 }
               }}
-              className="group relative inline-flex items-center gap-4 px-12 py-6 bg-zinc-900 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 shadow-2xl uppercase tracking-tighter italic"
+              className="group relative inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 shadow-2xl uppercase tracking-tighter italic border-4 border-white/20"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="relative z-10 flex items-center gap-3">
-                ZOBACZ OFERTĘ URWISA <ChevronRight size={22} strokeWidth={3} />
+                ZOBACZ OFERTĘ URWISA <ChevronRight size={22} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
           </div>

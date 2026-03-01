@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { MoveLeft, History } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Particles from "@/components/Particles";
 
 // Moduły wyciągnięte ze strony głównej oraz starego O Nas
 import ONasSection from "@/components/O-nasSection";
@@ -35,42 +36,42 @@ const mainPageItems = [
 
 export default function PoznajUrwisaPage() {
   return (
-    <div className="min-h-screen bg-transparent pt-24 md:pt-[120px] pb-32 relative z-10 text-zinc-900">
-      <div className="container mx-auto px-6 mb-12 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors mb-6 font-bold uppercase tracking-widest text-xs">
-          <MoveLeft size={16} /> Wróć do sklepu
+    <div className="min-h-screen bg-transparent pt-12 pb-32 relative z-10 text-zinc-900">
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <Particles
+          particleCount={40}
+          particleColors={["#BF2024", "#0055ff", "#f59e0b"]}
+          alphaParticles
+          particleBaseSize={180}
+          speed={0.06}
+        />
+      </div>
+      <div className="container mx-auto px-6 relative z-20">
+        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#0055ff] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 mb-4 group">
+          <MoveLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć na główną
         </Link>
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter pr-4"
-        >
-          Poznaj{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] pr-4">
-            Urwisa <History className="inline-block text-[#0055ff] mb-2" size={48} />
-          </span>
-        </motion.h1>
       </div>
 
-      <div className="container mx-auto px-4 space-y-32">
+      <div className="space-y-12">
+        <PoznajUrwisa />
+        
         <section>
           <ONasSection />
         </section>
       </div>
-
-      <PoznajUrwisa />
       
       <section className="py-20" aria-labelledby="gallery-title">
-        <div className="container mx-auto px-6 mb-12">
+        <div className="container mx-auto px-6 mb-12 text-center md:text-left">
           <h2
             id="gallery-title"
-            className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter pr-4"
+            className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter pr-4"
           >
-            Nasz{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] pr-4">
-              Sklep Stacjonarny
+            NASZ SKLEP W{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] via-orange-500 to-[#0055ff] pr-4 drop-shadow-sm">
+              OBIEKTYWIE
             </span>
           </h2>
+          <p className="text-zinc-500 font-bold uppercase tracking-widest mt-4">Wpadnij na Reymonta 38A w Białobrzegach i przekonaj się sam!</p>
         </div>
         <UrwisGallery items={mainPageItems} />
       </section>

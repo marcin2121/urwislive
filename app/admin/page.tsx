@@ -13,7 +13,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { PUSH_CATEGORIES, PushTopic } from '@/lib/push-config'
-import { getAdminUsersDetails } from '@/app/actions/get-admin-users'
+import { getAdminUsersDetails, getAdminUserCoupons } from '@/app/actions/get-admin-users'
 
 // --- NOWE IMPORTY DLA WYKRESÓW ---
 import { 
@@ -56,14 +56,10 @@ export default function AdminDashboard() {
     setSelectedUser(user)
     setLoadingUserCoupons(true)
     try {
-      const { data, error } = await supabase
-        .from('kupony')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+      const res = await getAdminUserCoupons(user.auth_user_id || user.id)
+      if (!res.success) throw new Error(res.error || "Wystąpił nieznany błąd.")
       
-      if (error) throw error
-      setUserCoupons(data || [])
+      setUserCoupons(res.coupons)
     } catch (err) {
       toast.error('Błąd pobierania kuponów użytkownika')
     } finally {
@@ -125,12 +121,13 @@ export default function AdminDashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [pRes, hRes, sRes, aRes, allHistRes, usersRes, kuponyRes, wheelRes, allCouponsRes, loyaltyRes] = await Promise.all([
+      const [pRes, hRes, sRes, aRes, allHistRes, usersRes, extraUsersRes, kuponyRes, wheelRes, allCouponsRes, loyaltyRes] = await Promise.all([
         supabase.from('promocje').select('*').order('created_at', { ascending: false }),
         supabase.from('push_history').select('*').eq('status', 'sent').order('created_at', { ascending: false }).limit(10),
         supabase.from('push_history').select('*').eq('status', 'scheduled').order('scheduled_for', { ascending: true }),
         supabase.from('push_analytics').select('action'),
         supabase.from('push_history').select('sent_to_count').eq('status', 'sent'),
+        supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at').order('created_at', { ascending: false }),
         getAdminUsersDetails(),
         supabase.from('kupony').select('*').is('user_id', null).order('created_at', { ascending: false }),
         supabase.from('wheel_prizes').select('*').order('chance', { ascending: false }),
@@ -143,7 +140,43 @@ export default function AdminDashboard() {
       setWheelPrizes(wheelRes?.data || [])
       setHistory(hRes?.data || [])
       setScheduledPushes(sRes?.data || [])
-      setAllUsers((usersRes as any)?.success ? (usersRes as any).users || [] : [])
+
+      const loyaltyClients = usersRes?.data || [];
+      const extraData = (extraUsersRes as any)?.success ? (extraUsersRes as any).extraData : {};
+      
+      const combinedClientsMap = new Map();
+      
+      // 1. Najpierw wrzucamy wszystkich z `auth.users` (w tym konto Admina bez karty)
+      Object.entries(extraData).forEach(([phone, extra]: [string, any]) => {
+         combinedClientsMap.set(phone, {
+            id: extra.auth_user_id, // ID zastępcze dla UI
+            auth_user_id: extra.auth_user_id,
+            phone_number: phone,
+            full_name: extra.full_name,
+            email: extra.email,
+            created_at: extra.created_at,
+            last_sign_in_at: extra.last_sign_in_at,
+            has_pwa: extra.has_pwa || false
+         });
+      });
+
+      // 2. Następnie nadpisujemy/dodajemy dane kart lojalnościowych
+      loyaltyClients.forEach(c => {
+         const existing = combinedClientsMap.get(c.phone_number) || { auth_user_id: null, email: null, last_sign_in_at: null, has_pwa: false, full_name: null };
+         combinedClientsMap.set(c.phone_number, {
+            ...existing,
+            ...c, // nadpisuje `id` na id karty lojalnościowej i `created_at` itp.
+            auth_user_id: existing.auth_user_id,
+            email: existing.email,
+            last_sign_in_at: existing.last_sign_in_at,
+            has_pwa: existing.has_pwa,
+            full_name: c.full_name || existing.full_name // priorytezacja Imienia z karty
+         });
+      });
+
+      // Sortujemy malejąco po dacie rejestracji
+      const finalClients = Array.from(combinedClientsMap.values()).sort((a,b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+      setAllUsers(finalClients);
       
       if (aRes?.data) {
         setPushStats({

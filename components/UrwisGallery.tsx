@@ -241,11 +241,10 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                   className="object-cover transition-transform duration-700 group-hover/card:scale-105 pointer-events-none"
                   sizes="(max-width: 768px) 80vw, (max-width: 1200px) 40vw, 30vw" quality={75}
                 />
-                {/* 🚀 SUGGESTION: bg-linear-to-t */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <p className="text-blue-300 font-bold uppercase tracking-widest text-[10px] mb-1">{item.category}</p>
-                  <h3 className="text-white text-2xl md:text-3xl font-black uppercase italic tracking-tight">{item.title}</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6 transform border-l-4 border-red-500 pl-4 bg-gradient-to-r from-black/40 to-transparent pt-2 pb-2 rounded-r-2xl backdrop-blur-[2px]">
+                  <p className="text-blue-300 font-black uppercase tracking-widest text-[10px] mb-1 drop-shadow-md">{item.category}</p>
+                  <h3 className="text-white text-3xl md:text-4xl font-black uppercase italic tracking-tighter leading-none drop-shadow-xl">{item.title}</h3>
                 </div>
               </motion.div>
             )
@@ -319,20 +318,17 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                   />
                 </motion.div>
 
-                {/* ZNIKAJĄCY TEKST */}
                 <motion.div 
                   animate={{ opacity: isZoomed ? 0 : 1, y: isZoomed ? 50 : 0 }}
-                  /* 🚀 SUGGESTION: bg-linear-to-t */
-                  className="absolute bottom-0 inset-x-0 p-8 md:p-16 bg-linear-to-t from-zinc-950 via-transparent to-transparent pointer-events-none flex flex-col justify-end"
+                  className="absolute bottom-0 inset-x-0 p-8 md:p-16 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent pointer-events-none flex flex-col justify-end"
                 >
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
-                      <Sparkles className="w-4 h-4 text-red-400" />
-                      <span className="text-white font-bold uppercase tracking-[0.2em] text-[10px] md:text-sm">{selectedItem.category}</span>
+                    <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-500/20 backdrop-blur-md rounded-full border border-red-500/40">
+                      <Sparkles className="w-4 h-4 text-red-400 animate-pulse" />
+                      <span className="text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-sm">{selectedItem.category}</span>
                     </span>
                   </div>
-                  {/* 🚀 SUGGESTION: bg-linear-to-r */}
-                  <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">
+                  <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-white to-blue-400 drop-shadow-[0_0_20px_rgba(0,0,0,0.8)]">
                     {selectedItem.title}
                   </h2>
                 </motion.div>
