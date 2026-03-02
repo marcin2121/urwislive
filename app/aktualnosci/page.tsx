@@ -67,7 +67,7 @@ export default function AktualnosciPage() {
               <Newspaper size={28} className="text-white" />
             </div>
             <div>
-              <h1 className="text-5xl md:text-7xl font-black text-zinc-900 tracking-tighter uppercase italic leading-[0.9]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-zinc-900 tracking-tighter uppercase italic leading-[0.9] pr-2">
                 Aktualności
               </h1>
               <p className="text-zinc-500 font-bold uppercase tracking-tight italic text-sm mt-2">

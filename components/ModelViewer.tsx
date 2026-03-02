@@ -313,8 +313,8 @@ const ModelViewer: FC<ViewerProps> = ({
 
   return (
     <div 
-      style={{ width, height, touchAction: 'none' }} 
-      className="relative group bg-zinc-50/50 rounded-3xl overflow-hidden border border-zinc-200"
+      style={{ width, height, touchAction: isTouchDevice ? 'auto' : 'none' }} 
+      className={`relative group bg-zinc-50/50 rounded-3xl overflow-hidden border border-zinc-200 ${isTouchDevice ? 'pointer-events-none select-none' : ''}`}
       role="region" 
       aria-label={title}
     >

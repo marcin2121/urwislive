@@ -276,13 +276,54 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     };
   }, []);
 
+  // --- Odtwarzacz Muzyki w Tle (Z pauzowaniem przy zminimalizowaniu Karty) ---
   useEffect(() => {
-    const audio = new Audio('/sfx/ambient.mp3');
-    audio.loop = true; 
-    audio.volume = isMuted ? 0 : (ambientVolume / 100); 
-    audio.play().catch(() => {});
-    ambientAudioRef.current = audio;
-    return () => { audio.pause(); audio.src = ''; };
+    let audio = ambientAudioRef.current;
+    
+    // Inicjalizuj tylko raz
+    if (!audio) {
+      audio = new Audio('/sfx/ambient.mp3');
+      audio.loop = true;
+      ambientAudioRef.current = audio;
+    }
+
+    // Aktualizuj głośność po kliknięciu mute w panelu 
+    audio.volume = isMuted ? 0 : (ambientVolume / 100);
+
+    // Spróbuj odtworzyć, jeśli strona wciąż jest w pierwszej warstwie
+    const playAudio = () => {
+      if (!isMuted && !document.hidden) {
+        audio?.play().catch(() => {});
+      }
+    };
+    
+    playAudio();
+
+    // Reaguj na przełączenie tła w smartfonie/PC (Pauza na minimalizacji)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        audio?.pause();
+      } else {
+        playAudio();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => { 
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      // Nie zrzucamy pamieci (audio.src = '') z powodu dependency array, niszczymy tylko na unmount
+    };
+  }, [isMuted, ambientVolume]);
+  
+  // Niszczenie elementu audio po wyjściu z sekcji kolorowanek
+  useEffect(() => {
+    return () => {
+       if (ambientAudioRef.current) {
+          ambientAudioRef.current.pause();
+          ambientAudioRef.current.src = '';
+       }
+    }
   }, []);
 
   // Keyboard Shortcuts (Ctrl+Z)

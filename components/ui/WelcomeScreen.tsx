@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Sparkles } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { usePopupControl } from '@/components/PopupProvider';
 
 // Pomocnicza funkcja do VAPID
 const urlBase64ToUint8Array = (base64String: string) => {
@@ -19,27 +20,31 @@ export default function WelcomeScreen() {
   const [mounted, setMounted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const supabase = createClient();
+  const { currentPopup, nextPopup } = usePopupControl();
 
   useEffect(() => {
     setMounted(true);
     
-    // Sprawdzamy czy to PWA (Standalone)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         (window.navigator as any).standalone === true;
+    if (currentPopup === 'WELCOME') {
+      // Sprawdzamy czy to PWA (Standalone)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                           (window.navigator as any).standalone === true;
 
-    if (!isStandalone) return;
+      const hasSeenWelcome = localStorage.getItem('urwis_welcome_seen');
 
-    const hasSeenWelcome = localStorage.getItem('urwis_welcome_seen');
-    
-    if (!hasSeenWelcome) {
-      const timer = setTimeout(() => setIsVisible(true), 800);
-      return () => clearTimeout(timer);
+      if (isStandalone && !hasSeenWelcome) {
+        setIsVisible(true);
+      } else {
+        // Pominięcie ekranu jeśli nie jesteśmy aplikacją samodzielną lub już go widzieliśmy
+        nextPopup();
+      }
     }
-  }, []);
+  }, [currentPopup, nextPopup]);
 
   const closeScreen = useCallback((actionType: 'accepted' | 'skipped') => {
     localStorage.setItem('urwis_welcome_seen', 'true');
     setIsVisible(false);
+    nextPopup(); // ✅ Zwolnienie logiki dla kolejnego komponentu w kolejce
 
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'welcome_screen_close', {
@@ -47,7 +52,7 @@ export default function WelcomeScreen() {
         event_label: actionType,
       });
     }
-  }, []);
+  }, [nextPopup]);
 
   const handleSubscribeAndEnter = async () => {
     setIsProcessing(true);

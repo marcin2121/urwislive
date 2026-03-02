@@ -101,7 +101,7 @@ export default function ImprezySection() {
             className="max-w-5xl"
           >
             <span className="text-[12px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-4 block">PARTY TIME: BIAŁOBRZEGI</span>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-zinc-900 mb-8 leading-[0.85] tracking-tighter uppercase italic">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black text-zinc-900 mb-8 leading-[0.85] tracking-tighter uppercase italic">
               ARTYKUŁY <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">IMPREZOWE</span>
             </h1>
             <p className="text-xl md:text-2xl text-zinc-600 font-bold leading-tight italic uppercase tracking-tight max-w-2xl">

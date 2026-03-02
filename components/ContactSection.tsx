@@ -109,9 +109,9 @@ export default function ContactSection() {
               <MessageSquare size={14} /> Jesteśmy dla Ciebie
             </motion.div>
             
-            <h1 className="text-6xl md:text-8xl font-black font-heading text-gray-900 tracking-tighter mb-8 leading-none">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black font-heading text-gray-900 tracking-tighter mb-8 leading-tight md:leading-none pr-2">
               SKONTAKTUJ SIĘ <br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">Z URWISEM</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] pr-4 drop-shadow-sm">Z URWISEM</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-gray-600 max-w-2xl mx-auto font-body font-medium leading-relaxed">

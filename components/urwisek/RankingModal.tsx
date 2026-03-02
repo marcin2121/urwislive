@@ -16,7 +16,7 @@ export default function RankingModal({ isOpen, onClose, ranking }: {
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-[200] flex items-end justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="absolute inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4 pt-10 sm:pt-4"
     >
       <motion.div 
         initial={{ y: "100%" }}
@@ -67,10 +67,10 @@ export default function RankingModal({ isOpen, onClose, ranking }: {
 
               <div className="text-right">
                 <div className="flex items-center gap-1 justify-end">
-                  <Star className="w-3 h-3 text-urwis-blue fill-urwis-blue" />
-                  <span className="text-lg font-black text-urwis-blue">Lvl {player.level}</span>
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                  <span className="text-lg font-black text-amber-600">{player.achievement_points || 0} PKT</span>
                 </div>
-                <p className="text-[9px] font-bold text-gray-300 uppercase">{player.points_earned} XP</p>
+                <p className="text-[9px] font-bold text-gray-400 uppercase">Lv. {player.level} • {player.points_earned} XP</p>
               </div>
             </div>
           ))}

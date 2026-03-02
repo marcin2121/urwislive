@@ -13,6 +13,7 @@ import Script from "next/script";
 import WelcomeScreen from "@/components/ui/WelcomeScreen";
 import { AuthProvider } from "@/components/AuthProvider";
 import OnboardingTour from "@/components/ui/OnboardingTour";
+import { PopupProvider } from "@/components/PopupProvider";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -189,38 +190,40 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white overflow-x-hidden">
         <AuthProvider>
-          <Suspense fallback={null}>
-            <WelcomeScreen />
-          </Suspense>
-
-          <Suspense fallback={null}>
-            <OrphansFixer />
-          </Suspense>
-
-          <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
-
-          <div className="relative z-20 flex flex-col min-h-screen bg-transparent overflow-x-hidden w-full max-w-full">
-            <Navbar />
-
+          <PopupProvider>
             <Suspense fallback={null}>
-              <InstallPrompt />
+              <WelcomeScreen />
             </Suspense>
 
-            <RibbonsBg />
+            <Suspense fallback={null}>
+              <OrphansFixer />
+            </Suspense>
 
-            <main className="grow bg-transparent">
-              {children}
-            </main>
+            <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
 
-            <Footer />
-          </div>
+            <div className="relative z-20 flex flex-col min-h-screen bg-transparent overflow-x-hidden w-full max-w-full">
+              <Navbar />
 
-          <Toaster position="bottom-right" richColors />
+              <Suspense fallback={null}>
+                <InstallPrompt />
+              </Suspense>
 
-          <Suspense fallback={null}>
-            <CookieModal />
-          </Suspense>
-          <OnboardingTour />
+              <RibbonsBg />
+
+              <main className="grow bg-transparent">
+                {children}
+              </main>
+
+              <Footer />
+            </div>
+
+            <Toaster position="bottom-right" richColors />
+
+            <Suspense fallback={null}>
+              <CookieModal />
+            </Suspense>
+            <OnboardingTour />
+          </PopupProvider>
         </AuthProvider>
 
         <Script

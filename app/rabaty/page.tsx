@@ -628,7 +628,7 @@ export default function RabatyPage() {
                 Twój indywidualny kupon został dodany do zakładki "Dostępne". Wykorzystaj go przy najbliższych zakupach!
               </p>
               <button onClick={() => setShowPrizeModal(false)} className="w-full bg-amber-500 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-xl hover:bg-amber-600 transition-colors cursor-pointer outline-none">
-                Zrozumiałem, Dziękuję!
+                Dzięki Urwis!
               </button>
             </motion.div>
           </motion.div>

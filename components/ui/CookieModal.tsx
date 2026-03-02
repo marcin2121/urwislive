@@ -2,32 +2,31 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, X, Info, Cookie } from 'lucide-react' // 🚀 Ikona Cookie musi być tutaj!
+import { Check, X, Info, Cookie } from 'lucide-react' 
 import Link from 'next/link'
 import Image from 'next/image'
+import { usePopupControl } from '@/components/PopupProvider'
 
 export default function CookieModal() {
   const [isVisible, setIsVisible] = useState(false)
+  const { currentPopup, nextPopup } = usePopupControl()
 
   useEffect(() => {
-    const checkConsent = () => {
+    if (currentPopup === 'COOKIES') {
       const consent = localStorage.getItem('urwis_cookie_accepted')
-      const introShown = sessionStorage.getItem('urwis_intro_shown')
 
-      if (consent === null && introShown === 'true') {
-        const timer = setTimeout(() => setIsVisible(true), 800)
-        return () => clearTimeout(timer)
+      if (consent === null) {
+        setIsVisible(true)
+      } else {
+        nextPopup() // Pop-up był już rozwiązany, idziemy dalej
       }
     }
-
-    checkConsent()
-    window.addEventListener('urwis_intro_finished', checkConsent)
-    return () => window.removeEventListener('urwis_intro_finished', checkConsent)
-  }, [])
+  }, [currentPopup, nextPopup])
 
   const saveConsent = (status: 'true' | 'false') => {
     localStorage.setItem('urwis_cookie_accepted', status)
     setIsVisible(false)
+    nextPopup() // ✅ Komunikacja do Globalnego Managera, że zwinęliśmy Cookies
   }
 
   return (

@@ -8,12 +8,17 @@ import Link from 'next/link'
 // Importy komponentów modułowych
 import StatsSection from './urwisek/StatsSection'
 import ActionPanel from './urwisek/ActionPanel'
+import UrwisShop from './urwisek/UrwisShop'
+import ArcadeCenter from './urwisek/ArcadeCenter'
+import QuestsPanel from './urwisek/QuestsPanel'
+import AchievementsPanel from './urwisek/AchievementsPanel'
 import PetDisplay from './urwisek/PetDisplay'
 import RankingModal from './urwisek/RankingModal'
 
 // Importy logiki i akcji
-import { interactWithUrwis, claimDailyLogin, getUrwisRanking } from '@/app/actions/tamagotchi'
+import { interactWithUrwis, claimDailyLogin, getUrwisRanking, buyUrwisItem, toggleUrwisItem, finishArcadeGame, claimQuestReward } from '@/app/actions/tamagotchi'
 import { calculateDecay } from '@/lib/urwis/engine'
+import { SHOP_ITEMS } from '@/lib/urwis/items'
 import { cn } from '@/lib/utils'
 
 export interface PetState {
@@ -28,6 +33,12 @@ export interface PetState {
   goldenUrwis: number
   points_earned: number
   lastInteraction: string
+  inventory: string[]
+  equippedItems: Record<string, string>
+  completedQuests: string[]
+  questProgress: Record<string, number>
+  achievements: string[]
+  achievementPoints: number
 }
 
 export default function UrwisekDashboard({ initialState }: { initialState: PetState }) {
@@ -36,11 +47,13 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
     hunger: Number(initialState.hunger) || 0,
     hygiene: Number(initialState.hygiene) || 0,
     happiness: Number(initialState.happiness) || 0,
+    inventory: initialState.inventory || [],
+    equippedItems: initialState.equippedItems || {},
   }))
   
   const [isPending, startTransition] = useTransition()
-  const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding' | 'playing' | 'ranking'>('none')
-  const [rewardMessage, setRewardMessage] = useState<string | null>(null)
+  const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding' | 'playing' | 'ranking' | 'shopping' | 'arcade' | 'quests' | 'achievements'>('none')
+  const [rewardMessage, setRewardMessage] = useState<React.ReactNode | null>(null)
   const [showSmile, setShowSmile] = useState(false)
   const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
   const [showLoginBonus, setShowLoginBonus] = useState(false)
@@ -130,12 +143,19 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
             points_earned: res.newState!.points_earned,
             goldenUrwis: res.newState!.goldenUrwis,
             lastInteraction: res.newState!.lastInteraction,
+            inventory: res.newState!.inventory ?? prev.inventory,
+            equippedItems: res.newState!.equippedItems ?? prev.equippedItems,
           }))
         }
         setShowSmile(true)
         const coinLabel = res.reward.coins >= 0 ? `+${res.reward.coins}` : `${res.reward.coins}`
-        setRewardMessage(`${coinLabel} 🪙 i +${res.reward.exp} EXP`)
+        setRewardMessage(<span className="flex items-center gap-1">{coinLabel} <Coins className="w-4 h-4 text-yellow-500" /> i +{res.reward.exp} EXP</span>)
         setActiveMode('none')
+        
+        if (res.newAchievements && res.newAchievements.length > 0) {
+           setTimeout(() => alert(`🏆 Odblokowano nowe osiągnięcie! (${res.newAchievements.length})`), 500)
+        }
+
         setTimeout(() => {
           setShowSmile(false); setRewardMessage(null); setLevelUpData(null);
         }, 4000)
@@ -149,6 +169,116 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
     })
   }
   
+  // ✅ HANDLER ZAKUPÓW
+  const handleBuyItem = async (itemId: string) => {
+    const res = await buyUrwisItem(itemId)
+    if (res.error) {
+      alert(res.error)
+      return
+    }
+    if (res.success && res.updates) {
+       setState(prev => ({
+         ...prev,
+         urwisCoins: res.updates.urwis_coins !== undefined ? res.updates.urwis_coins : prev.urwisCoins,
+         hunger: res.updates.hunger_level !== undefined ? res.updates.hunger_level : prev.hunger,
+         inventory: res.updates.inventory !== undefined ? res.updates.inventory : prev.inventory,
+         achievements: res.updates.achievements !== undefined ? res.updates.achievements : prev.achievements,
+         achievementPoints: res.updates.achievement_points !== undefined ? res.updates.achievement_points : prev.achievementPoints,
+         questProgress: res.updates.quest_progress !== undefined ? res.updates.quest_progress : prev.questProgress
+       }))
+       
+       if (res.newAchievements && res.newAchievements.length > 0) {
+          setTimeout(() => alert(`🏆 Odblokowano nowe osiągnięcie! (${res.newAchievements.length})`), 500)
+       }
+
+       setRewardMessage(<span className="flex items-center gap-1">Kupiono! (-{SHOP_ITEMS.find(i => i.id === itemId)?.price} <Coins className="w-4 h-4 text-yellow-500" />)</span>)
+       setTimeout(() => setRewardMessage(null), 3000)
+    }
+  }
+
+  // ✅ HANDLER UBIERANIA
+  const handleEquipToggle = async (itemId: string, category: string) => {
+    const res = await toggleUrwisItem(itemId, category)
+    if (res.error) {
+      alert(res.error)
+      return
+    }
+    
+    if (res.success && res.equippedItems) {
+       setState(prev => ({
+         ...prev,
+         equippedItems: res.equippedItems
+       }))
+    }
+  }
+
+  // ✅ HANDLER ODBIERANIA NAGRÓD Z MINIGIER ARCADE
+  const handleArcadeWin = async (frontendCoins: number, frontendExp: number) => {
+    const res = await finishArcadeGame('memory')
+    
+    if (res.error) {
+      alert(res.error)
+      return
+    }
+    if (res.success && res.reward) {
+       setState(prev => ({
+         ...prev,
+         urwisCoins: prev.urwisCoins + res.reward.coins,
+         level: res.newLvl,
+         points_earned: res.newExp,
+         questProgress: res.questProgress || prev.questProgress
+       }))
+       
+       setRewardMessage(<span className="flex items-center gap-1">Wygrana! +{res.reward.coins} <Coins className="w-4 h-4 text-yellow-500" /> i +{res.reward.exp} EXP</span>)
+       setShowSmile(true)
+       
+       if (res.newAchievements && res.newAchievements.length > 0) {
+          setState(prev => ({
+             ...prev, 
+             achievements: [...prev.achievements, ...res.newAchievements]
+          }))
+          setTimeout(() => alert(`🏆 Odblokowano nowe osiągnięcie! (${res.newAchievements.length})`), 500)
+       }
+
+       setTimeout(() => { setShowSmile(false); setRewardMessage(null); }, 3000)
+       
+       if (res.leveledUp) {
+          setLevelUpData({ show: true, lvl: res.newLvl })
+       }
+    }
+    setActiveMode('none')
+  }
+
+  // ✅ HANDLER ODBIERANIA NAGRÓD Z MISJI
+  const handleClaimQuest = async (questId: string, customReward: number) => {
+    const res = await claimQuestReward(questId, customReward)
+    
+    if (res.error) {
+       alert(res.error)
+       return
+    }
+
+    if (res.success) {
+       setState(prev => ({
+         ...prev,
+         completedQuests: [...prev.completedQuests, questId],
+         urwisCoins: prev.urwisCoins + customReward
+       }))
+       
+       if (res.newAchievements && res.newAchievements.length > 0) {
+          setState(prev => ({
+             ...prev, 
+             achievements: [...prev.achievements, ...res.newAchievements]
+          }))
+          setTimeout(() => alert(`🏆 Odblokowano nowe osiągnięcie! (${res.newAchievements.length})`), 500)
+       }
+
+       setRewardMessage(<span className="flex items-center gap-1">Sukces! Zgarniasz +{customReward} <Coins className="w-4 h-4 text-yellow-500" /></span>)
+       setShowSmile(true)
+       setTimeout(() => { setShowSmile(false); setRewardMessage(null); }, 3000)
+    }
+  }
+
   return (
     <div className="select-none mx-auto w-full flex flex-col justify-between p-6 max-md:pb-8 bg-white relative overflow-y-auto overflow-x-hidden scrollbar-hide
       md:max-w-2xl md:h-[75vh] md:my-4 md:rounded-[50px] md:shadow-2xl md:border-8 md:border-[#0055ff]/10
@@ -209,6 +339,42 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
             isOpen={isRankingOpen} 
             onClose={() => setIsRankingOpen(false)} 
             ranking={rankingData} 
+          />
+        )}
+        
+        {activeMode === 'shopping' && (
+          <UrwisShop 
+            coins={state.urwisCoins}
+            level={state.level}
+            inventory={state.inventory || []}
+            equippedItems={state.equippedItems || {}}
+            onClose={() => setActiveMode('none')}
+            onBuy={handleBuyItem}
+            onEquipToggle={handleEquipToggle}
+          />
+        )}
+        
+        {activeMode === 'arcade' && (
+          <ArcadeCenter 
+            onClose={() => setActiveMode('none')}
+            onGameComplete={handleArcadeWin}
+          />
+        )}
+
+        {activeMode === 'achievements' && (
+          <AchievementsPanel 
+            totalPoints={state.achievementPoints} 
+            unlockedIds={state.achievements} 
+            onClose={() => setActiveMode('none')} 
+          />
+        )}
+        
+        {activeMode === 'quests' && (
+          <QuestsPanel 
+            completedQuests={state.completedQuests}
+            questProgress={state.questProgress}
+            onClose={() => setActiveMode('none')}
+            onClaim={handleClaimQuest}
           />
         )}
       </AnimatePresence>

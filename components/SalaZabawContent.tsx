@@ -57,7 +57,7 @@ export default function SalaZabawContent() {
                 <Crown size={14} strokeWidth={3} aria-hidden="true" /> System Złotych Urwisów
               </motion.div>
               
-              <h2 className="text-6xl md:text-8xl font-black text-zinc-900 tracking-tighter leading-none uppercase italic">
+              <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black text-zinc-900 tracking-tighter leading-none uppercase italic">
                 Zabawa, która <span className="text-[#BF2024]">się opłaca</span>
               </h2>
               <p className="text-zinc-700 font-bold max-w-3xl mx-auto text-xl md:text-2xl uppercase tracking-tight italic">

@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { calculateDecay, getXPForLevel } from '@/lib/urwis/engine'
+import { SHOP_ITEMS } from '@/lib/urwis/items'
+import { checkAchievements } from '@/lib/urwis/achievements'
 
 export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
   const supabase = await createClient()
@@ -42,7 +44,9 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
   const currentLvl = pet.level || 1;
   const nextLvlThreshold = getXPForLevel(currentLvl);
 
-  if (isFirstThisActionToday) expToAdd = Math.floor(nextLvlThreshold * 0.0833);
+  if (isFirstThisActionToday) {
+    expToAdd = Math.floor(nextLvlThreshold * 0.0833);
+  }
 
   if (actionType === 'feed') {
     coinDelta = -40;
@@ -67,7 +71,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
   }
 
   // 6. ZAPIS DO BAZY (DOKŁADNE POLA)
-  const updates = {
+  let updates: any = {
     urwis_coins: Math.floor(Math.max(0, (pet.urwis_coins || 0) + coinDelta)),
     golden_urwis: Math.floor((pet.golden_urwis || 0) + goldenUrwisAdd),
     points_earned: Math.floor(newTotalExp),
@@ -77,6 +81,29 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
     hunger_level: Math.round(actionType === 'feed' ? Math.min(100, currentHunger + 20) : currentHunger),
     hygiene_level: Math.round(actionType === 'wash' ? Math.min(100, currentHygiene + 20) : currentHygiene),
     happiness_level: Math.round(actionType === 'play' ? Math.min(100, currentHappiness + 20) : currentHappiness),
+  }
+
+  // --- ACHIEVEMENT CHECK ---
+  const currentPetStateForAchievements = {
+    ...pet,
+    level: Math.floor(newLvl),
+    urwis_coins: Math.floor(Math.max(0, (pet.urwis_coins || 0) + coinDelta))
+  };
+  const { newUnlocks, pointsGained } = checkAchievements(currentPetStateForAchievements, actionType);
+  if (newUnlocks.length > 0) {
+     updates.achievements = [...(pet.achievements || []), ...newUnlocks];
+     updates.achievement_points = (pet.achievement_points || 0) + pointsGained;
+  }
+
+  // --- QUEST PROGRESS ---
+  const qProgress = pet.quest_progress || {};
+  let questId = '';
+  if (actionType === 'feed') questId = 'q_feed_3';
+  if (actionType === 'play') questId = 'q_play';
+  if (actionType === 'wash') questId = 'q_wash_3';
+  
+  if (questId) {
+    updates.quest_progress = { ...qProgress, [questId]: (qProgress[questId] || 0) + 1 };
   }
 
   const { error: updateError } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id);
@@ -90,6 +117,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
     success: true,
     leveledUp,
     reward: { coins: coinDelta, exp: expToAdd, isDailyBonus: isFirstThisActionToday },
+    newAchievements: newUnlocks,
     newState: {
       hunger: updates.hunger_level,
       hygiene: updates.hygiene_level,
@@ -98,7 +126,12 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
       level: updates.level,
       points_earned: updates.points_earned,
       goldenUrwis: updates.golden_urwis,
-      lastInteraction: updates.last_interaction
+      lastInteraction: updates.last_interaction,
+      inventory: pet.inventory || [],
+      equippedItems: pet.equipped_items || {},
+      achievements: updates.achievements || pet.achievements || [],
+      achievementPoints: updates.achievement_points || pet.achievement_points || 0,
+      questProgress: updates.quest_progress || pet.quest_progress || {}
     }
   }
 }
@@ -175,9 +208,9 @@ export async function getUrwisRanking() {
   
   const { data, error } = await supabase
     .from('urwis_pet')
-    .select('player_name, name, level, points_earned, gender')
+    .select('player_name, name, level, points_earned, gender, achievement_points')
+    .order('achievement_points', { ascending: false })
     .order('level', { ascending: false })
-    .order('points_earned', { ascending: false })
     .limit(10)
 
   if (error) {
@@ -186,4 +219,188 @@ export async function getUrwisRanking() {
   }
 
   return { success: true, ranking: data }
+}
+
+export async function buyUrwisItem(itemId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Musisz być zalogowany!' }
+
+  const itemDef = SHOP_ITEMS.find(i => i.id === itemId)
+  if (!itemDef) return { error: 'Przedmiot nie istnieje.' }
+
+  const { data: pet } = await supabase.from('urwis_pet')
+    .select('level, urwis_coins, inventory, hunger_level, achievements, achievement_points, quest_progress')
+    .eq('user_id', user.id).single()
+
+  if (!pet) return { error: 'Nie znaleziono maskotki.' }
+
+  if ((pet.level || 1) < itemDef.requiredLevel) {
+     return { error: `Wymaga ${itemDef.requiredLevel} poziomu, by zakupić!` }
+  }
+
+  const currentCoins = pet.urwis_coins || 0
+  if (currentCoins < itemDef.price) return { error: 'Brak wystarczającej liczby monet.' }
+
+  let updates: any = {
+    urwis_coins: currentCoins - itemDef.price
+  }
+
+  // ITEMY trafia na stałe do ekwipunku
+  const inv = pet.inventory || []
+  if (inv.includes(itemId)) return { error: 'Już posiadasz ten przedmiot!' }
+  updates.inventory = [...inv, itemId]
+
+  // --- ACHIEVEMENT CHECK ---
+  const currentPetStateForAchievements = {
+    ...pet,
+    urwis_coins: updates.urwis_coins
+  };
+  const { newUnlocks, pointsGained } = checkAchievements(currentPetStateForAchievements, 'buy');
+  if (newUnlocks.length > 0) {
+     updates.achievements = [...(pet.achievements || []), ...newUnlocks];
+     updates.achievement_points = (pet.achievement_points || 0) + pointsGained;
+  }
+
+  // --- QUEST PROGRESS ---
+  const qProgress = pet.quest_progress || {};
+  updates.quest_progress = { ...qProgress, 'q_shop_2': (qProgress['q_shop_2'] || 0) + 1 };
+
+  const { error } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id)
+  if (error) return { error: 'Błąd podczas płatności.' }
+
+  revalidatePath('/strefa-zabawy/urwisek')
+  return { success: true, updates, newAchievements: newUnlocks }
+}
+
+export async function toggleUrwisItem(itemId: string, category: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Musisz być zalogowany!' }
+
+  const { data: pet } = await supabase.from('urwis_pet')
+    .select('inventory, equipped_items')
+    .eq('user_id', user.id).single()
+
+  if (!pet || !(pet.inventory || []).includes(itemId)) {
+    return { error: 'Nie posiadasz tego przedmiotu!' }
+  }
+
+  const currentEq = pet.equipped_items || {}
+  
+  // Mechanizm Togglowania - jeśli ubrane to deaktywuj, jeśli inne to nadpisz.
+  if (currentEq[category] === itemId) {
+    delete currentEq[category]
+  } else {
+    currentEq[category] = itemId
+  }
+
+  const { error } = await supabase.from('urwis_pet').update({ equipped_items: currentEq }).eq('user_id', user.id)
+  if (error) return { error: 'Nie udało się przebrać Urwiska.' }
+
+  revalidatePath('/strefa-zabawy/urwisek')
+  return { success: true, equippedItems: currentEq }
+}
+
+export async function finishArcadeGame(gameId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Musisz być zalogowany!' }
+
+  const { data: pet } = await supabase.from('urwis_pet')
+    .select('urwis_coins, points_earned, level, achievements, achievement_points, quest_progress')
+    .eq('user_id', user.id).single()
+
+  if (!pet) return { error: 'Nie znaleziono maskotki.' }
+
+  let coinsEarned = 0
+  let expEarned = 0
+  if (gameId === 'memory') {
+    coinsEarned = 15
+    expEarned = 20
+  } else {
+    return { error: 'Nieznana minigra!' }
+  }
+
+  const currentLvl = pet.level || 1
+  const nextLvlThreshold = getXPForLevel(currentLvl)
+  let newTotalExp = (pet.points_earned || 0) + expEarned
+  let newLvl = currentLvl
+  let leveledUp = false
+
+  if (newTotalExp >= nextLvlThreshold) {
+    leveledUp = true
+    newLvl += 1
+    newTotalExp -= nextLvlThreshold
+    coinsEarned += 100 // Mały bonus za Level Up
+  }
+
+  let updates: any = {
+    urwis_coins: Math.floor((pet.urwis_coins || 0) + coinsEarned),
+    points_earned: Math.floor(newTotalExp),
+    level: Math.floor(newLvl)
+  }
+
+  // --- ACHIEVEMENT CHECK ---
+  const currentPetStateForAchievements = {
+    ...pet,
+    level: updates.level,
+    urwis_coins: updates.urwis_coins
+  };
+  const { newUnlocks, pointsGained } = checkAchievements(currentPetStateForAchievements, 'arcade');
+  if (newUnlocks.length > 0) {
+     updates.achievements = [...(pet.achievements || []), ...newUnlocks];
+     updates.achievement_points = (pet.achievement_points || 0) + pointsGained;
+  }
+
+  // --- QUEST PROGRESS ---
+  const qProgress = pet.quest_progress || {};
+  updates.quest_progress = { ...qProgress, 'q_arcade_2': (qProgress['q_arcade_2'] || 0) + 1 };
+
+  const { error } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id)
+  if (error) return { error: 'Błąd podczas zapisu wygranej z Arcade.' }
+
+  revalidatePath('/strefa-zabawy/urwisek')
+  return { success: true, reward: { coins: coinsEarned, exp: expEarned }, leveledUp, newLvl: updates.level, newExp: updates.points_earned, newAchievements: newUnlocks, questProgress: updates.quest_progress }
+}
+
+export async function claimQuestReward(questId: string, rewardCoins: number) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Musisz być zalogowany!' }
+
+  const { data: pet } = await supabase.from('urwis_pet')
+    .select('urwis_coins, completed_quests, achievements, achievement_points, level')
+    .eq('user_id', user.id).single()
+
+  if (!pet) return { error: 'Nie znaleziono maskotki.' }
+
+  // Sprawdzanie czy już nie odebrano tego questa dzisiaj/w ogóle (zalezy od logiki docelowej bazy)
+  const completedArray = pet.completed_quests || []
+  if (completedArray.includes(questId)) {
+     return { error: 'Nagroda została już odebrana!' }
+  }
+
+  let updates: any = {
+    urwis_coins: Math.floor((pet.urwis_coins || 0) + rewardCoins),
+    // Zapiszmy id zadania jako ukończone w nowej kolumnie tekstowej jsonb
+    completed_quests: [...completedArray, questId] 
+  }
+
+  // --- ACHIEVEMENT CHECK ---
+  const currentPetStateForAchievements = {
+    ...pet,
+    urwis_coins: updates.urwis_coins
+  };
+  const { newUnlocks, pointsGained } = checkAchievements(currentPetStateForAchievements, 'quest');
+  if (newUnlocks.length > 0) {
+     updates.achievements = [...(pet.achievements || []), ...newUnlocks];
+     updates.achievement_points = (pet.achievement_points || 0) + pointsGained;
+  }
+
+  const { error } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id)
+  if (error) return { error: 'Błąd odbierania nagrody.' }
+
+  revalidatePath('/strefa-zabawy/urwisek')
+  return { success: true, rewardCoins, newAchievements: newUnlocks }
 }

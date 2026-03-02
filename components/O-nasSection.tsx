@@ -146,7 +146,7 @@ export default function AboutSection() {
         {/* --- KONTAKT CTA --- */}
         <div className="text-center space-y-12 pb-12">
           {/* 🚀 Nagłówek H2 jest tutaj poprawny, bo jest kolejną sekcją główną */}
-          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 italic pr-4">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter text-zinc-900 italic pr-4">
             WPADNIESZ <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff] pr-4">DO NAS?</span>
           </h2>
           <Link 

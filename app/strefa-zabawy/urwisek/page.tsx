@@ -72,7 +72,13 @@ export default async function UrwisekPage() {
                 urwisCoins: pet.urwis_coins,
                 goldenUrwis: pet.golden_urwis,
                 points_earned: pet.points_earned,
-                lastInteraction: pet.last_interaction 
+                lastInteraction: pet.last_interaction,
+                inventory: pet.inventory || [],
+                equippedItems: pet.equipped_items || {},
+                completedQuests: pet.completed_quests || [],
+                questProgress: pet.quest_progress || {},
+                achievements: pet.achievements || [],
+                achievementPoints: pet.achievement_points || 0
               }} 
             />
           )}

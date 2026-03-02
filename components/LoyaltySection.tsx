@@ -25,7 +25,7 @@ export default function LoyaltySection() {
               <div className="space-y-6">
                 <span className="text-[12px] font-black uppercase tracking-[0.4em] text-[#BF2024] mb-4 block">Program lojalnościowy</span>
                 
-                <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tight leading-[0.85] text-zinc-900">
+                <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black uppercase tracking-tight leading-[0.85] text-zinc-900">
                   ZŁOTE <br />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff]">
                     URWISY

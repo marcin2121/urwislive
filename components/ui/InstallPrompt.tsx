@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share, PlusSquare, X, Download, Sparkles } from 'lucide-react';
 import Image from 'next/image';
+import { usePopupControl } from '@/components/PopupProvider';
 
 export default function InstallPrompt() {
   const [show, setShow] = useState(false);
@@ -14,11 +15,14 @@ export default function InstallPrompt() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { currentPopup, nextPopup } = usePopupControl();
+
   // 🚀 LOGIKA ZAMYKANIA: Zapamiętujemy w sesji, że użytkownik zamknął okno
   const handleDismiss = useCallback(() => {
     sessionStorage.setItem('urwis_install_prompt_dismissed', 'true');
     setShow(false);
-  }, []);
+    nextPopup();
+  }, [nextPopup]);
 
   useEffect(() => {
     // Sprawdzamy, czy użytkownik już odrzucił prompt w tej sesji
@@ -35,22 +39,26 @@ export default function InstallPrompt() {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Pokaż tylko jeśli nie jest zainstalowane, nie zostało odrzucone i jest z QR
-      if (!isStandalone && isFromQR && !isDismissed) {
+      // Pokaż tylko jeśli jest w kolejce
+      if (currentPopup === 'INSTALL_PROMPT' && !isStandalone && isFromQR && !isDismissed) {
         setShow(true);
       }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // Automatyczne pokazanie dla iOS lub QR po opóźnieniu
-    if (!isStandalone && !isDismissed && (isFromQR || (isIOS && !isStandalone))) {
-      const timer = setTimeout(() => setShow(true), isFromQR ? 500 : 3000);
-      return () => clearTimeout(timer);
+    // Automatyczne pokazanie dla iOS lub QR po ustawieniu state z PROVIDERa (zamiast timerów)
+    if (currentPopup === 'INSTALL_PROMPT') {
+      if (!isStandalone && !isDismissed && (isFromQR || (isIOS && !isStandalone))) {
+        setShow(true);
+      } else {
+        // Pominięcie
+        nextPopup();
+      }
     }
 
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-  }, [searchParams]);
+  }, [searchParams, currentPopup, nextPopup]);
 
   const handleAndroidInstall = async () => {
     if (deferredPrompt) {
@@ -59,6 +67,7 @@ export default function InstallPrompt() {
       if (outcome === 'accepted') {
         setShow(false);
         sessionStorage.setItem('urwis_install_prompt_dismissed', 'true');
+        nextPopup();
       }
       setDeferredPrompt(null);
     }

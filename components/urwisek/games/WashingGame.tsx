@@ -46,7 +46,7 @@ export default function WashingGame({ onComplete }: { onComplete: () => void }) 
     // Dodajemy postęp TYLKO jeśli kursor JEST w hitboxie zębów i wciąż nim ruszamy
     if (inTeethHitbox) {
       // 0.05 to szybkość mycia. Jeśli będzie szło za wolno, zmień na 0.1
-      setWashTime(prev => Math.min(10, prev + 0.01))
+      setWashTime(prev => Math.min(10, prev + 0.02))
     }
   }
 

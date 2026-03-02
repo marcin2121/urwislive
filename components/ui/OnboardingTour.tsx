@@ -3,28 +3,23 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Gift, Smartphone, ArrowRight, CheckCircle2, X } from "lucide-react";
+import { usePopupControl } from "@/components/PopupProvider";
 
 export default function OnboardingTour() {
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const { currentPopup, nextPopup } = usePopupControl();
 
   useEffect(() => {
-    const isDone = localStorage.getItem("urwis_onboarding_done");
-    if (isDone) return;
-
-    const tryOpen = () => {
-      // Czekamy aż intro się skończy (tak jak CookieModal)
-      const introShown = sessionStorage.getItem('urwis_intro_shown');
-      if (introShown === 'true') {
-        const timer = setTimeout(() => setIsOpen(true), 1500);
-        return () => clearTimeout(timer);
+    if (currentPopup === 'ONBOARDING') {
+      const isDone = localStorage.getItem("urwis_onboarding_done");
+      if (!isDone) {
+        setIsOpen(true);
+      } else {
+        nextPopup();
       }
-    };
-
-    tryOpen();
-    window.addEventListener('urwis_intro_finished', tryOpen);
-    return () => window.removeEventListener('urwis_intro_finished', tryOpen);
-  }, []);
+    }
+  }, [currentPopup, nextPopup]);
 
   const handleNext = () => {
     if (step < 3) {
@@ -37,6 +32,7 @@ export default function OnboardingTour() {
   const handleClose = () => {
     setIsOpen(false);
     localStorage.setItem("urwis_onboarding_done", "true");
+    nextPopup(); // Przekaż akcję dalej w maszynie Stanów
   };
 
   const stepsContent = [

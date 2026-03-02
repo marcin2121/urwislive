@@ -5,10 +5,10 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sparkles, X } from 'lucide-react'
 
-// Importujemy minigry
 import WashingGame from './games/WashingGame'
 import FeedingGame from './games/FeedingGame'
 import PlayingGame from './games/PlayingGame'
+import { SHOP_ITEMS } from '@/lib/urwis/items'
 
 export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage, showSmile, state }: any) {
   
@@ -21,12 +21,12 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
 
   const getSpeechBubble = () => {
     if (showSmile) return "Hura! Uwielbiam to! ✨";
-    if (activeMode === 'washing') return "Pucujemy łuski! 🛁";
-    if (activeMode === 'feeding') return "Mniam, moje ulubione! 🍕";
+    if (activeMode === 'washing') return "Pucujemy ząbki! 🛁";
+    if (activeMode === 'feeding') return "Mniam, moje ulubione! 🍎";
     if (activeMode === 'playing') return "Bawmy się! 🚀";
     
     if (state?.hunger < 30) return "Burczy mi w brzuchu... Daj coś zjeść! 🥺";
-    if (state?.hygiene < 30) return "Chyba czas na kąpiel! 🧽";
+    if (state?.hygiene < 30) return "Chyba czas na mycie ząbków! 🧽";
     if (state?.happiness < 30) return "Pobaw się ze mną, nudzi mi się... 🧸";
     if (state?.hunger > 80 && state?.happiness > 80) return "Jestem taki szczęśliwy! Grajmy dalej! 🦖";
     
@@ -50,15 +50,54 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
       </AnimatePresence>
 
       <div className="relative w-64 h-64 flex items-center justify-center z-10">
-      <Image 
-  id="urwisek-image" 
-  src={getPetImageSrc()} 
-  alt="Urwisek" 
-  width={256} height={256} 
-  className="object-contain drop-shadow-2xl transition-all duration-300 pointer-events-none" // pointer-events-none też tu pomoże!
-  priority 
-  draggable={false} // 👈 To blokuje systemowe przeciąganie obrazka
-/>
+        
+        <Image 
+          id="urwisek-image" 
+          src={getPetImageSrc()} 
+          alt="Urwisek" 
+          width={256} height={256} 
+          className="object-contain drop-shadow-2xl transition-all duration-300 pointer-events-none relative z-10" 
+          priority 
+          draggable={false} 
+        />
+
+        {/* ODZIEŻ WIERZCHNIA (CZAPKI) */}
+        {state.equippedItems?.hat && (() => {
+           const hatItem = SHOP_ITEMS.find(i => i.id === state.equippedItems.hat);
+           if (!hatItem) return null;
+           return (
+             <Image 
+                src={hatItem.imageSrc} 
+                alt="Czapka Urwiska" 
+                fill 
+                sizes="(max-width: 768px) 256px, 256px"
+                priority
+                className="object-contain pointer-events-none z-20 drop-shadow-xl"
+             />
+           )
+        })()}
+
+        {/* TOWARZYSZ (ZWIERZAK) */}
+        {state.equippedItems?.toy && (() => {
+           const toyItem = SHOP_ITEMS.find(i => i.id === state.equippedItems.toy);
+           if (!toyItem) return null;
+           return (
+             <motion.div 
+               animate={{ y: [0, -8, 0] }} 
+               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+               className="absolute -bottom-4 right-2 z-30 pointer-events-none"
+             >
+               <Image 
+                  src={toyItem.imageSrc} 
+                  alt="Towarzysz" 
+                  width={96} height={96} 
+                  sizes="(max-width: 768px) 96px, 96px"
+                  priority
+                  className="object-contain drop-shadow-xl"
+               />
+             </motion.div>
+           )
+        })()}
 
         <AnimatePresence>
           {showSmile && (
