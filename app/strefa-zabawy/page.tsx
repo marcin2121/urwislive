@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight } from 'lucide-react'
+import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot } from 'lucide-react'
 
 export const metadata = {
   title: 'Strefa Zabawy i Darmowe Gry | Sklep Urwis',
@@ -159,12 +159,28 @@ export default function StrefaZabawyPage() {
           </div>
         </Link>
 
-        {/* Placeholder dla przyszłych gier */}
-        <div className="group block">
-          <div className="bg-zinc-100/50 rounded-[3rem] p-8 border border-zinc-200 border-dashed h-full flex flex-col items-center justify-center relative overflow-hidden text-center min-h-[300px] opacity-70">
-             <span className="text-zinc-400 font-black uppercase tracking-widest text-sm">Więcej gier<br/>wkrótce...</span>
+        {/* Kafelek Bubble Shooter - Lecę w Kulki */}
+        <Link href="/strefa-zabawy/lece-w-kulki" className="group block">
+          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-cyan-200 transition-all h-full flex flex-col relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-16 bg-cyan-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-cyan-500/10 transition-colors"></div>
+            
+            <div className="mb-6 bg-cyan-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <CircleDot className="text-cyan-500" size={32} />
+            </div>
+            
+            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-cyan-500 transition-colors pr-2">
+              Lecę w Kulki
+            </h2>
+            
+            <p className="text-zinc-500 font-medium flex-1">
+              "Pif, paf! Połącz trzy takie same bąbelki by pękły i zdobądź masę punktów! Dasz radę odeprzeć atak z góry?"
+            </p>
+            
+            <div className="mt-8 flex items-center text-cyan-500 font-bold uppercase tracking-widest text-xs">
+              Strzelaj balonami! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
-        </div>
+        </Link>
 
       </div>
     </div>
