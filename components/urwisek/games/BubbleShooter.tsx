@@ -9,12 +9,12 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 // Konfiguracja geometrii i gry
-const COLORS = ['#ef4444', '#3b82f6', '#22c54e', '#eab308', '#a855f7', '#f97316'];
+const COLORS = ['#bf2024', '#0055ff', '#22c54e', '#eab308', '#a855f7', '#f97316'];
 const BALL_RADIUS = 16;
 const DIAMETER = BALL_RADIUS * 2;
 const ROWS = 12;
 const COLS = 10;
-const CANVAS_WIDTH = COLS * DIAMETER + BALL_RADIUS; 
+const CANVAS_WIDTH = COLS * DIAMETER;
 const CANVAS_HEIGHT = 600;
 const SHOOTER_Y = CANVAS_HEIGHT - 30;
 const SHOOTER_X = CANVAS_WIDTH / 2;
@@ -83,7 +83,9 @@ export default function BubbleShooter() {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
+  const levelRef = useRef(1);
   const [misses, setMisses] = useState(0);
+  const missesRef = useRef(0);
   const [rewardMsg, setRewardMsg] = useState<string | null>(null);
   
   // Elementy Rankingu i Tożsamości Gracza
@@ -119,6 +121,10 @@ export default function BubbleShooter() {
 
   // Inicjalizacja siatki i startowej amunicji (generator)
   const initGame = useCallback(() => {
+    if (animationRef.current) {
+       cancelAnimationFrame(animationRef.current);
+    }
+    
     let initialGrid: (Ball | null)[][] = [];
     availableColors.current = COLORS.slice(0, COLORS_START);
 
@@ -159,7 +165,9 @@ export default function BubbleShooter() {
     setScore(0);
     scoreRef.current = 0;
     setLevel(1);
+    levelRef.current = 1;
     setMisses(0);
+    missesRef.current = 0;
     setGameOver(false);
     gameOverRef.current = false;
     setIsStarted(true);
@@ -382,7 +390,8 @@ export default function BubbleShooter() {
          scoreRef.current = newScore;
          // Co 1000 punktów dodaj trudniejszy kolor
          const newLvl = Math.floor(newScore / 1000) + 1;
-         if (newLvl > level) {
+         if (newLvl > levelRef.current) {
+            levelRef.current = newLvl;
             setLevel(newLvl);
             if (COLORS_START - 1 + newLvl <= COLORS.length) {
                availableColors.current = COLORS.slice(0, COLORS_START - 1 + newLvl);
@@ -393,14 +402,13 @@ export default function BubbleShooter() {
 
     } else {
       // Dolicz 'pudło' do licznika tury
-      setMisses(m => {
-        const nextMiss = m + 1;
-        if (nextMiss >= 5) {
-           shiftBoardDown();
-           return 0; // Reset
-        }
-        return nextMiss;
-      });
+      missesRef.current += 1;
+      setMisses(missesRef.current);
+      if (missesRef.current >= 5) {
+         shiftBoardDown();
+         missesRef.current = 0;
+         setMisses(0);
+      }
     }
 
     // Załaduj nową kulkę ze slotu magazynka (Swap slot)
@@ -426,21 +434,22 @@ export default function BubbleShooter() {
      const tc = currentBall.current.color;
      currentBall.current.color = nextBall.current.color;
      nextBall.current.color = tc;
-     setNextColorUI(currentBall.current.color); // Trick: tu UI dla secondary podmieniać trza
+     setNextColorUI(nextBall.current.color); // Trick: tu UI dla secondary podmieniać trza
   };
 
   // Kara (turowa) obniżająca cały sufit w dół jeśli nic się nie zbiło
   const shiftBoardDown = () => {
-    // Wypchnij cały układ gridu o index w dół
-    grid.current.unshift([]); 
+    // Wypchnij układ o 2 indexy w dół, zachowując integralność parzystości Hexów siatki na obu końcach
+    grid.current.unshift([], []); 
     
-    // Wygneruj nowy sufit na wierzchu z losowych kolorów
-    const r = 0;
-    const isOffset = r % 2 !== 0;
-    const colsInRow = isOffset ? COLS - 1 : COLS;
-    for (let c = 0; c < colsInRow; c++) {
-      const color = availableColors.current[Math.floor(Math.random() * availableColors.current.length)];
-      grid.current[r][c] = { x: 0, y: 0, color, gridR: r, gridC: c };
+    // Wygneruj nowe dwa rzędy sufitu na wierzchu z losowych kolorów
+    for (let r = 0; r <= 1; r++) {
+       const isOffset = r % 2 !== 0;
+       const colsInRow = isOffset ? COLS - 1 : COLS;
+       for (let c = 0; c < colsInRow; c++) {
+         const color = availableColors.current[Math.floor(Math.random() * availableColors.current.length)];
+         grid.current[r][c] = { x: 0, y: 0, color, gridR: r, gridC: c };
+       }
     }
 
     // Zaktualizuj współrzędne wszystkich żeby zjechały w dół o jedną pozycję HEX 
@@ -457,6 +466,7 @@ export default function BubbleShooter() {
              // Ucieczka na dno - zgniecenie = Game Over
              if (grid.current[row][col]!.y >= SHOOTER_Y - DIAMETER) {
                  endGame();
+                 return;
              }
           }
        }
@@ -465,6 +475,7 @@ export default function BubbleShooter() {
 
 
   const endGame = async () => {
+    if (gameOverRef.current) return;
     setGameOver(true);
     gameOverRef.current = true;
     setIsSubmittingScore(true);
@@ -484,7 +495,7 @@ export default function BubbleShooter() {
     // Zapisz WYNIK w tabeli SUPABASE
     const finalScore = scoreRef.current;
     if (playerName.trim() !== '') {
-        const saveRes = await submitBubbleShooterScore(playerName.trim(), finalScore, level);
+        const saveRes = await submitBubbleShooterScore(playerName.trim(), finalScore, levelRef.current);
         if (saveRes?.success) {
             // Po pomyślnym zapisie pobierz Ranking
             const rankData = await getBubbleShooterRanking(finalScore);
@@ -529,8 +540,11 @@ export default function BubbleShooter() {
     let hitT = null;
     let hitDist = 999;
     
-    for (let r = 0; r < grid.current.length; r++) {
-      if (!grid.current[r]) continue;
+    const approxRow = Math.floor((b.y - 20) / (DIAMETER - 4));
+    const rowsToCheck = [approxRow - 1, approxRow, approxRow + 1];
+
+    for (const r of rowsToCheck) {
+      if (r < 0 || r >= grid.current.length || !grid.current[r]) continue;
       for (let c = 0; c < grid.current[r].length; c++) {
          const target = grid.current[r][c];
          if (!target) continue;
@@ -734,6 +748,17 @@ export default function BubbleShooter() {
     return () => cancelAnimationFrame(animationRef.current);
   }, [isStarted, gameOver, render]);
 
+  // Skrót klawiszowy
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'ShiftLeft') {
+        e.preventDefault();
+        swapBalls();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isStarted, gameOver]);
 
   // Handler Akcji Myszy (Wskazywanie celownika / Oddanie Strzału)
   const handleInteractionStart = (e: React.PointerEvent | React.MouseEvent | React.TouchEvent) => {
@@ -781,7 +806,7 @@ export default function BubbleShooter() {
     const angle = Math.atan2(dy, dx);
 
     // Zablokuj strzał w dolne partie podłoża
-    if (angle > -0.1 && angle < Math.PI + 0.1) return;
+    if (dy >= -20) return;
 
     const vx = Math.cos(angle) * SPEED;
     const vy = Math.sin(angle) * SPEED;
@@ -841,6 +866,18 @@ export default function BubbleShooter() {
              >
                 <RefreshCw className="w-5 h-5" />
              </Button>
+          </div>
+      )}
+
+      {/* Pasek postępu pudeł (Misses Counter) */}
+      {isStarted && !gameOver && (
+          <div className="absolute bottom-[2%] left-[5%] z-20 flex gap-1.5 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} className={cn(
+                "w-2 h-2 rounded-full transition-all duration-300",
+                i < misses ? "bg-red-500 scale-125 shadow-[0_0_10px_rgba(239,68,68,0.7)]" : "bg-white/20"
+              )} />
+            ))}
           </div>
       )}
 

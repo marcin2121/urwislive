@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot } from 'lucide-react'
+import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks } from 'lucide-react'
 
 export const metadata = {
   title: 'Strefa Zabawy i Darmowe Gry | Sklep Urwis',
@@ -181,7 +181,22 @@ export default function StrefaZabawyPage() {
             </div>
           </div>
         </Link>
-
+<Link href="/strefa-zabawy/urwis-breaker" className="group block">
+  <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-indigo-200 transition-all h-full flex flex-col relative overflow-hidden">
+    <div className="mb-6 bg-indigo-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+      <Blocks className="text-indigo-500" size={32} />
+    </div>
+    <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-indigo-500 transition-colors">
+      Urwis Breaker
+    </h2>
+    <p className="text-zinc-500 font-medium flex-1">
+      "Rozbij wszystkie klocki piłką, łap power-upy i bijaj rekordy!"
+    </p>
+    <div className="mt-8 flex items-center text-indigo-500 font-bold uppercase tracking-widest text-xs">
+      Graj teraz! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+    </div>
+  </div>
+</Link>
       </div>
     </div>
   )

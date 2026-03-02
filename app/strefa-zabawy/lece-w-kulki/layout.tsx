@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Lecę w Kulki - Strefa Zabawy',
-  description: 'Wciągająca gra Bubble Shooter na czas wolny. Zrób wynik i znajdź się w Top 10!',
+  description: 'Wciągająca gra Bubble Shooter na czas wolny. Pobij rekord i znajdź się rankingu!',
 }
 
 export default function GameLayout({
