@@ -283,84 +283,67 @@ export default function BubbleShooter() {
     if (c >= maxCols) c = maxCols - 1;
 
     // Próba inteligentnego Ślizgu (Slip)
-    // Jeśli trafiliśmy zdefiniowaną bańkę (hitTarget) lub wprost wyliczone miejsce jest zajęte - znajdź najlepszego sąsiada 
+    // Jeśli wyliczone miejsce jest zajęte lub wykreowaliśmy fizyczne zderzenie, szukaj wokoł docelowego pola
     if ((grid.current[r] && grid.current[r][c]) || hitTargetR !== undefined) {
-       let bestR = hitTargetR !== undefined ? hitTargetR : r;
-       let bestC = hitTargetC !== undefined ? hitTargetC : c;
+       const centerR = hitTargetR !== undefined ? hitTargetR : r;
+       const centerC = hitTargetC !== undefined ? hitTargetC : c;
        
-       // Przeskanuj sąsiadów pod kątem wolnego miejsca i kto jest fizycznie najbliżej srodka mBalla
-       const emptyNeighbors = [];
-       const isTrgOffset = bestR % 2 !== 0;
-       const trgMaxCols = isTrgOffset ? COLS - 1 : COLS;
-       const dirs = isTrgOffset 
+       const cOffset = centerR % 2 !== 0;
+       const dirs = cOffset 
           ? [[0, -1], [0, 1], [-1, 0], [-1, 1], [1, 0], [1, 1]] 
           : [[0, -1], [0, 1], [-1, -1], [-1, 0], [1, -1], [1, 0]];
           
+       let bestDist = Infinity;
+       let bestSpot = null;
+
        for (const [dr, dc] of dirs) {
-          const nr = bestR + dr;
-          const nc = bestC + dc;
+          const nr = centerR + dr;
+          const nc = centerC + dc;
           const nOffset = nr % 2 !== 0;
-          const nMax = nOffset ? COLS - 1 : COLS;
+          const nMaxCols = nOffset ? COLS - 1 : COLS;
           
-          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < nMax) {
+          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < nMaxCols) {
+             // Zbadaj to pole
              if (!grid.current[nr] || !grid.current[nr][nc]) {
-                // To wolne miejsce, wylicz jego idealne koordynaty w gridzie by ocenić dystans
                 const idealX = nOffset ? nc * DIAMETER + DIAMETER : nc * DIAMETER + BALL_RADIUS;
                 const idealY = nr * (DIAMETER - 4) + BALL_RADIUS + 20;
+                
+                // Zwykły, matematyczny dystans od kuli bez sztucznych modyfikatorów
                 const dist = Math.sqrt(Math.pow(mBall.x - idealX, 2) + Math.pow(mBall.y - idealY, 2));
-                emptyNeighbors.push({ nr, nc, dist });
+                if (dist < bestDist) {
+                   bestDist = dist;
+                   bestSpot = { nr, nc };
+                }
              }
           }
        }
        
-       if (emptyNeighbors.length > 0) {
-          // Faworyzuj najwyższe wolne pola ('wślizgiwanie' się do górnych szpar) oraz koordynaty najbliższe myszce
-          emptyNeighbors.sort((a,b) => {
-             // Jeśli pole A leży "wyżej" (mniejsze nr), dostaje potężny bonus by piłka chciała się tam wcisnąć
-             const bonusA = a.nr * 15;
-             const bonusB = b.nr * 15;
-             return (a.dist + bonusA) - (b.dist + bonusB);
-          });
-          r = emptyNeighbors[0].nr;
-          c = emptyNeighbors[0].nc;
+       if (bestSpot) {
+          r = bestSpot.nr;
+          c = bestSpot.nc;
        } else {
-          // Fallback brutalny jeśli otoczony 
-          r++;
-          if (r >= ROWS) { endGame(); return; }
-          isOffset = r % 2 !== 0;
-          c = isOffset ? Math.max(0, Math.min(c, COLS - 2)) : Math.max(0, Math.min(c, COLS - 1));
-       }
-    } else {
-       // Znajdź sąsiadów - prosta weryfikacja czy slot wolny
-       const isTrgOffset = r % 2 !== 0;
-       const trgMaxCols = isTrgOffset ? COLS - 1 : COLS;
-       // Jeśli jednak r,c jest zajęte mimo pierwszego if() (Edge Case) szukaj wolnego w dół
-       while (grid.current[r] && grid.current[r][c]) {
+          // Fallback w razie jakichś anomalii i "zamurowanej" bąbelka
           r++; 
           if (r >= ROWS) { endGame(); return; }
           isOffset = r % 2 !== 0;
-          c = isOffset ? Math.max(0, Math.min(c, COLS - 2)) : Math.max(0, Math.min(c, COLS - 1));
+          const bMax = isOffset ? COLS - 1 : COLS;
+          c = Math.max(0, Math.min(c, bMax - 1));
+          
+          while (grid.current[r] && grid.current[r][c]) {
+             r++;
+             if (r >= ROWS) { endGame(); return; }
+             isOffset = r % 2 !== 0;
+             const nbMax = isOffset ? COLS - 1 : COLS;
+             c = Math.max(0, Math.min(c, nbMax - 1));
+          }
        }
     }
 
-    // Bezpiecznie nadpisz - Jeśli r i c wciąż zajęte to wyjedź
+    // Bezpiecznie nadpisz do macierzy 
     if (!grid.current[r]) grid.current[r] = [];
-    if (grid.current[r][c]) {
-       // Ultimate fail-safe szukaj czegokolwiek (żeby nie nadpisać istniejącego)
-       for (let failR=r; failR<ROWS; failR++) {
-          if (!grid.current[failR]) grid.current[failR] = [];
-          for (let failC=0; failC<COLS; failC++) {
-             if (!grid.current[failR][failC]) {
-                r = failR; c = failC; break;
-             }
-          }
-          if (!grid.current[r][c]) break;
-       }
-       if (r >= ROWS) { endGame(); return; }
-       isOffset = r % 2 !== 0;
-    }
+    isOffset = r % 2 !== 0;
     
-    // Twarde "Snapnięcie" fizycznego rysunku kuli do równych wymiarów z siatki
+    // Twarde "Snapnięcie" fizycznego rysunku kuli do równych wymiarów z siatki (na stałe usuwa błąd overlapu wizualnego)
     const computedX = isOffset ? c * DIAMETER + DIAMETER : c * DIAMETER + BALL_RADIUS;
     const computedY = r * (DIAMETER - 4) + BALL_RADIUS + 20;
 
