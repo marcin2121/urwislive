@@ -300,6 +300,80 @@ export async function getBubbleShooterRanking(currentScore?: number) {
   }
 }
 
+// ==========================================
+// SYSTEM RANKINGOWY KLOCKÓW (ARKANOID)
+// ==========================================
+
+export async function submitArkanoidScore(playerName: string, score: number, level: number) {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase
+      .from('arkanoid_scores')
+      .insert({
+        player_name: playerName,
+        score: score,
+        level: level
+      })
+      
+    if (error) {
+       console.error('Failed to submit arkanoid score', error)
+       return { success: false }
+    }
+    
+    // Inwaliduj cache gdy uaktualniono wynik
+    revalidatePath('/strefa-zabawy/urwis-breaker');
+    
+    return { success: true }
+  } catch(e) {
+    console.error(e)
+    return { success: false }
+  }
+}
+
+export async function getArkanoidRanking(currentScore?: number) {
+  try {
+    const supabase = await createClient()
+    
+    const { data: topPlayers, error } = await supabase
+      .from('arkanoid_scores')
+      .select('id, player_name, score, level, created_at')
+      .order('score', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (error || !topPlayers) {
+       return { success: true, topScores: [] }
+    }
+    
+    let statsMessage = null;
+    
+    if (currentScore !== undefined && topPlayers.length > 0) {
+        let position = topPlayers.findIndex((p: { score: number }) => p.score <= currentScore!) + 1;
+        if (position === 0) position = 11; 
+        
+        const top3ScoreThreshold = topPlayers.length >= 3 ? topPlayers[2].score : (topPlayers[topPlayers.length-1]?.score || 0);
+
+        if (position <= 3) {
+            statsMessage = `Brawo! Wbiłeś na podium ${position} Miejsce!`;
+        } else {
+            const diff = top3ScoreThreshold - currentScore;
+            statsMessage = diff > 0 
+               ? `Do 3 Miejsca zabrakło Ci ${diff} punktów!`
+               : `Jesteś poza dziesiątką, popraw się!`;
+        }
+    }
+
+    return { 
+       success: true, 
+       topScores: topPlayers,
+       statsMessage 
+    }
+
+  } catch (error) {
+    return { success: false, topScores: [] }
+  }
+}
+
 export async function buyUrwisItem(itemId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -396,6 +470,12 @@ export async function finishArcadeGame(gameId: string) {
   let expEarned = 0
   if (gameId === 'memory') {
     coinsEarned = 15
+    expEarned = 20
+  } else if (gameId === 'bubble_shooter') {
+    coinsEarned = 15
+    expEarned = 25
+  } else if (gameId === 'arkanoid') {
+    coinsEarned = 10
     expEarned = 20
   } else {
     return { error: 'Nieznana minigra!' }

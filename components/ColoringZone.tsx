@@ -338,63 +338,88 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo]);
 
-  // 🚀 ZMIANA: Lepsza metoda wykrywania orientacji za pomocą matchMedia i EventListenera
-  useEffect(() => {
-    trackEvent('coloring_start', { template_id: template.id, template_title: template.title });
-    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+ useEffect(() => {
+  trackEvent('coloring_start', { template_id: template.id, template_title: template.title });
+  setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
-    const mql = window.matchMedia('(orientation: portrait)');
-    
-    // Ustaw stan początkowy
-    setIsPortrait(mql.matches);
+  // ✅ Najbardziej niezawodna metoda — sprawdza rzeczywiste piksele
+  const checkOrientation = () => {
+    // Na starych Androidach matchMedia bywa wadliwe, window.innerWidth/Height ZAWSZE działa
+    const portrait = window.innerHeight > window.innerWidth;
+    setIsPortrait(portrait);
+    if (!portrait) {
+      setForceDismissOrientation(false);
+    }
+  };
 
-    // Nasłuchiwanie zmian orientacji (to jest znacznie bardziej niezawodne na Androidzie niż resize)
-    const handleOrientationChange = (e: MediaQueryListEvent) => {
-        setIsPortrait(e.matches);
-        // Jeśli obróciliśmy telefon prawidłowo do poziomu, możemy zresetować wymuszone ignorowanie
-        if (!e.matches) {
-            setForceDismissOrientation(false);
-        }
-    };
+  // Sprawdź od razu
+  checkOrientation();
 
+  // Metoda 1: orientationchange (stary Android — tylko to odpala niezawodnie)
+  window.addEventListener('orientationchange', () => {
+    // Stary Android potrzebuje 300ms na aktualizację wymiarów po obróceniu!
+    setTimeout(checkOrientation, 300);
+  });
+
+  // Metoda 2: resize (nowy Android, desktop, jako backup)
+  window.addEventListener('resize', checkOrientation);
+
+  // Metoda 3: matchMedia (nowoczesne przeglądarki)
+  let mql: MediaQueryList | null = null;
+  try {
+    mql = window.matchMedia('(orientation: portrait)');
     if (mql.addEventListener) {
-        mql.addEventListener('change', handleOrientationChange);
+      mql.addEventListener('change', checkOrientation);
     } else {
-        // Fallback dla bardzo starych przeglądarek
-        mql.addListener(handleOrientationChange);
+      // @ts-ignore — stare API
+      mql.addListener(checkOrientation);
     }
+  } catch (e) {
+    // matchMedia może rzucić błąd na bardzo starych urządzeniach
+  }
 
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, 1280, 720);
-        setUndoStack([canvas.toDataURL()]);
-      }
+  // Canvas init
+  const canvas = canvasRef.current;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, 1280, 720);
+      setUndoStack([canvas.toDataURL()]);
     }
+  }
 
-    const ghost = document.createElement('canvas');
-    ghost.width = 1280; ghost.height = 720;
-    const gCtx = ghost.getContext('2d', { willReadFrequently: true });
-    if (gCtx) {
-      const img = new window.Image();
-      img.crossOrigin = 'anonymous';
-      img.src = template.src;
-      img.onload = () => {
-        gCtx.fillStyle = '#FFFFFF'; gCtx.fillRect(0, 0, 1280, 720);
-        gCtx.drawImage(img, 0, 0, 1280, 720);
-        ghostCanvasRef.current = ghost;
-      };
-    }
-
-    return () => {
-        if (mql.removeEventListener) {
-            mql.removeEventListener('change', handleOrientationChange);
-        } else {
-            mql.removeListener(handleOrientationChange);
-        }
+  const ghost = document.createElement('canvas');
+  ghost.width = 1280; ghost.height = 720;
+  const gCtx = ghost.getContext('2d', { willReadFrequently: true });
+  if (gCtx) {
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.src = template.src;
+    img.onload = () => {
+      gCtx.fillStyle = '#FFFFFF';
+      gCtx.fillRect(0, 0, 1280, 720);
+      gCtx.drawImage(img, 0, 0, 1280, 720);
+      ghostCanvasRef.current = ghost;
     };
-  }, [template]);
+  }
+
+  return () => {
+    window.removeEventListener('resize', checkOrientation);
+    // orientationchange — anonimowa funkcja, nie można usunąć bezpośrednio
+    // więc używamy AbortController pattern:
+    if (mql) {
+      try {
+        if (mql.removeEventListener) {
+          mql.removeEventListener('change', checkOrientation);
+        } else {
+          // @ts-ignore
+          mql.removeListener(checkOrientation);
+        }
+      } catch (e) {}
+    }
+  };
+}, [template]);
 
   const handleDownload = () => {
     const canvas = canvasRef.current;

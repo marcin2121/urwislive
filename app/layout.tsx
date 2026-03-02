@@ -163,7 +163,7 @@ const schemas = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${inter.variable} ${fredoka.variable}`}>
+    <html lang="pl" className={`${inter.variable} ${fredoka.variable}`} suppressHydrationWarning>
       <head>
         {/* ✅ preload obrazka LCP */}
         <link rel="preload" href="/urwis-fallback.webp" as="image" fetchPriority="high" />
@@ -188,7 +188,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
 
-      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white overflow-x-hidden">
+      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white overflow-x-hidden" suppressHydrationWarning>
         <AuthProvider>
           <PopupProvider>
             <Suspense fallback={null}>

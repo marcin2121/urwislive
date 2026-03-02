@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks } from 'lucide-react'
+import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory } from 'lucide-react'
 
 export const metadata = {
   title: 'Strefa Zabawy i Darmowe Gry | Sklep Urwis',
@@ -190,10 +190,26 @@ export default function StrefaZabawyPage() {
       Urwis Breaker
     </h2>
     <p className="text-zinc-500 font-medium flex-1">
-      "Rozbij wszystkie klocki piłką, łap power-upy i bijaj rekordy!"
+      "Rozbij wszystkie klocki piłką, łap power-upy i bij rekordy!"
     </p>
     <div className="mt-8 flex items-center text-indigo-500 font-bold uppercase tracking-widest text-xs">
       Graj teraz! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+    </div>
+  </div>
+</Link>
+<Link href="/strefa-zabawy/fabryka-urwisa" className="group block">
+  <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-emerald-200 transition-all h-full flex flex-col relative overflow-hidden">
+    <div className="mb-6 bg-emerald-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+      <Factory className="text-emerald-500" size={32} />
+    </div>
+    <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-emerald-500 transition-colors">
+      Fabryka Urwisa
+    </h2>
+    <p className="text-zinc-500 font-medium flex-1">
+      "Klikaj, zatrudniaj Urwisków, buduj ogromną fabrykę! Zobacz, jak rośnie Twoje imperium (Gra typu Idle)."
+    </p>
+    <div className="mt-8 flex items-center text-emerald-500 font-bold uppercase tracking-widest text-xs">
+      Zarządzaj Fabryką <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
     </div>
   </div>
 </Link>

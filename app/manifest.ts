@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#0055ff',
-    orientation: 'portrait',
+    orientation: 'any',
     categories: ['shopping', 'kids', 'education'], // 🚀 SEO: Pomaga sklepom z aplikacjami kategoryzować PWA
     icons: [
       {

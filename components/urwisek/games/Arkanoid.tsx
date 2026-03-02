@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Trophy, Play, RotateCcw, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { finishArcadeGame, submitArkanoidScore, getArkanoidRanking } from '@/app/actions/tamagotchi'
 import { cn } from '@/lib/utils'
 
 // ─── Stałe ────────────────────────────────────────────────────────────────────
@@ -17,10 +19,10 @@ const BCOLS = 8
 const BGAP = 4
 const BHEIGHT = 22
 const BTOP = 60
-const BASE_SPEED = 5
+const BASE_SPEED = 5.5
 const PU_SPEED = 2.5
 const LASER_SPEED = 10
-const PU_CHANCE = 0.18
+// PU_CHANCE is now dynamic per level
 const FPS = 60
 const PADDLE_SPEED_KB = 7
 
@@ -113,17 +115,78 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, p: PUp) => {
 }
 
 const generateBricks = (level: number): Brick[] => {
-  const rows = Math.min(3 + Math.floor((level - 1) / 2), 10)
-  const maxHp = Math.min(level, 5)
   const bricks: Brick[] = []
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < BCOLS; c++) {
-      const hp = Math.max(1, Math.round(((rows - r) / rows) * maxHp))
-      bricks.push({
-        x: BGAP + c * (BW + BGAP),
-        y: BTOP + r * (BHEIGHT + BGAP),
-        hp, maxHp: hp,
-      })
+  
+  // Co 5 poziomów układ się powtarza ale bloki są 5x mocniejsze!
+  const loopCycle = Math.floor((level - 1) / 5)
+  const patternLevel = ((level - 1) % 5) + 1
+  
+  // Bazowe HP dla danego klocka rośnie w każdym cyklu (np lvl 6 dodaje +5 HP do wszystkiego)
+  const hpBonus = loopCycle * 5
+  
+  switch (patternLevel) {
+    case 1: { // Klasyczny blok początkowy (Coraz więcej rzędów do lvl 5)
+      const rows = 3 + loopCycle;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < BCOLS; c++) {
+          const hp = Math.max(1, Math.round(((rows - r) / rows) * 3)) + hpBonus;
+          bricks.push({ x: BGAP + c * (BW + BGAP), y: BTOP + r * (BHEIGHT + BGAP), hp, maxHp: hp })
+        }
+      }
+      break;
+    }
+    case 2: { // Piramida Diamentowa
+      const rows = 5;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < BCOLS; c++) {
+          const distToCenter = Math.abs(c - (BCOLS - 1) / 2);
+          if (distToCenter <= r * 0.6) {
+             const hp = (r + 1) + hpBonus;
+             bricks.push({ x: BGAP + c * (BW + BGAP), y: BTOP + r * (BHEIGHT + BGAP), hp, maxHp: hp })
+          }
+        }
+      }
+      break;
+    }
+    case 3: { // Szachownica (przeplatane)
+      const rows = 4 + (loopCycle % 2);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < BCOLS; c++) {
+          if ((r + c) % 2 === 0) {
+            const hp = 2 + hpBonus;
+            bricks.push({ x: BGAP + c * (BW + BGAP), y: BTOP + r * (BHEIGHT + BGAP), hp, maxHp: hp })
+          }
+        }
+      }
+      break;
+    }
+    case 4: { // Kształt "U" - Twarde boki, pusty środek
+      const rows = 6;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < BCOLS; c++) {
+          const isEdge = c === 0 || c === BCOLS - 1 || r === 0;
+          if (isEdge) {
+            const hp = 4 + hpBonus;
+            bricks.push({ x: BGAP + c * (BW + BGAP), y: BTOP + r * (BHEIGHT + BGAP), hp, maxHp: hp })
+          } else if (r === rows - 1) { // Podpora U
+            const hp = 2 + hpBonus;
+            bricks.push({ x: BGAP + c * (BW + BGAP), y: BTOP + r * (BHEIGHT + BGAP), hp, maxHp: hp })
+          }
+        }
+      }
+      break;
+    }
+    case 5: { // Kolumny pionowe (Wąskie przerwy)
+      const rows = 7;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < BCOLS; c++) {
+          if (c % 2 !== 0) {
+            const hp = 3 + (rows - r) + hpBonus;
+            bricks.push({ x: BGAP + c * (BW + BGAP), y: BTOP + r * (BHEIGHT + BGAP), hp, maxHp: hp })
+          }
+        }
+      }
+      break;
     }
   }
   return bricks
@@ -138,6 +201,16 @@ export default function Arkanoid() {
   const [score,     setScore]     = useState(0)
   const [level,     setLevel]     = useState(1)
   const [lives,     setLives]     = useState(3)
+  const [playerName, setPlayerName] = useState('')
+  const [rankingData, setRankingData] = useState<any[]>([])
+  const [rankingStatusMessage, setRankingStatusMessage] = useState<string | null>(null)
+  const [isSubmittingScore, setIsSubmittingScore] = useState(false)
+  const [rewardMsg, setRewardMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    const savedName = localStorage.getItem('urwis_arkanoid_nickname');
+    if (savedName) setPlayerName(savedName);
+  }, []);
 
   const balls     = useRef<Ball[]>([])
   const bricks    = useRef<Brick[]>([])
@@ -146,7 +219,8 @@ export default function Arkanoid() {
   const particles = useRef<Ptcl[]>([])
 
   const paddleX = useRef(CW / 2)
-  const paddleW = useRef(PADDLE_BASE_W)
+  const INITIAL_PADDLE_W = PADDLE_BASE_W
+  const paddleW = useRef(INITIAL_PADDLE_W)
 
   const ballIdRef  = useRef(0)
   const puIdRef    = useRef(0)
@@ -168,7 +242,8 @@ export default function Arkanoid() {
 
   // ── spawnBall ──────────────────────────────────────────────────────────────
   const spawnBall = useCallback(() => {
-    const speed = BASE_SPEED + (levelRef.current - 1) * 0.25
+    // Duże skalowanie prędkości 0.55 za każdy level (będzie szybko gicior)
+    const speed = BASE_SPEED + (levelRef.current - 1) * 0.55
     const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6
     ballIdRef.current++
     balls.current = [{
@@ -183,7 +258,8 @@ export default function Arkanoid() {
   const applyPowerUp = useCallback((type: PUType) => {
     switch (type) {
       case 'wide':
-        paddleW.current = PADDLE_BASE_W * 1.65
+        // Szersza paletka bazuje na zminimalizowanej
+        paddleW.current = (PADDLE_BASE_W - Math.min((levelRef.current - 1) * 3, 35)) * 1.65
         widePaddleTimer.current = 10 * FPS
         break
       case 'multiball':
@@ -223,6 +299,8 @@ export default function Arkanoid() {
     bricks.current   = generateBricks(levelRef.current)
     powerUps.current = []
     lasers.current   = []
+    // Skurcz paletkę na następny poziom maxymalnie o 35 pikseli po 11 lvlach.
+    paddleW.current = PADDLE_BASE_W - Math.min((levelRef.current - 1) * 3, 35);
     spawnBall()
   }, [spawnBall])
 
@@ -247,9 +325,14 @@ export default function Arkanoid() {
     powerUps.current = []; lasers.current = []; particles.current = []
     bricks.current = generateBricks(1)
     setScore(0); setLevel(1); setLives(3)
+    setRewardMsg(null); setRankingData([]); setRankingStatusMessage(null)
     setGameOver(false); setIsStarted(true)
     spawnBall()
-  }, [spawnBall])
+    
+    if (playerName.trim().length >= 3) {
+      localStorage.setItem('urwis_arkanoid_nickname', playerName.trim());
+    }
+  }, [playerName, spawnBall])
 
   // ── render / game loop ────────────────────────────────────────────────────
   const render = useCallback(() => {
@@ -305,7 +388,9 @@ export default function Arkanoid() {
         paddleX.current = Math.min(CW - paddleW.current / 2, paddleX.current + PADDLE_SPEED_KB)
 
       // Timery power-upów
-      if (widePaddleTimer.current > 0 && --widePaddleTimer.current === 0) paddleW.current = PADDLE_BASE_W
+      if (widePaddleTimer.current > 0 && --widePaddleTimer.current === 0) {
+         paddleW.current = PADDLE_BASE_W - Math.min((levelRef.current - 1) * 3, 35);
+      }
       if (laserTimer.current    > 0 && --laserTimer.current    === 0) laserActive.current = false
       if (slowTimer.current     > 0 && --slowTimer.current     === 0) speedMult.current = 1
 
@@ -345,7 +430,7 @@ export default function Arkanoid() {
         setLives(livesRef.current)
         if (livesRef.current <= 0) {
           gameOverRef.current = true
-          setGameOver(true)
+          handleGameOver()
         } else {
           spawnBall()
         }
@@ -374,7 +459,9 @@ export default function Arkanoid() {
           if (b.hp <= 0) {
             scoreRef.current += b.maxHp * 10 * levelRef.current
             setScore(scoreRef.current)
-            if (Math.random() < PU_CHANCE) {
+            // Zmniejsz Szansę na PU im wyższy poziom (minimum 4%)
+            const dynamicPUChance = Math.max(0.20 - (levelRef.current * 0.015), 0.04)
+            if (Math.random() < dynamicPUChance) {
               const types: PUType[] = ['wide', 'multiball', 'laser', 'slow', 'life']
               puIdRef.current++
               powerUps.current.push({
@@ -441,6 +528,38 @@ export default function Arkanoid() {
   }, [isStarted, spawnBall, nextLevel, applyPowerUp])
 
   // ── Effects ───────────────────────────────────────────────────────────────
+
+  const handleGameOver = async () => {
+    setGameOver(true)
+    setIsSubmittingScore(true)
+    
+    if (scoreRef.current > 500) {
+       const reward = await finishArcadeGame('arkanoid')
+       if (reward.success && reward.reward) {
+         setRewardMsg(`Ekstra, Urwisie! Otrzymujesz +${reward.reward.coins} Monet 🪙 i +${reward.reward.exp} EXP ⭐!`)
+       }
+    }
+    
+    const finalScore = scoreRef.current
+    if (playerName.trim() !== '') {
+        const saveRes = await submitArkanoidScore(playerName.trim(), finalScore, levelRef.current)
+        if (saveRes?.success) {
+            const rankData = await getArkanoidRanking(finalScore)
+            if (rankData.success) {
+               setRankingData(rankData.topScores || [])
+               setRankingStatusMessage(rankData.statsMessage || null)
+            }
+        }
+    } else {
+        const rankData = await getArkanoidRanking(finalScore)
+        if (rankData.success) {
+           setRankingData(rankData.topScores || [])
+           setRankingStatusMessage(rankData.statsMessage || null)
+        }
+    }
+    setIsSubmittingScore(false)
+  };
+
   useEffect(() => {
     if (isStarted && !gameOver) render()
     return () => cancelAnimationFrame(animationRef.current)
@@ -448,6 +567,9 @@ export default function Arkanoid() {
 
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
+      // Zablokuj listener jeśli jesteśmy w menu głównym (Pisanie nicku)
+      if (gameOverRef.current || document.activeElement?.tagName === 'INPUT') return;
+      
       keysPressed.current.add(e.code)
       if (['ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault()
       if (e.code === 'Space') shootLaser()
@@ -542,7 +664,7 @@ export default function Arkanoid() {
             </span>
           </h2>
           <p className="text-zinc-400 text-sm mb-2 text-center max-w-[240px]">
-            Odbijaj piłkę, rozbijaj klocki, łap power-upy!
+            Odbijaj piłkę, zbijaj klocki, łap power-upy Urwisa!
           </p>
           <p className="text-zinc-600 text-xs mb-6 text-center">
             🖱️ mysz / dotyk — ruch paletki &nbsp;·&nbsp; klik / spacja — laser
@@ -573,38 +695,117 @@ export default function Arkanoid() {
             ))}
           </div>
 
+          {/* KARTA LOGOWANIA / NICK gracza */}
+          <div className="w-full bg-black/40 p-4 rounded-xl border border-white/10 mb-6 backdrop-blur-sm">
+            <h3 className="text-white font-bold mb-2 text-center text-sm uppercase tracking-wider">Imię Urwisa</h3>
+            <Input 
+              type="text" 
+              placeholder="Jak się nazwiesz? (min. 3 znaki)" 
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              className="bg-black/50 border-white/20 text-white text-center font-bold h-12 focus-visible:ring-indigo-500 rounded-lg placeholder:text-zinc-600"
+              maxLength={12}
+            />
+          </div>
+
           <Button
             size="lg"
             onClick={initGame}
-            className="w-full h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-black text-lg rounded-xl shadow-lg"
+            disabled={playerName.trim().length < 3}
+            className="w-full h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-black text-lg rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            START
+            START GRY!
           </Button>
         </Card>
       )}
 
-      {/* Game Over */}
+      {/* Game Over Modal */}
       {gameOver && (
-        <Card className="absolute bg-[#1a1c29]/95 backdrop-blur-md border-indigo-500/30 p-8 flex flex-col items-center shadow-2xl z-20 rounded-2xl w-[90%] max-w-sm">
-          <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-bold uppercase tracking-widest text-sm border border-red-500/30">
-            Game Over
+        <Card className="absolute bg-[#1a1c29]/95 backdrop-blur-xl border-indigo-500/30 p-8 flex flex-col items-center shadow-2xl z-20 rounded-2xl w-[90%] max-w-sm max-h-[90dvh] overflow-y-auto custom-scrollbar">
+          <div className="w-full flex justify-between items-start mb-4">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 text-red-400 font-bold uppercase tracking-widest text-xs border border-red-500/30">
+               Game Over
+             </div>
+             <div className="text-right">
+                <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Level</p>
+                <p className="text-white font-black text-lg">{level}</p>
+             </div>
           </div>
+          
           <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 mb-1">
             {score}
           </h2>
-          <p className="text-zinc-400 font-medium mb-7">ZDOBYTE PUNKTY · LVL {level}</p>
+          <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-6">Zdobyte Punkty</p>
+          
+          {rewardMsg && (
+             <div className="w-full bg-indigo-500/20 border border-indigo-500/30 rounded-xl p-3 mb-6 text-center">
+                <span className="text-indigo-300 text-sm font-bold block">{rewardMsg}</span>
+             </div>
+          )}
+
+          {/* Leaderboard Section */}
+          <div className="w-full bg-black/40 rounded-xl border border-white/5 p-4 mb-6 relative">
+             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#1a1c29] px-3 py-1 rounded-full border border-white/10 text-xs font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-yellow-500" /> TOP 10 URWISÓW
+             </div>
+             
+             {isSubmittingScore ? (
+                <div className="flex flex-col items-center justify-center py-6">
+                   <RotateCcw className="w-6 h-6 text-indigo-500 animate-spin mb-2" />
+                   <span className="text-zinc-400 text-sm">Zapisywanie wyniku...</span>
+                </div>
+             ) : (
+                <>
+                   {rankingStatusMessage && (
+                      <div className="text-center w-full mt-3 mb-4">
+                         <span className={cn(
+                            "text-xs font-bold px-2 py-1 rounded-md", 
+                            rankingStatusMessage.includes('Brawo') ? "bg-green-500/20 text-green-400" : "bg-zinc-800 text-zinc-400"
+                         )}>
+                            {rankingStatusMessage}
+                         </span>
+                      </div>
+                   )}
+                   
+                   <div className="flex flex-col gap-2 mt-4">
+                      {rankingData.map((entry, idx) => (
+                         <div key={entry.id || idx} className={cn(
+                            "flex items-center justify-between p-2 rounded-lg text-sm",
+                            idx === 0 ? "bg-yellow-500/20 border border-yellow-500/30" : 
+                            idx === 1 ? "bg-zinc-300/20 border border-zinc-300/30" : 
+                            idx === 2 ? "bg-amber-700/20 border border-amber-700/30" : "bg-white/5",
+                            entry.player_name === playerName.trim() && entry.score === score && "ring-1 ring-indigo-500 bg-indigo-500/10"
+                         )}>
+                            <div className="flex items-center gap-3">
+                               <span className={cn("font-black w-4 text-center", 
+                                  idx === 0 ? "text-yellow-500" : idx === 1 ? "text-zinc-300" : idx === 2 ? "text-amber-600" : "text-zinc-500"
+                               )}>{idx + 1}</span>
+                               <span className={cn("font-bold truncate max-w-[120px]", entry.player_name === playerName.trim() ? "text-white" : "text-zinc-300")}>
+                                  {entry.player_name}
+                               </span>
+                            </div>
+                            <span className="font-mono text-indigo-300 font-bold">{entry.score}</span>
+                         </div>
+                      ))}
+                      {rankingData.length === 0 && <div className="text-center text-zinc-600 text-sm py-2">Bądź najlepszym Urwisem! Rozbijaj klocki.</div>}
+                   </div>
+                </>
+             )}
+          </div>
+
           <Button
             onClick={initGame}
-            className="w-full h-14 bg-white hover:bg-zinc-200 text-zinc-900 font-black text-lg rounded-xl"
+            disabled={isSubmittingScore}
+            className="w-full h-14 bg-white hover:bg-zinc-200 text-zinc-900 font-black text-lg rounded-xl mb-3 shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all"
           >
-            <RotateCcw className="w-5 h-5 mr-2" /> Zagraj Ponownie
+            <RotateCcw className="w-5 h-5 mr-2" /> JESZCZE RAZ
           </Button>
           <Button
             variant="outline"
-            className="w-full h-12 mt-3 border-white/10 text-white hover:bg-white/5 rounded-xl font-medium"
+            className="w-full h-12 border-white/10 text-white hover:bg-white/5 rounded-xl font-medium"
             onClick={() => (window.location.href = '/strefa-zabawy')}
           >
-            Wyjdź do Menu
+            Wróć do Strefy Zabawy
           </Button>
         </Card>
       )}

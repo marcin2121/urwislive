@@ -290,39 +290,119 @@ export default function BubbleShooter() {
     const maxCols = isOffset ? COLS - 1 : COLS;
     if (c >= maxCols) c = maxCols - 1;
 
-    // Próba inteligentnego Ślizgu (Slip)
-    // Jeśli wyliczone miejsce jest zajęte lub wykreowaliśmy fizyczne zderzenie, szukaj wokoł docelowego pola
+    // Funkcja pomocnicza: idealne koordynaty pola grid
+    const getIdealPos = (gr: number, gc: number) => {
+      const gOff = gr % 2 !== 0;
+      return {
+        x: gOff ? gc * DIAMETER + DIAMETER : gc * DIAMETER + BALL_RADIUS,
+        y: gr * (DIAMETER - 4) + BALL_RADIUS + 20
+      };
+    };
+
+    // Funkcja pomocnicza: czy dane pole jest w granicach i pusty
+    const isSlotEmpty = (sr: number, sc: number) => {
+      if (sr < 0 || sr >= ROWS || sc < 0) return false;
+      const sOff = sr % 2 !== 0;
+      const sMax = sOff ? COLS - 1 : COLS;
+      if (sc >= sMax) return false;
+      return !grid.current[sr] || !grid.current[sr][sc];
+    };
+
+    // Funkcja pomocnicza: czy slot nie koliduje fizycznie z istniejącymi piłkami (anti-overlap)
+    const isSlotSafe = (sr: number, sc: number) => {
+      const ideal = getIdealPos(sr, sc);
+      for (let rr = Math.max(0, sr - 1); rr <= Math.min((grid.current.length || ROWS) - 1, sr + 1); rr++) {
+        if (!grid.current[rr]) continue;
+        for (let cc = 0; cc < grid.current[rr].length; cc++) {
+          if (grid.current[rr][cc]) {
+            const dx = ideal.x - grid.current[rr][cc]!.x;
+            const dy = ideal.y - grid.current[rr][cc]!.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < DIAMETER - 4) return false; // Za blisko — overlapping!
+          }
+        }
+      }
+      return true;
+    };
+
+    // Próba inteligentnego Ślizgu (Slip) z uwzględnieniem kierunku lotu
     if ((grid.current[r] && grid.current[r][c]) || hitTargetR !== undefined) {
        const centerR = hitTargetR !== undefined ? hitTargetR : r;
        const centerC = hitTargetC !== undefined ? hitTargetC : c;
        
+       // Zbierz kandydatów z 2 pierścieni sąsiadów (ring-1 + ring-2)
+       const candidates: {nr: number, nc: number}[] = [];
+       const candidateSet = new Set<string>();
+       
+       // Ring 1 — bezpośredni sąsiedzi trafień
        const cOffset = centerR % 2 !== 0;
-       const dirs = cOffset 
+       const dirs1 = cOffset 
           ? [[0, -1], [0, 1], [-1, 0], [-1, 1], [1, 0], [1, 1]] 
           : [[0, -1], [0, 1], [-1, -1], [-1, 0], [1, -1], [1, 0]];
-          
-       let bestDist = Infinity;
-       let bestSpot = null;
-
-       for (const [dr, dc] of dirs) {
+       
+       for (const [dr, dc] of dirs1) {
           const nr = centerR + dr;
           const nc = centerC + dc;
-          const nOffset = nr % 2 !== 0;
-          const nMaxCols = nOffset ? COLS - 1 : COLS;
-          
-          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < nMaxCols) {
-             // Zbadaj to pole
-             if (!grid.current[nr] || !grid.current[nr][nc]) {
-                const idealX = nOffset ? nc * DIAMETER + DIAMETER : nc * DIAMETER + BALL_RADIUS;
-                const idealY = nr * (DIAMETER - 4) + BALL_RADIUS + 20;
-                
-                // Zwykły, matematyczny dystans od kuli bez sztucznych modyfikatorów
-                const dist = Math.sqrt(Math.pow(mBall.x - idealX, 2) + Math.pow(mBall.y - idealY, 2));
-                if (dist < bestDist) {
-                   bestDist = dist;
-                   bestSpot = { nr, nc };
+          const key = `${nr},${nc}`;
+          if (!candidateSet.has(key) && isSlotEmpty(nr, nc)) {
+             candidateSet.add(key);
+             candidates.push({nr, nc});
+          }
+       }
+       
+       // Ring 2 — sąsiedzi sąsiadów (dla ciaśniejszych sytuacji)
+       if (candidates.length === 0) {
+          for (const [dr, dc] of dirs1) {
+             const midR = centerR + dr;
+             const midC = centerC + dc;
+             const midOff = midR % 2 !== 0;
+             const dirs2 = midOff
+                ? [[0, -1], [0, 1], [-1, 0], [-1, 1], [1, 0], [1, 1]] 
+                : [[0, -1], [0, 1], [-1, -1], [-1, 0], [1, -1], [1, 0]];
+             for (const [dr2, dc2] of dirs2) {
+                const nr = midR + dr2;
+                const nc = midC + dc2;
+                const key = `${nr},${nc}`;
+                if (!candidateSet.has(key) && isSlotEmpty(nr, nc)) {
+                   candidateSet.add(key);
+                   candidates.push({nr, nc});
                 }
              }
+          }
+       }
+
+       // Ranking kandydatów z wagą kierunkową
+       let bestScore = Infinity;
+       let bestSpot: {nr: number, nc: number} | null = null;
+       const ballDx = mBall.dx || 0;
+       const ballDy = mBall.dy || -1;
+       const ballSpeed = Math.sqrt(ballDx * ballDx + ballDy * ballDy) || 1;
+       const normDx = ballDx / ballSpeed;
+       const normDy = ballDy / ballSpeed;
+
+       for (const cand of candidates) {
+          const ideal = getIdealPos(cand.nr, cand.nc);
+          const dx = mBall.x - ideal.x;
+          const dy = mBall.y - ideal.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Waga kierunkowa: slot w kierunku lotu piłki jest faworyzowany
+          const toCandDx = ideal.x - mBall.x;
+          const toCandDy = ideal.y - mBall.y;
+          const toCandLen = Math.sqrt(toCandDx * toCandDx + toCandDy * toCandDy) || 1;
+          const dot = (toCandDx / toCandLen) * normDx + (toCandDy / toCandLen) * normDy;
+          
+          // dot = 1 oznacza idealne dopasowanie kierunkowe, -1 = przeciwny
+          // Faworyzujemy sloty bliżej kierunku lotu (mniejszy final score = lepszy)
+          const directionBonus = (1 - dot) * BALL_RADIUS; // 0 dla idealnego kierunku, 2*BR dla przeciwnego
+          const finalScore = dist + directionBonus;
+          
+          // Sprawdź czy slot jest bezpieczny (nie overlappuje)
+          if (!isSlotSafe(cand.nr, cand.nc)) continue;
+          
+          if (finalScore < bestScore) {
+             bestScore = finalScore;
+             bestSpot = cand;
           }
        }
        
@@ -330,7 +410,7 @@ export default function BubbleShooter() {
           r = bestSpot.nr;
           c = bestSpot.nc;
        } else {
-          // Fallback w razie jakichś anomalii i "zamurowanej" bąbelka
+          // Fallback w razie jakichś anomalii i "zamurowanej" kulki
           r++; 
           if (r >= ROWS) { endGame(); return; }
           isOffset = r % 2 !== 0;
@@ -517,52 +597,59 @@ export default function BubbleShooter() {
   };
 
 
-  // Obliczanie fizyki
+  // Obliczanie fizyki (z sub-stepping dla precyzji)
   const updatePhysics = () => {
     if (!flyingBall.current) return;
 
-    let b = flyingBall.current;
-    b.x += b.dx;
-    b.y += b.dy;
+    // Sub-stepping: 2 kroki po połowie prędkości zapobiegają tunelowaniu
+    const SUBSTEPS = 2;
+    for (let step = 0; step < SUBSTEPS; step++) {
+      if (!flyingBall.current) return; // mogło snapnąć w poprzednim substepie
+      
+      let b = flyingBall.current;
+      b.x += b.dx / SUBSTEPS;
+      b.y += b.dy / SUBSTEPS;
 
-    // Kolizja ze ścianą 
-    if (b.x - BALL_RADIUS <= 0 || b.x + BALL_RADIUS >= CANVAS_WIDTH) {
-       b.dx *= -1; // Reflect! Odwrócenie wektora kierunku
-       b.x = b.x - BALL_RADIUS <= 0 ? BALL_RADIUS : CANVAS_WIDTH - BALL_RADIUS;
-    }
-    // Kolizja z sufitem 
-    if (b.y - BALL_RADIUS <= 20) {
-       snapToGrid(b);
-       return;
-    }
-
-    // Sprawdź szybką kolizję z inną dymionką zapisaną na gridzie
-    let hitT = null;
-    let hitDist = 999;
-    
-    const approxRow = Math.floor((b.y - 20) / (DIAMETER - 4));
-    const rowsToCheck = [approxRow - 1, approxRow, approxRow + 1];
-
-    for (const r of rowsToCheck) {
-      if (r < 0 || r >= grid.current.length || !grid.current[r]) continue;
-      for (let c = 0; c < grid.current[r].length; c++) {
-         const target = grid.current[r][c];
-         if (!target) continue;
-
-         const dx = b.x - target.x;
-         const dy = b.y - target.y;
-         const d = Math.sqrt(dx * dx + dy * dy);
-
-         // Zmniejszony hitbox - jeśli po odbiciu wsunie się za głęboko, algorytm snapToGrid (best dist) wyciągnie kulę na odpowiedni kafel
-         if (d < DIAMETER - 4 && d < hitDist) { 
-            hitDist = d;
-            hitT = {r, c};
-         }
+      // Kolizja ze ścianą 
+      if (b.x - BALL_RADIUS <= 0 || b.x + BALL_RADIUS >= CANVAS_WIDTH) {
+         b.dx *= -1;
+         b.x = b.x - BALL_RADIUS <= 0 ? BALL_RADIUS : CANVAS_WIDTH - BALL_RADIUS;
       }
-    }
+      // Kolizja z sufitem 
+      if (b.y - BALL_RADIUS <= 20) {
+         snapToGrid(b);
+         return;
+      }
 
-    if (hitT) {
-      snapToGrid(b, hitT.r, hitT.c);
+      // Detekcja kolizji z kulkami na gridzie (rozszerzony scan ±2 wiersze)
+      let hitT = null;
+      let hitDist = 999;
+      
+      const approxRow = Math.floor((b.y - 20) / (DIAMETER - 4));
+      const rowsToCheck = [approxRow - 2, approxRow - 1, approxRow, approxRow + 1, approxRow + 2];
+
+      for (const r of rowsToCheck) {
+        if (r < 0 || r >= grid.current.length || !grid.current[r]) continue;
+        for (let c = 0; c < grid.current[r].length; c++) {
+           const target = grid.current[r][c];
+           if (!target) continue;
+
+           const dx = b.x - target.x;
+           const dy = b.y - target.y;
+           const d = Math.sqrt(dx * dx + dy * dy);
+
+           // Hitbox dopasowany do promienia (DIAMETER - 2 żeby nie przelecieć)
+           if (d < DIAMETER - 2 && d < hitDist) { 
+              hitDist = d;
+              hitT = {r, c};
+           }
+        }
+      }
+
+      if (hitT) {
+        snapToGrid(b, hitT.r, hitT.c);
+        return;
+      }
     }
   };
 
@@ -615,8 +702,8 @@ export default function BubbleShooter() {
                   const target = grid.current[r][c]!;
                   const dtX = nextX - target.x;
                   const dtY = nextY - target.y;
-                  // Tu też zmieniony promień żeby linia ładnie się wślizgiwała pokazując trickshota docelowego
-                  if (Math.sqrt(dtX*dtX + dtY*dtY) < DIAMETER - 6) {
+                  // Hitbox celownika zsynchronizowany z kolizją (DIAMETER - 2)
+                  if (Math.sqrt(dtX*dtX + dtY*dtY) < DIAMETER - 2) {
                      hitGrid = true;
                      break;
                   }
@@ -831,6 +918,9 @@ export default function BubbleShooter() {
     >
       {/* HUD Wewnątrz Ekranu */}
       <div className="absolute top-0 w-full max-w-[500px] flex justify-between items-center px-4 py-3 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none">
+         <div className="flex bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10 items-center gap-2 pointer-events-auto cursor-pointer" onClick={() => window.location.href = '/strefa-zabawy'}>
+            <MoveLeft className="w-5 h-5 text-white/70 hover:text-white transition-colors" />
+         </div>
          <div className="flex bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10 items-center gap-2">
             <Trophy className="w-4 h-4 text-[#ffd700]" />
             <span className="text-white font-bold tracking-wider">{score}</span>
@@ -845,39 +935,77 @@ export default function BubbleShooter() {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="block bg-[#1a1c29] shadow-2xl rounded-xl max-w-full max-h-[100dvh] object-contain border border-white/5 active:cursor-crosshair touch-none"
-        onMouseDown={handleInteractionStart}
+        className="block bg-[#1a1c29] shadow-2xl md:rounded-xl w-full h-full max-h-[100dvh] md:max-h-[85vh] md:max-w-md object-contain border border-white/5 active:cursor-crosshair touch-none"
+        onMouseDown={(e) => {
+           if (nextBall.current && isStarted && !gameOver) {
+              const rect = canvasRef.current?.getBoundingClientRect();
+              if (rect) {
+                 const scaleX = CANVAS_WIDTH / rect.width;
+                 const scaleY = CANVAS_HEIGHT / rect.height;
+                 const clickX = (e.clientX - rect.left) * scaleX;
+                 const clickY = (e.clientY - rect.top) * scaleY;
+                 
+                 // If clicked near nextBall (radius ~40px)
+                 const dist = Math.sqrt(Math.pow(clickX - nextBall.current.x, 2) + Math.pow(clickY - nextBall.current.y, 2));
+                 if (dist < 40) {
+                     swapBalls();
+                     return;
+                 }
+              }
+           }
+           handleInteractionStart(e);
+        }}
         onMouseMove={handleInteractionMove}
         onMouseUp={handleInteractionEnd}
         onMouseLeave={handleInteractionEnd}
-        onTouchStart={handleInteractionStart}
+        onTouchStart={(e) => {
+           if (nextBall.current && isStarted && !gameOver && e.touches.length > 0) {
+              const rect = canvasRef.current?.getBoundingClientRect();
+              if (rect) {
+                 const scaleX = CANVAS_WIDTH / rect.width;
+                 const scaleY = CANVAS_HEIGHT / rect.height;
+                 const clickX = (e.touches[0].clientX - rect.left) * scaleX;
+                 const clickY = (e.touches[0].clientY - rect.top) * scaleY;
+                 
+                 const dist = Math.sqrt(Math.pow(clickX - nextBall.current.x, 2) + Math.pow(clickY - nextBall.current.y, 2));
+                 if (dist < 50) { // Bigger hit area for touch
+                     swapBalls();
+                     return;
+                 }
+              }
+           }
+           handleInteractionStart(e);
+        }}
         onTouchMove={handleInteractionMove}
         onTouchEnd={handleInteractionEnd}
       />
       
       {/* Przycisk SWAP Kulek */}
       {isStarted && !gameOver && (
-          <div className="absolute bottom-[2%] right-[5%] z-20">
+          <div className="absolute bottom-[4%] right-[4%] z-20 flex flex-col items-end gap-1">
              <Button
-                variant="outline"
-                size="icon"
                 onClick={swapBalls}
-                className="rounded-full w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-white shadow-lg"
+                className="rounded-full h-12 bg-indigo-500/80 hover:bg-indigo-400 backdrop-blur-md border border-white/20 active:scale-95 transition-all text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] font-black uppercase tracking-widest select-none flex items-center gap-2 px-5"
              >
                 <RefreshCw className="w-5 h-5" />
+                <span className="text-sm">Zamień</span>
              </Button>
+             <span className="hidden lg:block text-[9px] text-white/40 font-bold uppercase mr-2 tracking-widest">(Spacja / PPM)</span>
           </div>
       )}
 
       {/* Pasek postępu pudeł (Misses Counter) */}
       {isStarted && !gameOver && (
-          <div className="absolute bottom-[2%] left-[5%] z-20 flex gap-1.5 p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
-            {[0, 1, 2, 3, 4].map(i => (
-              <div key={i} className={cn(
-                "w-2 h-2 rounded-full transition-all duration-300",
-                i < misses ? "bg-red-500 scale-125 shadow-[0_0_10px_rgba(239,68,68,0.7)]" : "bg-white/20"
-              )} />
-            ))}
+          <div className="absolute bottom-[4%] left-[4%] z-20 flex flex-col items-start gap-1 p-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-xl">
+            <span className="text-[10px] text-zinc-300 font-bold uppercase tracking-widest mb-1.5 leading-none">Pudła do Opuszczenia:</span>
+            <div className="flex gap-2 w-full justify-between items-center px-1">
+               {[0, 1, 2, 3, 4].map(i => (
+                 <div key={i} className={cn(
+                   "w-3 h-3 rounded-full transition-all duration-300 border border-black/50 shadow-inner",
+                   i < misses ? "bg-red-500 scale-125 shadow-[0_0_12px_rgba(239,68,68,0.9)] border-red-400/50" : "bg-white/10"
+                 )} />
+               ))}
+            </div>
           </div>
       )}
 
@@ -909,9 +1037,16 @@ export default function BubbleShooter() {
              size="lg" 
              onClick={initGame}
              disabled={playerName.trim().length < 3}
-             className="w-full h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-indigo-500/25 transition-all outline-none"
+             className="w-full h-14 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-indigo-500/25 transition-all outline-none mb-3"
           >
             START
+          </Button>
+          <Button 
+             variant="outline"
+             className="w-full h-12 border-white/10 text-white hover:bg-white/5 rounded-xl font-medium"
+             onClick={() => window.location.href = '/strefa-zabawy'}
+          >
+             Wróć do Strefy Zabawy
           </Button>
         </Card>
       )}

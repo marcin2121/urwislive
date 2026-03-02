@@ -13,7 +13,9 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  interactiveWidget: 'resizes-content', // ← dodaj to
 };
+
 
 export default function KolorowankiPage() {
   return (
