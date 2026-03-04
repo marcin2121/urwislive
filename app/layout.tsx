@@ -14,7 +14,7 @@ import WelcomeScreen from "@/components/ui/WelcomeScreen";
 import { AuthProvider } from "@/components/AuthProvider";
 import OnboardingTour from "@/components/ui/OnboardingTour";
 import { PopupProvider } from "@/components/PopupProvider";
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 const inter = Inter({ 
   subsets: ["latin"], 
   variable: "--font-inter",
@@ -140,7 +140,7 @@ const schemas = [
       {
         "@type": "Question",
         "name": "Jakie są godziny otwarcia Sklepu Urwis?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Sklep Urwis jest otwarty od poniedziałku do piątku w godzinach 8:00-18:00 oraz w soboty 8:00-15:00. W niedziele sklep jest zamknięty." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Sklep Urwis jest otwarty od poniedziałku do piątku w godzinach 8:00-18:00 oraz w soboty 8:00-15:00." }
       },
       {
         "@type": "Question",
@@ -190,6 +190,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white overflow-x-hidden" suppressHydrationWarning>
         <AuthProvider>
+          
           <PopupProvider>
             <Suspense fallback={null}>
               <WelcomeScreen />
@@ -223,6 +224,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <CookieModal />
             </Suspense>
             <OnboardingTour />
+            <SpeedInsights />
           </PopupProvider>
         </AuthProvider>
 

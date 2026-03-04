@@ -169,7 +169,7 @@ export default function StrefaZabawyPage() {
             </div>
             
             <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-cyan-500 transition-colors pr-2">
-              Lecę w Kulki
+              Kulki
             </h2>
             
             <p className="text-zinc-500 font-medium flex-1">

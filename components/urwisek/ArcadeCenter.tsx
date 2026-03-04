@@ -66,7 +66,7 @@ export default function ArcadeCenter({ onClose, onGameComplete }: ArcadeCenterPr
                   <Brain size={28} />
                 </div>
                 <div className="text-left flex-1">
-                  <h3 className="font-black text-lg text-zinc-800 leading-none mb-1">Pamięciówka Muli</h3>
+                  <h3 className="font-black text-lg text-zinc-800 leading-none mb-1">Memory Urwisa</h3>
                   <p className="text-xs font-bold text-zinc-400 flex items-center gap-1">Znajdź pary i wygraj 15 <Coins className="w-3 h-3 text-yellow-500" /></p>
                 </div>
                 <div className="text-purple-500 font-bold bg-purple-50 px-3 py-1.5 rounded-xl uppercase text-[10px] tracking-widest">
