@@ -996,7 +996,7 @@ export default function BubbleShooter() {
 
       {/* Pasek postępu pudeł (Misses Counter) */}
       {isStarted && !gameOver && (
-          <div className="absolute bottom-[4%] left-[4%] z-20 flex flex-col items-start gap-1 p-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-xl">
+          <div className="absolute bottom-[18%] left-[4%] z-20 flex flex-col items-start gap-1 p-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-xl">
             <span className="text-[10px] text-zinc-300 font-bold uppercase tracking-widest mb-1.5 leading-none">Pudła do Opuszczenia:</span>
             <div className="flex gap-2 w-full justify-between items-center px-1">
                {[0, 1, 2, 3, 4].map(i => (

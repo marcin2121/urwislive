@@ -91,8 +91,8 @@ export default function Footer() {
             </div>
 
             {/* QUICK LINKS */}
-            <div className="space-y-6">
-              <div className="text-zinc-900 font-black uppercase tracking-widest text-xs italic">
+            <div className="space-y-6" suppressHydrationWarning>
+              <div className="text-zinc-900 font-black uppercase tracking-widest text-xs italic" suppressHydrationWarning>
                 Szybkie Linki
               </div>
               <nav aria-label="Nawigacja w stopce">
@@ -123,12 +123,12 @@ export default function Footer() {
           </div>
 
           {/* 🛡️ NOTA PRAWNA I COPYRIGHT */}
-          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col gap-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic">
-              <div className="space-y-2">
-                <div className="text-zinc-900">© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
+          <div className="mt-16 pt-8 border-t border-white/20 flex flex-col gap-8" suppressHydrationWarning>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 italic" suppressHydrationWarning>
+              <div className="space-y-2" suppressHydrationWarning>
+                <div className="text-zinc-900" suppressHydrationWarning>© {currentYear} SKLEP URWIS. ALL RIGHTS RESERVED.</div>
                 {/* 🚀 POPRAWKA KONTRASTU: text-zinc-600 zamiast zinc-400 */}
-                <div className="text-zinc-600 font-bold">NIP: 7981093937 | REGON: 671959384</div>
+                <div className="text-zinc-600 font-bold" suppressHydrationWarning>NIP: 7981093937 | REGON: 671959384</div>
               </div>
               <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
   <span className="flex items-center gap-1"> 
@@ -209,10 +209,10 @@ function FooterLink({ href, icon, label, sublabel }: { href: string, icon: any, 
         onClick={handleClick}
         className="flex gap-4 group cursor-pointer transition-all hover:translate-x-1"
       >
-        <div className={`${isBlue ? 'text-[#0055ff]' : 'text-[#bf2024]'} group-hover:scale-110 transition-transform`} aria-hidden="true">
+        <div className={`${isBlue ? 'text-[#0055ff]' : 'text-[#bf2024]'} group-hover:scale-110 transition-transform`} aria-hidden="true" suppressHydrationWarning>
           {icon}
         </div>
-        <div className="flex flex-col leading-none text-left">
+        <div className="flex flex-col leading-none text-left" suppressHydrationWarning>
           <span className={`text-zinc-900 font-black text-sm tracking-tight ${isBlue ? 'group-hover:text-[#0055ff]' : 'group-hover:text-[#bf2024]'}`}>
             {label}
           </span>

@@ -263,15 +263,20 @@ export default function ProfilePage() {
                 transition={{ duration: 0.2 }}
                 className="space-y-8"
               >
-                {/* Powiadomienia */}
+                {/* 1. Powiadomienia Push przeglądarki */}
                 <div>
-                  <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <Bell size={16} /> Powiadomienia w aplikacji
+                  <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <Bell size={16} /> Powiadomienia Push
                   </h3>
+                  <p className="text-[11px] text-zinc-400 font-medium mb-4 pl-6">
+                    Banery na ekranie telefonu / komputera — wysyłane przez przeglądarkę, gdy pojawią się nowe promocje.
+                  </p>
                   <div className="bg-zinc-50 p-5 rounded-3xl border border-zinc-200 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div>
-                      <p className="font-black text-sm uppercase text-zinc-800 mb-1">Powiadomienia Push</p>
-                      <p className="text-xs text-zinc-500 font-medium">Otrzymuj alerty o błyskawicznych wyprzedażach klocków LEGO i nowościach w ofercie.</p>
+                      <p className="font-black text-sm uppercase text-zinc-800 mb-1">Zezwolenie przeglądarki</p>
+                      <p className="text-xs text-zinc-500 font-medium leading-relaxed">
+                        Włącz, żeby dostawać baner na ekranie gdy pojawią się nowe zestawy LEGO lub błyskawiczne wyprzedaże — nawet bez otwierania strony.
+                      </p>
                     </div>
                     <div className="shrink-0">
                       <PushButton />
@@ -281,30 +286,33 @@ export default function ProfilePage() {
 
                 <hr className="border-zinc-100" />
 
-                {/* Powiadomienia push */}
+                {/* 2. Zgoda marketingowa (kupony i rabaty) */}
                 <div>
-                  <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <ShieldCheck size={16} /> Powiadomienia
+                  <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <ShieldCheck size={16} /> Promocje i Kupony
                   </h3>
+                  <p className="text-[11px] text-zinc-400 font-medium mb-4 pl-6">
+                    Zgoda na wysyłkę informacji o nowościach i rabatach — wymagana, żeby Koło Fortuny mogło Ci przyznawać kupony.
+                  </p>
                   <div className={`flex flex-col sm:flex-row items-start gap-4 p-5 rounded-3xl border transition-colors ${marketingConsent ? 'border-green-200 bg-green-50' : 'border-zinc-200 bg-zinc-50'}`}>
                     <div className="mt-1 hidden sm:block">
                       {marketingConsent ? <CheckCircle size={28} className="text-green-500" /> : <ShieldCheck size={28} className="text-zinc-400" />}
                     </div>
                     <div className="flex-1 w-full">
                       <p className={`font-black text-sm uppercase mb-1 ${marketingConsent ? 'text-green-800' : 'text-zinc-700'}`}>
-                        {marketingConsent ? "Powiadomienia Aktywne" : "Powiadomienia Wyłączone"}
+                        {marketingConsent ? "Zgoda aktywna ✓" : "Zgoda nieaktywna"}
                       </p>
-                      <p className="text-xs font-medium text-zinc-600 opacity-80 leading-relaxed mb-4">
+                      <p className="text-xs font-medium text-zinc-600 leading-relaxed mb-4">
                         {marketingConsent 
-                          ? "Otrzymujesz powiadomienia push o nowych kuponach, promocjach i nowościach w sklepie." 
-                          : "Włącz powiadomienia, aby dostawać informacje o nowych kuponach i promocjach."}
+                          ? "Masz włączoną zgodę — Koło Fortuny może Ci przyznawać kupony, a my możemy informować Cię o nowych promocjach." 
+                          : "Bez tej zgody nie możemy wysyłać Ci kuponów z Koła Fortuny ani informacji o nowych promocjach."}
                       </p>
                       <button 
                         onClick={toggleMarketingConsent}
                         disabled={updatingConsent}
                         className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs uppercase transition-all flex justify-center items-center gap-2 ${marketingConsent ? 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200' : 'bg-green-500 text-white hover:bg-green-600 shadow-md shadow-green-500/30'}`}
                       >
-                        {updatingConsent ? "Zapisywanie..." : (marketingConsent ? "Wyłącz powiadomienia" : "Włącz powiadomienia")}
+                        {updatingConsent ? "Zapisywanie..." : (marketingConsent ? "Wycofaj zgodę" : "Wyrażam zgodę")}
                       </button>
                     </div>
                   </div>

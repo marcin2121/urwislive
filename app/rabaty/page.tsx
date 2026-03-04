@@ -58,6 +58,9 @@ export default function RabatyPage() {
   
   const [spinResult, setSpinResult] = useState<any>(null);
   const [showPrizeModal, setShowPrizeModal] = useState(false);
+  const [showCouponFullModal, setShowCouponFullModal] = useState(false);
+  const MAX_COUPON_INVENTORY = 6;
+  const [showActiveOverlay, setShowActiveOverlay] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -174,6 +177,7 @@ export default function RabatyPage() {
     setActiveCoupon(newActive);
     localStorage.setItem('urwis_active_coupon', JSON.stringify(newActive));
     setConfirmModal(null);
+    setShowActiveOverlay(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const coupon = dbCoupons.find(c => c.id === id);
@@ -198,6 +202,13 @@ export default function RabatyPage() {
     }
 
     if (!canSpin || isSpinning) return;
+    
+    // Blokada gdy ekwipunek kuponów jest pełny (≥6 kuponów)
+    if (availableCouponsList.length >= MAX_COUPON_INVENTORY) {
+      setShowCouponFullModal(true);
+      return;
+    }
+
     setCanSpin(false); 
     setIsSpinning(true);
 
@@ -392,19 +403,32 @@ export default function RabatyPage() {
               </div>
             </div>
 
-            <div className="text-center">
-              <button 
-                onClick={handleSpinWheel}
-                disabled={!canSpin || isSpinning || filteredWheelPrizes.length === 0}
-                className={`px-8 py-4 rounded-2xl font-black uppercase text-sm shadow-xl transition-all w-full md:w-auto ${
-                  canSpin && !isSpinning && filteredWheelPrizes.length > 0
-                  ? 'bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 active:scale-95 cursor-pointer outline-none' 
-                  : 'bg-zinc-100 text-zinc-400 cursor-not-allowed border-2 border-zinc-200 shadow-none'
-                }`}
-              >
-                {filteredWheelPrizes.length === 0 ? 'Zrób miejsce na tarczy!' : isSpinning ? 'Losowanie w toku...' : canSpin ? 'ZAKRĘĆ KOŁEM!' : 'Zablokowane do Jutra 🔒'}
-              </button>
-            </div>
+              <div className="text-center">
+              
+                {/* Komunikat o pełnym ekwipunku */}
+                {availableCouponsList.length >= MAX_COUPON_INVENTORY && canSpin && (
+                  <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-start gap-3 text-left">
+                    <span className="text-2xl shrink-0">🦖</span>
+                    <p className="text-xs font-bold text-amber-800">
+                      Masz już {availableCouponsList.length} kuponów! Wykorzystaj obecne kupony w sklepie,<br/>żeby zrobić miejsce na nowe!
+                    </p>
+                  </div>
+                )}
+
+                <button 
+                  onClick={handleSpinWheel}
+                  disabled={!canSpin || isSpinning || filteredWheelPrizes.length === 0}
+                  className={`px-8 py-4 rounded-2xl font-black uppercase text-sm shadow-xl transition-all w-full md:w-auto ${
+                    canSpin && !isSpinning && filteredWheelPrizes.length > 0
+                    ? availableCouponsList.length >= MAX_COUPON_INVENTORY
+                      ? 'bg-amber-100 text-amber-700 border-2 border-amber-300 cursor-not-allowed'
+                      : 'bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 active:scale-95 cursor-pointer outline-none' 
+                    : 'bg-zinc-100 text-zinc-400 cursor-not-allowed border-2 border-zinc-200 shadow-none'
+                  }`}
+                >
+                  {filteredWheelPrizes.length === 0 ? 'Zrób miejsce na tarczy!' : isSpinning ? 'Losowanie w toku...' : !canSpin ? 'Zablokowane do Jutra 🔒' : availableCouponsList.length >= MAX_COUPON_INVENTORY ? 'Ekwipunek pełny! 🦖' : 'ZAKRĘĆ KOŁEM!'}
+                </button>
+              </div>
           </section>
         )}
 
@@ -635,6 +659,39 @@ export default function RabatyPage() {
         )}
       </AnimatePresence>
 
+      {/* MODAL: Pełny Ekwipunek Kuponów */}
+      <AnimatePresence>
+        {showCouponFullModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[5000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 40 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, y: 40 }}
+              className="bg-white p-8 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-amber-400 to-orange-500" />
+              <div className="text-6xl mb-4 mt-2">🦖</div>
+              <h3 className="text-sm font-black uppercase text-amber-600 tracking-widest mb-1">Ekwipunek pełny!</h3>
+              <h2 className="text-2xl font-black italic uppercase text-zinc-900 mb-4 leading-tight">
+                Hej Urwisie!<br />Masz już {availableCouponsList.length} kuponów!
+              </h2>
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 text-left">
+                <p className="text-sm font-bold text-amber-900 leading-relaxed">
+                  Zanim zakręcisz kołem i zdobędziesz nowe zniżki, wykorzystaj swoje obecne kupony przy zakupach w sklepie. Zrobimy wtedy miejsce na nowe nagrody! 😄
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCouponFullModal(false)}
+                className="w-full bg-amber-500 text-white py-4 rounded-2xl font-black uppercase text-sm shadow-xl hover:bg-amber-600 transition-colors cursor-pointer outline-none"
+              >
+                Dobra, zrozumiałem!
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {confirmModal && (
           <motion.div 
@@ -667,15 +724,24 @@ export default function RabatyPage() {
 
       {/* PEŁNOEKRANOWY TIMER KUPONU */}
       <AnimatePresence>
-        {currentActiveData && (
+        {currentActiveData && showActiveOverlay && (
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
             className="fixed inset-0 z-[6000] bg-white text-zinc-900 flex flex-col items-center justify-center p-6 text-center"
           >
-            <div className={`absolute top-0 left-0 right-0 h-10 flex items-center justify-center text-white ${timeLeft < 60 ? 'bg-red-500 animate-pulse' : 'bg-[#0055ff]'}`}>
-              <span className="text-sm md:text-xl font-black uppercase tracking-widest">Pokaż ten ekran kasjerce</span>
+            <div className={`absolute top-0 left-0 right-0 h-10 flex items-center justify-between px-4 text-white ${timeLeft < 60 ? 'bg-red-500 animate-pulse' : 'bg-[#0055ff]'}`}>
+              <span className="text-sm md:text-xl font-black uppercase tracking-widest flex-1 text-center">
+                Pokaż ten ekran kasjerce
+              </span>
+              <button
+                onClick={() => setShowActiveOverlay(false)}
+                className="ml-4 shrink-0 bg-white/20 hover:bg-white/30 transition-colors rounded-lg px-3 py-1 text-white text-xs font-black uppercase tracking-widest flex items-center gap-1 cursor-pointer"
+                aria-label="Minimalizuj widok kuponu"
+              >
+                <X size={14} /> Minimalizuj
+              </button>
             </div>
             
             <motion.div 
@@ -702,6 +768,26 @@ export default function RabatyPage() {
               Prosimy nie zamykać okna. Kupon po upływie czasu przepadnie.
             </p>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MINIMALIZOWANY PASEK KUPONU */}
+      <AnimatePresence>
+        {currentActiveData && !showActiveOverlay && (
+          <motion.button
+            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            onClick={() => setShowActiveOverlay(true)}
+            className={`fixed top-0 left-0 right-0 z-[5500] flex items-center justify-center gap-3 py-3 px-4 text-white font-black text-sm uppercase tracking-widest cursor-pointer shadow-lg ${
+              timeLeft < 60 ? 'bg-red-500 animate-pulse' : 'bg-[#0055ff]'
+            }`}
+          >
+            <Timer size={16} />
+            <span>Aktywny kupon: {currentActiveData.title}</span>
+            <span className="font-mono">
+              {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
+            </span>
+            <span className="ml-2 bg-white/20 rounded px-2 py-0.5 text-xs">Dotknij by pokazać</span>
+          </motion.button>
         )}
       </AnimatePresence>
     </div>

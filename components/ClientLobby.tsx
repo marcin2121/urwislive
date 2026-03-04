@@ -14,7 +14,6 @@ const TEMPLATES: Template[] = [
   { id: 'marysia', title: 'Urwis z Marysią', brand: 'Balony', difficulty: 'Normalny', thumb: '/coloring/thumb-marysia.webp', src: '/coloring/urwis-marysia.webp' },
   { id: 'balon', title: 'Urwis w parku', brand: 'Park', difficulty: 'Łatwy', thumb: '/coloring/thumb-balon.webp', src: '/coloring/urwis-balon.webp' },
   { id: 'pies', title: 'Urwis głaszcze psa', brand: 'Pies', difficulty: 'Trudny', thumb: '/coloring/thumb-pies.webp', src: '/coloring/urwis-pies.webp' },
-  { id: 'klocki', title: 'Urwis buduje z klocków', brand: 'Minecraft', difficulty: 'Łatwy', thumb: '/coloring/thumb-minecraft.webp', src: '/coloring/urwis-minecraft.webp' },
   { id: 'zabawa', title: 'Zabawa w pokoju', brand: 'Zabawa', difficulty: 'Normalny', thumb: '/coloring/thumb-zabawa.webp', src: '/coloring/urwis-zabawa.webp' },
   { id: 'kotek', title: 'Urwis z kotkiem', brand: 'Kotek', difficulty: 'Łatwy', thumb: '/coloring/thumb-kotek.webp', src: '/coloring/urwis-kotek.webp' },
 ];
