@@ -1,4 +1,4 @@
-import { Newspaper, Gamepad2, Gift, Star, Package, Sparkles } from 'lucide-react';
+import { Newspaper, Gamepad2, Gift, Star, Package, Sparkles, MessageCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface NewsItem {
@@ -28,13 +28,22 @@ export { CATEGORY_STYLES };
 
 export const NEWS_DATA: NewsItem[] = [
   {
+    id: 'wirtualny-urwis',
+    title: 'Wirtualny Urwis — Twój asystent zakupowy!',
+    description: 'Poznaj naszego nowego, inteligentnego bota! Wirtualny Urwis pomoże Ci w znalezieniu asortymentu, opowie o grach i rozwieje wszelkie wątpliwości. Znajdziesz go w prawym dolnym rogu ekranu!',
+    date: '2026-03-05',
+    category: 'nowość',
+    icon: MessageCircle,
+    pinned: true,
+  },
+  {
     id: 'quiz-urwisa',
     title: 'Nowa gra: Quiz Urwisa!',
     description: 'Rozwiąż nasz wesoły quiz i przekonaj się, jakim rodzajem Urwisa jesteś! Artystą, Odkrywcą, Śmieszkiem, a może Budowniczym? Sprawdź sam!',
     date: '2026-03-04',
     category: 'nowość',
     icon: Sparkles,
-    pinned: true,
+    pinned: false,
     link: '/strefa-zabawy/quiz-urwisa',
   },
   {
