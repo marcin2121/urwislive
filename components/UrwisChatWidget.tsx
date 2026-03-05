@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
-import type { Message } from '@ai-sdk/react';
-import type { ToolInvocation } from 'ai';
+import type { UIMessage } from '@ai-sdk/react';
+import type { UIToolInvocation } from 'ai';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,9 +18,9 @@ export function UrwisChatWidget() {
 
   // useChat przechowuje stan rozmowy. Najnowsza wersja (v5+) używa sendMessage i status zamiast isLoading/handleSubmit
   const { messages, error, stop, sendMessage, status } = useChat({
-    api: '/api/chat',
-    id: 'urwis-widget', // Identyfikator pomagający w utrzymaniu cache'u hooka
-  });
+  id: 'urwis-widget',  // api usunięte — /api/chat jest domyślne
+});
+
 
   const isLoading = status === 'submitted' || status === 'streaming';
   console.log("UrwisChatWidget state =>", { status, inputLength: input.length, error });
@@ -52,7 +52,7 @@ export function UrwisChatWidget() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage(input);
+sendMessage({ text: input });
     setInput('');
   };
 
@@ -145,21 +145,31 @@ export function UrwisChatWidget() {
                           ? 'bg-zinc-900 text-white rounded-br-sm' 
                           : 'bg-white text-zinc-800 border-2 border-zinc-100 rounded-bl-sm'
                       }`}>
-                        <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                       <div className="whitespace-pre-wrap leading-relaxed">
+  {m.parts?.map((part, i) =>
+    part.type === 'text' ? <span key={i}>{part.text}</span> : null
+  )}
+</div>
                         
                         {/* Tool Invocations (Magia) */}
-                        {m.toolInvocations?.map(toolInvocation => (
-                          <div key={toolInvocation.toolCallId} className="mt-2 md:mt-3 text-[10px] md:text-[11px] font-bold tracking-widest uppercase bg-yellow-50 text-yellow-700 p-2 md:p-2.5 rounded-xl border-2 border-yellow-200 flex items-start gap-2 shadow-inner">
-                            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 mt-0.5 shrink-0 text-yellow-500" />
-                            <div>
-                              {toolInvocation.state === 'result' ? (
-                                <span className="text-yellow-600">Magia zadziałała: "{toolInvocation.args.productName}"</span>
-                              ) : (
-                                <span className="animate-pulse">Wróżę los dla: "{toolInvocation.args.productName}"...</span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                      {m.parts
+  ?.filter(p => p.type === 'tool-invocation')
+  .map((part, i) => {
+    const ti = (part as { type: 'tool-invocation'; toolInvocation: UIToolInvocation }).toolInvocation;
+    return (
+      <div key={ti.toolCallId} className="mt-2 md:mt-3 text-[10px] md:text-[11px] font-bold tracking-widest uppercase bg-yellow-50 text-yellow-700 p-2 md:p-2.5 rounded-xl border-2 border-yellow-200 flex items-start gap-2 shadow-inner">
+        <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 mt-0.5 shrink-0 text-yellow-500" />
+        <div>
+          {ti.state === 'result' ? (
+            <span className="text-yellow-600">Magia zadziałała: "{ti.args?.productName}"</span>
+          ) : (
+            <span className="animate-pulse">Wróżę los dla: "{ti.args?.productName}"...</span>
+          )}
+        </div>
+      </div>
+    );
+  })
+}
                       </div>
                     </div>
                   </div>
