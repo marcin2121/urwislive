@@ -18,9 +18,10 @@ export default function SalaZabawContent() {
   // Funkcja śledzenia zdarzeń GTAG
   const trackPlayEvent = (action: string, label: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', action, {
+      (window as any).gtag('event', 'sala_zabaw_interakcja', {
         'event_category': 'Playroom_Interaction',
         'event_label': label,
+        'interaction_type': action,
         'location': 'Białobrzegi'
       });
     }
@@ -149,7 +150,7 @@ export default function SalaZabawContent() {
                  href="https://lecewkulki.eu/" 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 onClick={() => trackPlayEvent('external_link', 'lecewkulki_home')}
+                 onClick={() => trackPlayEvent('link_zewnetrzny', 'lecewkulki_strona')}
                  className="w-full sm:w-auto px-12 py-6 bg-[#0055ff] text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all text-center"
                >
                   Strona WWW lokalu
@@ -157,7 +158,7 @@ export default function SalaZabawContent() {
                <a 
                  href="https://lecewkulki.eu/urodziny/" 
                  target="_blank" 
-                 onClick={() => trackPlayEvent('external_link', 'birthday_booking')}
+                 onClick={() => trackPlayEvent('link_zewnetrzny', 'rezerwacja_urodzin')}
                  className="w-full sm:w-auto px-12 py-6 bg-white border-2 border-zinc-100 text-zinc-900 rounded-4xl font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-center shadow-xl"
                >
                   Zarezerwuj urodziny

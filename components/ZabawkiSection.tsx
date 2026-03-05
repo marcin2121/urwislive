@@ -142,7 +142,7 @@ export default function ZabawkiSection() {
 
               <Link 
                 href="/kontakt"
-                onClick={() => trackToyInteraction('toy_category_click', cat.id)}
+                onClick={() => trackToyInteraction('zabawki_klikniecie', `kategoria_${cat.id}`)}
                 aria-label={`Zapytaj o dostępność produktów z kategorii ${cat.title} w Białobrzegach`}
                 className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-widest text-zinc-900 group-hover:gap-4 transition-all"
               >
@@ -170,7 +170,7 @@ export default function ZabawkiSection() {
           </div>
           <Link 
             href="tel:+48604208183"
-            onClick={() => trackToyInteraction('toy_cta_click', 'phone_call')}
+            onClick={() => trackToyInteraction('zabawki_klikniecie', 'telefon')}
             aria-label="Zadzwoń do Sklepu Urwis"
             className="md:ml-auto px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs text-center block"
           >

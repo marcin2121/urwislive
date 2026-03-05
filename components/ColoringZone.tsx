@@ -339,7 +339,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   }, [undo]);
 
  useEffect(() => {
-  trackEvent('coloring_start', { template_id: template.id, template_title: template.title });
+  trackEvent('kolorowanka_start', { template_id: template.id, template_title: template.title });
   setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
   // ✅ Najbardziej niezawodna metoda — sprawdza rzeczywiste piksele
@@ -642,7 +642,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <button 
               onClick={() => {
                 setForceDismissOrientation(true);
-                trackEvent('coloring_orientation_bypassed');
+                trackEvent('kolorowanka_orientacja_pominiecie');
               }}
               className="absolute top-6 right-6 p-4 text-zinc-400 hover:text-white border-none bg-transparent"
             >

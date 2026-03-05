@@ -53,9 +53,10 @@ export default function GrySection() {
   // Funkcja śledzenia zdarzeń GTAG
   const trackGameInteraction = (action: string, label: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', action, {
+      (window as any).gtag('event', 'gry_interakcja', {
         'event_category': 'Offer_Games_2026',
         'event_label': label,
+        'interaction_type': action,
         'location': 'Białobrzegi'
       });
     }
@@ -142,7 +143,7 @@ export default function GrySection() {
 
               <Link 
                 href="/kontakt"
-                onClick={() => trackGameInteraction('game_category_click', cat.id)}
+                onClick={() => trackGameInteraction('gry_kategoria_klikniecie', cat.id)}
                 aria-label={`Zapytaj o dostępność produktów z kategorii ${cat.title} w Białobrzegach`}
                 className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-widest text-zinc-900 group-hover:gap-4 transition-all"
               >
@@ -170,7 +171,7 @@ export default function GrySection() {
           </div>
           <Link 
             href="tel:+48604208183"
-            onClick={() => trackGameInteraction('game_cta_click', 'phone_call')}
+            onClick={() => trackGameInteraction('gry_cta_klikniecie', 'telefon')}
             aria-label="Zadzwoń do Sklepu Urwis"
             className="md:ml-auto px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs"
           >

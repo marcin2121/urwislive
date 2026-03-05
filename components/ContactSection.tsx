@@ -21,7 +21,7 @@ export default function ContactSection() {
   // Funkcja do śledzenia zdarzeń GTAG
   const trackContactClick = (type: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'contact_click', {
+      (window as any).gtag('event', 'kontakt_klikniecie', {
         'event_category': 'Contact',
         'event_label': type
       });

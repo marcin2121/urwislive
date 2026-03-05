@@ -11,7 +11,7 @@ import Image from 'next/image'
 export default function LeceWKulkiSection() {
     const trackSocial = (platform: string) => {
       if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'social_click', {
+        (window as any).gtag('event', 'social_klikniecie', {
           'event_category': 'Social',
           'event_label': platform
         });

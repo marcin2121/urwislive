@@ -107,7 +107,7 @@ export default function Footer() {
                     <button
                       onClick={() => {
                         localStorage.removeItem('urwis_cookie_accepted');
-                        trackFooterEvent('cookie_reset', { location: 'footer' });
+                        trackFooterEvent('stopka_cookie_reset', { sekcja: 'stopka' });
                         window.location.reload();
                       }}
                       className="text-zinc-700 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase cursor-pointer"
@@ -139,7 +139,7 @@ export default function Footer() {
   target="_blank" 
   rel="nofollow noopener noreferrer" 
   onClick={() => { 
-    trackFooterEvent('click_creator', { location: 'footer' }); 
+    trackFooterEvent('stopka_tworca_klikniecie', { sekcja: 'stopka' }); 
   }}
   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black tracking-widest text-orange-600 hover:bg-orange-50 hover:text-orange-700 transition-all active:scale-95"
 >
@@ -178,7 +178,7 @@ function SocialIcon({ href, icon, ariaLabel }: { href: string, icon: React.React
       target="_blank"
       rel="noopener noreferrer"
       aria-label={ariaLabel}
-      onClick={() => trackFooterEvent('click_social', { platform, location: 'footer' })}
+      onClick={() => trackFooterEvent('stopka_social_klikniecie', { platforma: platform, sekcja: 'stopka' })}
       className="w-10 h-10 rounded-xl bg-white/60 flex items-center justify-center text-zinc-900 hover:bg-[#0055ff] hover:text-white transition-all shadow-sm border border-white/50"
     >
       {icon}
@@ -192,11 +192,11 @@ function FooterLink({ href, icon, label, sublabel }: { href: string, icon: any, 
   
   const handleClick = () => {
     if (href.startsWith('tel:')) {
-      trackFooterEvent('contact_intent', { method: 'phone', destination, location: 'footer' });
+      trackFooterEvent('stopka_kontakt_telefon', { metoda: 'telefon', cel: destination, sekcja: 'stopka' });
     } else if (href.startsWith('mailto:')) {
-      trackFooterEvent('contact_intent', { method: 'email', destination, location: 'footer' });
+      trackFooterEvent('stopka_kontakt_email', { metoda: 'email', cel: destination, sekcja: 'stopka' });
     } else if (href.includes('maps') || href.includes('google')) {
-      trackFooterEvent('contact_intent', { method: 'routing_map', destination, location: 'footer' });
+      trackFooterEvent('stopka_kontakt_mapa', { metoda: 'mapa_nawigacja', cel: destination, sekcja: 'stopka' });
     }
   };
 
@@ -228,7 +228,7 @@ function QuickLink({ href, children }: { href: string, children: React.ReactNode
   return (
     <Link 
       href={href} 
-      onClick={() => trackFooterEvent('nav_link_click', { name: children as string, location: 'footer' })}
+      onClick={() => trackFooterEvent('stopka_link_klikniecie', { nazwa: children as string, sekcja: 'stopka' })}
       className="text-zinc-700 hover:text-zinc-900 font-bold text-sm transition-colors flex items-center gap-2 group italic uppercase"
     >
       <div className="w-1.5 h-1.5 rounded-full bg-zinc-400 group-hover:bg-[#BF2024] transition-colors" aria-hidden="true" />

@@ -32,7 +32,7 @@ export default function PushButton() {
 
   const trackPushEvent = (action: string, params: object = {}) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'push_interaction', {
+      (window as any).gtag('event', 'push_interakcja', {
         event_category: 'PWA_Push',
         interaction_type: action,
         ...params

@@ -145,7 +145,7 @@ export default function SzkolaSection() {
 
               <Link 
                 href="/kontakt"
-                onClick={() => trackSchoolInteraction('school_category_click', cat.id)}
+                onClick={() => trackSchoolInteraction('szkola_klikniecie', `kategoria_${cat.id}`)}
                 aria-label={`Zapytaj o artykuły z kategorii ${cat.title} w Białobrzegach`}
                 className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-widest text-zinc-900 group-hover:gap-4 transition-all"
               >
@@ -174,7 +174,7 @@ export default function SzkolaSection() {
           <div className="md:ml-auto">
             <Link 
               href="tel:+48604208183"
-              onClick={() => trackSchoolInteraction('office_cta_click', 'b2b_call')}
+              onClick={() => trackSchoolInteraction('szkola_klikniecie', 'telefon_b2b')}
               aria-label="Zadzwoń w sprawie zaopatrzenia biura"
               className="px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs text-center block"
             >

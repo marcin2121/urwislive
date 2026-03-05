@@ -151,7 +151,7 @@ export default function PoznajUrwisa() {
               href="/oferta"
               onClick={() => {
                 if ((window as any).gtag) {
-                  (window as any).gtag('event', 'hero_cta_click', { destination: 'oferta_urwisa' });
+                  (window as any).gtag('event', 'hero_cta_klikniecie', { cel: 'oferta_urwisa' });
                 }
               }}
               className="group relative inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 shadow-2xl uppercase tracking-tighter italic border-4 border-white/20"

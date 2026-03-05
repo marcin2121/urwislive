@@ -53,9 +53,10 @@ export default function ImprezySection() {
   // Funkcja śledzenia zdarzeń GTAG
   const trackPartyInteraction = (action: string, label: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', action, {
+      (window as any).gtag('event', 'imprezy_interakcja', {
         'event_category': 'Offer_Party_2026',
         'event_label': label,
+        'interaction_type': action,
         'location': 'Białobrzegi'
       });
     }
@@ -145,7 +146,7 @@ export default function ImprezySection() {
 
               <Link 
                 href="/kontakt"
-                onClick={() => trackPartyInteraction('party_category_click', cat.id)}
+                onClick={() => trackPartyInteraction('imprezy_kategoria_klikniecie', cat.id)}
                 aria-label={`Zamów produkty z kategorii ${cat.title} w Sklepie Urwis`}
                 className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-widest text-zinc-900 group-hover:gap-4 transition-all"
               >
@@ -174,7 +175,7 @@ export default function ImprezySection() {
           <div className="md:ml-auto">
             <Link 
               href="tel:+48604208183"
-              onClick={() => trackPartyInteraction('party_cta_click', 'phone_helium')}
+              onClick={() => trackPartyInteraction('imprezy_cta_klikniecie', 'telefon_hel')}
               aria-label="Zadzwoń i zapytaj o balony z helem"
               className="px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs text-center block"
             >

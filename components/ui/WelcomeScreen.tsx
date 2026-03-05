@@ -47,7 +47,7 @@ export default function WelcomeScreen() {
     nextPopup(); // ✅ Zwolnienie logiki dla kolejnego komponentu w kolejce
 
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'welcome_screen_close', {
+      (window as any).gtag('event', 'ekran_powitalny_zamkniecie', {
         event_category: 'PWA',
         event_label: actionType,
       });
@@ -58,7 +58,7 @@ export default function WelcomeScreen() {
     setIsProcessing(true);
     
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'push_subscribe_click', {
+      (window as any).gtag('event', 'push_zapis_klikniecie', {
         event_category: 'PWA',
         event_label: 'Urwis Welcome Screen'
       });
@@ -121,7 +121,7 @@ export default function WelcomeScreen() {
         }).catch(err => console.error('Błąd Welcome Push:', err));
 
         if (typeof window !== 'undefined' && (window as any).gtag) {
-          (window as any).gtag('event', 'push_subscription_success', {
+          (window as any).gtag('event', 'push_sukces', {
             event_category: 'PWA'
           });
         }

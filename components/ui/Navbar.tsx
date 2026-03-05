@@ -84,7 +84,7 @@ export default function Navbar() {
       if (hoursRef.current && !hoursRef.current.contains(event.target as Node)) {
         if (isHoursDropdownOpen) {
             setIsHoursDropdownOpen(false);
-            trackEvent('nav_hours_auto_close');
+            trackEvent('nawigacja_godziny_zamkniecie_auto');
         }
       }
     }
@@ -184,7 +184,7 @@ export default function Navbar() {
             {/* LOGO */}
             <Link 
               href="/" 
-              onClick={() => trackEvent('nav_logo_click')} 
+              onClick={() => trackEvent('nawigacja_logo_klikniecie')} 
               className="flex items-center gap-0.5 md:gap-1 group shrink-0"
             >
               <div className="relative w-9 h-9 md:w-11 md:h-11 shrink-0 transition-transform group-hover:scale-105">
@@ -201,7 +201,7 @@ export default function Navbar() {
               onClick={() => {
                 const newState = !isHoursDropdownOpen;
                 setIsHoursDropdownOpen(newState);
-                trackEvent('nav_hours_toggle', { state: newState ? 'open' : 'close' });
+                trackEvent('nawigacja_godziny_zmiana', { stan: newState ? 'otwarte' : 'zamkniete' });
               }}
               className="flex items-center gap-1.5 px-2 py-1.5 md:px-4 md:py-2 rounded-full bg-white/50 border border-white/60 shadow-sm shrink-0 hover:bg-white transition-colors"
             >
@@ -247,7 +247,7 @@ export default function Navbar() {
               <Link 
                 key={item.name} 
                 href={item.href} 
-                onClick={() => trackEvent('nav_link_click', { name: item.name })}
+                onClick={() => trackEvent('nawigacja_link_klikniecie', { nazwa: item.name })}
                 className={`px-3 py-2 rounded-full text-[11px] font-bold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${
                   item.name === "Kolorowanki" 
                     ? 'bg-linear-to-r from-red-500 to-blue-500 text-white shadow-md hover:scale-105'
@@ -269,7 +269,7 @@ export default function Navbar() {
             <div className="hidden md:block">
               <Link 
                 href="/rabaty" 
-                onClick={() => trackEvent('nav_rabaty_click')}
+                onClick={() => trackEvent('nawigacja_rabaty_klikniecie')}
                 className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-400 shadow-md shadow-amber-500/20 hover:shadow-lg hover:scale-105"
               >
                 <span className="text-[11px] font-black uppercase mr-1.5">Rabaty</span>
@@ -292,7 +292,7 @@ export default function Navbar() {
               {user ? (
                 <Link 
                   href="/profil" 
-                  onClick={() => trackEvent('nav_profile_click')}
+                  onClick={() => trackEvent('nawigacja_profil_klikniecie')}
                   className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-50 hover:bg-zinc-100 text-[#0055ff] border-zinc-200"
                 >
                   <span className="text-[11px] font-black uppercase mr-2 text-zinc-700">Profil</span>
@@ -312,7 +312,7 @@ export default function Navbar() {
             <button 
               onClick={() => {
                 setMobileMenuOpen(true);
-                trackEvent('mobile_menu_open');
+                trackEvent('nawigacja_mobilna_otwarcie');
               }} 
               className="hidden md:flex xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm hover:bg-zinc-100 text-zinc-600 active:scale-90 transition-transform shrink-0 min-w-[44px] min-h-[44px] items-center justify-center"
             >
@@ -333,7 +333,7 @@ export default function Navbar() {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[120]" 
               onClick={() => {
                 setMobileMenuOpen(false);
-                trackEvent('mobile_menu_close_backdrop');
+                trackEvent('nawigacja_mobilna_zamkniecie_tlo');
               }} 
             />
             <motion.div 
@@ -354,7 +354,7 @@ export default function Navbar() {
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    trackEvent('mobile_menu_close_button');
+                    trackEvent('nawigacja_mobilna_zamkniecie_przycisk');
                   }} 
                   className="p-3 bg-zinc-50 border border-zinc-200 shadow-sm rounded-full text-zinc-600 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
@@ -375,7 +375,7 @@ export default function Navbar() {
                       href={item.href} 
                       onClick={() => { 
                         setMobileMenuOpen(false); 
-                        trackEvent('mobile_nav_click', { name: item.name }); 
+                        trackEvent('nawigacja_mobilna_link_klikniecie', { nazwa: item.name }); 
                       }} 
                       className="flex items-center gap-4 p-4 rounded-2xl text-lg font-black italic uppercase tracking-tighter hover:bg-zinc-50 text-zinc-800"
                     >
@@ -390,7 +390,7 @@ export default function Navbar() {
                 <div className="flex flex-col gap-3">
                   <Link 
                     href="/strefa-zabawy" 
-                    onClick={() => { setMobileMenuOpen(false); trackEvent('mobile_cta_strefa-zabawy'); }} 
+                    onClick={() => { setMobileMenuOpen(false); trackEvent('nawigacja_mobilna_strefa_zabawy_klikniecie'); }} 
                     className="flex flex-col relative overflow-hidden p-6 rounded-4xl bg-zinc-900 text-white border border-zinc-800 shadow-xl"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-[#BF2024]/40 to-[#0055ff]/40 opacity-80" />
@@ -415,17 +415,17 @@ export default function Navbar() {
       {!isUrwisekPage && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
           <div className="flex items-center justify-around px-2 relative">
-            <Link href="/" onClick={() => trackEvent('bottom_nav_home')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+            <Link href="/" onClick={() => trackEvent('nawigacja_dolna_start')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
               <Home size={24} className={pathname === '/' ? 'fill-current' : ''} />
               <span className="text-[9px] font-black uppercase tracking-tighter">Start</span>
             </Link>
-            <Link href="/strefa-zabawy" onClick={() => trackEvent('bottom_nav_strefa')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname.startsWith('/strefa-zabawy') ? 'text-yellow-500' : 'text-zinc-500'}`}>
+            <Link href="/strefa-zabawy" onClick={() => trackEvent('nawigacja_dolna_strefa')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname.startsWith('/strefa-zabawy') ? 'text-yellow-500' : 'text-zinc-500'}`}>
               <Smile size={24} />
               <span className="text-[9px] font-black uppercase tracking-tighter">Zabawa</span>
             </Link>
 
             {/* Fab Button: Rabaty */}
-            <Link href="/rabaty" onClick={() => trackEvent('bottom_nav_rabaty')} className="relative flex flex-col items-center gap-1 w-16 -mt-8 mx-2 z-10 group">
+            <Link href="/rabaty" onClick={() => trackEvent('nawigacja_dolna_rabaty')} className="relative flex flex-col items-center gap-1 w-16 -mt-8 mx-2 z-10 group">
               <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl border-[5px] border-white/80 backdrop-blur-sm transition-transform group-active:scale-95 ${pathname === '/rabaty' ? 'bg-[#BF2024] text-white shadow-red-500/40' : 'bg-gradient-to-tr from-amber-400 to-orange-500 text-white'}`}>
                 <BadgePercent size={28} className={pathname === '/rabaty' ? 'fill-current' : ''} />
               </div>
@@ -433,17 +433,17 @@ export default function Navbar() {
             </Link>
 
             {user ? (
-              <Link href="/profil" onClick={() => trackEvent('bottom_nav_profile')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+              <Link href="/profil" onClick={() => trackEvent('nawigacja_dolna_profil')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
                 <User size={24} className={pathname === '/profil' ? 'fill-current' : ''} />
                 <span className="text-[9px] font-black uppercase tracking-tighter">Profil</span>
               </Link>
             ) : (
-              <button onClick={() => { trackEvent('bottom_nav_login'); setIsAuthModalOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500">
+              <button onClick={() => { trackEvent('nawigacja_dolna_logowanie'); setIsAuthModalOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500">
                 <User size={24} />
                 <span className="text-[9px] font-black uppercase tracking-tighter">Konto</span>
               </button>
             )}
-            <button onClick={() => { trackEvent('bottom_nav_menu'); setMobileMenuOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none">
+            <button onClick={() => { trackEvent('nawigacja_dolna_menu'); setMobileMenuOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none">
               <Menu size={24} />
               <span className="text-[9px] font-black uppercase tracking-tighter">Menu</span>
             </button>

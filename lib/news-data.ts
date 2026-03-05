@@ -13,11 +13,11 @@ export interface NewsItem {
   pinned?: boolean;
 }
 
-const CATEGORY_STYLES: Record<string, { color: string; bg: string }> = {
-  'nowość': { color: 'text-blue-600', bg: 'bg-blue-100' },
-  'promocja': { color: 'text-red-600', bg: 'bg-red-100' },
-  'wydarzenie': { color: 'text-amber-600', bg: 'bg-amber-100' },
-  'informacja': { color: 'text-zinc-600', bg: 'bg-zinc-100' },
+const CATEGORY_STYLES: Record<string, { color: string; bg: string; glowColor: string }> = {
+  'nowość': { color: 'text-blue-600', bg: 'bg-blue-100', glowColor: '37, 99, 235' }, // blue-600
+  'promocja': { color: 'text-red-600', bg: 'bg-red-100', glowColor: '220, 38, 38' }, // red-600
+  'wydarzenie': { color: 'text-amber-600', bg: 'bg-amber-100', glowColor: '217, 119, 6' }, // amber-600
+  'informacja': { color: 'text-zinc-600', bg: 'bg-zinc-100', glowColor: '113, 113, 122' }, // zinc-500
 };
 
 export { CATEGORY_STYLES };
@@ -28,20 +28,39 @@ export { CATEGORY_STYLES };
 
 export const NEWS_DATA: NewsItem[] = [
   {
+    id: 'quiz-urwisa',
+    title: 'Nowa gra: Quiz Urwisa!',
+    description: 'Rozwiąż nasz wesoły quiz i przekonaj się, jakim rodzajem Urwisa jesteś! Artystą, Odkrywcą, Śmieszkiem, a może Budowniczym? Sprawdź sam!',
+    date: '2026-03-04',
+    category: 'nowość',
+    icon: Sparkles,
+    pinned: true,
+    link: '/strefa-zabawy/quiz-urwisa',
+  },
+  {
+    id: 'strefa-zabawy-v2',
+    title: 'Wielka aktualizacja Strefy Zabawy! 🚀',
+    description: 'Nasz wirtualny plac zabaw przeszedł całkowitą metamorfozę! Przebudowaliśmy wygląd na nowoczesny i elegancki, podzieliliśmy gry na wygodne kategorie. Sprawdź nowe 4 promowane hity na stronie głównej!',
+    date: '2026-03-04',
+    category: 'wydarzenie',
+    icon: Gamepad2,
+    link: '/strefa-zabawy',
+  },
+  {
     id: 'marzec-nowosci-lego',
     title: 'Nowa dostawa LEGO w sklepie!',
     description: 'Właśnie dotarła do nas świeża dostawa klocków LEGO! Nowe zestawy już czekają na półkach. Przyjdź i zobacz, co mamy nowego!',
     date: '2026-03-01',
-    category: 'nowość',
+    category: 'informacja',
     icon: Package,
-    pinned: true,
+    pinned: false,
   },
   {
     id: 'kolorowanki-online',
     title: 'Kolorowanki Urwisa — teraz online!',
     description: 'Nowa sekcja na naszej stronie: koloruj cyfrowo w przeglądarce, drukuj lub zapisuj swoje dzieła. Dla małych i dużych artystów!',
     date: '2026-02-28',
-    category: 'wydarzenie',
+    category: 'informacja',
     icon: Sparkles,
     link: '/strefa-zabawy/kolorowanki',
   },

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Gamepad2, X, Brain, Zap, Clock, Coins } from 'lucide-react'
+import { Gamepad2, X, Brain, Zap, Clock, Coins, HelpCircle } from 'lucide-react'
 import ArcadeMemoryGame from './games/ArcadeMemoryGame'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +13,15 @@ interface ArcadeCenterProps {
 
 export default function ArcadeCenter({ onClose, onGameComplete }: ArcadeCenterProps) {
   const [activeGame, setActiveGame] = useState<string | null>(null)
+
+  const trackArcadeEvent = (gameId: string) => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'arcade_gra_uruchomienie', {
+        'event_category': 'Arcade_Center',
+        'event_label': gameId
+      });
+    }
+  };
 
   const handleGameEnd = (won: boolean) => {
     if (won) {
@@ -59,7 +68,7 @@ export default function ArcadeCenter({ onClose, onGameComplete }: ArcadeCenterPr
             <motion.div key="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               
               <button 
-                onClick={() => setActiveGame('memory')}
+                onClick={() => { trackArcadeEvent('memory'); setActiveGame('memory'); }}
                 className="w-full bg-white border-2 border-zinc-200 hover:border-purple-400 p-4 rounded-3xl flex items-center gap-4 group transition-all"
               >
                 <div className="bg-indigo-50 text-indigo-500 p-3 rounded-2xl group-hover:scale-110 transition-transform">
@@ -70,6 +79,22 @@ export default function ArcadeCenter({ onClose, onGameComplete }: ArcadeCenterPr
                   <p className="text-xs font-bold text-zinc-400 flex items-center gap-1">Znajdź pary i wygraj 15 <Coins className="w-3 h-3 text-yellow-500" /></p>
                 </div>
                 <div className="text-purple-500 font-bold bg-purple-50 px-3 py-1.5 rounded-xl uppercase text-[10px] tracking-widest">
+                  Graj
+                </div>
+              </button>
+
+              <button 
+                onClick={() => { trackArcadeEvent('quiz'); window.location.href = '/strefa-zabawy/quiz-urwisa'; }}
+                className="w-full bg-white border-2 border-zinc-200 hover:border-amber-400 p-4 rounded-3xl flex items-center gap-4 group transition-all"
+              >
+                <div className="bg-amber-50 text-amber-500 p-3 rounded-2xl group-hover:scale-110 transition-transform">
+                  <HelpCircle size={28} />
+                </div>
+                <div className="text-left flex-1">
+                  <h3 className="font-black text-lg text-zinc-800 leading-none mb-1">Quiz Urwisa</h3>
+                  <p className="text-xs font-bold text-zinc-400 flex items-center gap-1">Jakim Urwisem jesteś?</p>
+                </div>
+                <div className="text-amber-500 font-bold bg-amber-50 px-3 py-1.5 rounded-xl uppercase text-[10px] tracking-widest">
                   Graj
                 </div>
               </button>

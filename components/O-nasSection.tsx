@@ -9,7 +9,7 @@ import Particles from "@/components/Particles"
 export default function AboutSection() {
   const trackAboutInteraction = (area: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'about_interaction', {
+      (window as any).gtag('event', 'o_nas_interakcja', {
         'event_category': 'Engagement',
         'event_label': area
       });
@@ -69,7 +69,7 @@ export default function AboutSection() {
                 </div>
                 <Link 
                   href="/oferta" 
-                  onClick={() => trackAboutInteraction('shop_click')}
+                  onClick={() => trackAboutInteraction('sklep_klikniecie')}
                   aria-label="Sprawdź ofertę zabawek i artykułów szkolnych"
                   className="relative z-10 flex items-center gap-3 font-black uppercase text-[11px] tracking-widest text-[#BF2024] mt-10 hover:gap-5 transition-all"
                 >
@@ -97,7 +97,7 @@ export default function AboutSection() {
                 </div>
                 <Link 
                   href="/salazabaw" 
-                  onClick={() => trackAboutInteraction('playroom_click')}
+                  onClick={() => trackAboutInteraction('sala_zabaw_klikniecie')}
                   aria-label="Odkryj salę zabaw Lecę w Kulki"
                   className="relative z-10 flex items-center gap-3 font-black uppercase text-[11px] tracking-widest text-[#0055ff] mt-10 hover:gap-5 transition-all"
                 >
@@ -131,7 +131,7 @@ export default function AboutSection() {
                 <Link 
                   href="https://akademiaurwisa.pl" 
                   target="_blank" 
-                  onClick={() => trackAboutInteraction('academy_click')}
+                  onClick={() => trackAboutInteraction('akademia_klikniecie')}
                   aria-label="Rozpocznij przygodę w Akademii Urwisa (otwiera się w nowej karcie)"
                   className="relative z-10 flex items-center gap-3 font-black uppercase text-[11px] tracking-widest text-amber-600 mt-10 hover:gap-5 transition-all"
                 >
@@ -151,7 +151,7 @@ export default function AboutSection() {
           </h2>
           <Link 
             href="/kontakt" 
-            onClick={() => trackAboutInteraction('footer_cta_click')}
+            onClick={() => trackAboutInteraction('stopka_cta_klikniecie')}
             aria-label="Przejdź do strony kontaktowej i odwiedź nas w Białobrzegach"
             className="group relative inline-flex items-center gap-4 px-16 py-8 bg-zinc-900 text-white rounded-full font-black text-2xl uppercase tracking-tighter hover:scale-105 transition-all shadow-2xl overflow-hidden"
           >

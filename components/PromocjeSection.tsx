@@ -89,9 +89,10 @@ export default function PromocjeSection() {
 
   const trackPromoInteraction = (action: string, itemName: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', action, {
+      (window as any).gtag('event', 'promocje_interakcja', {
         'event_category': 'Promotions_2026',
         'event_label': itemName,
+        'interaction_type': action,
         'location': 'Białobrzegi'
       });
     }
@@ -243,7 +244,7 @@ export default function PromocjeSection() {
 
                     <Link 
                       href="/kontakt" 
-                      onClick={() => trackPromoInteraction('promo_reserve_click', item.title)}
+                      onClick={() => trackPromoInteraction('promocja_rezerwacja_klikniecie', item.title)}
                       aria-label={`Zarezerwuj lub zapytaj o produkt: ${item.title}`}
                       className={`group/btn w-full py-5 text-white rounded-4xl font-black uppercase tracking-widest text-center block relative overflow-hidden shadow-xl transition-all hover:scale-[1.02] ${!item.expires_at && 'mt-auto'}`}
                       style={{ backgroundColor: getAccentColor(item.category) }}

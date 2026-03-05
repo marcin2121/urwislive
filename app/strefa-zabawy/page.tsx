@@ -1,218 +1,150 @@
-import Link from 'next/link'
-import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory } from 'lucide-react'
+"use client";
 
-export const metadata = {
-  title: 'Strefa Zabawy i Darmowe Gry | Sklep Urwis',
-  description: 'Odkryj interaktywne gry, Wirtualnego Urwisa, kolorowanki i AR. Zanurz się w darmowej rozrywce od Sklepu Urwis!',
-};
+import React from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare, Flame, Lightbulb, Gamepad2 } from 'lucide-react';
+import MagicBento from '@/components/ui/MagicBento';
+
+// Definicje gier podzielone na kategorie - WERSJA PREMIUM (jak reszta sklepu)
+
+
+const CATEGORIES = [
+  {
+    title: 'Kreatywność & Odkrywanie',
+    icon: <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />,
+    games: [
+      { id: 'urwisek', icon: <Smile className="text-yellow-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Wirtualny Urwis', desc: 'Nakarm i baw się ze swoim wirtualnym podopiecznym. Zdobywaj punkty!', glowColor: '250, 204, 21', href: '/strefa-zabawy/urwisek', highlight: true, highlightTag: 'Hit!' },
+      { id: 'kolorowanki', icon: <Paintbrush className="text-blue-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kolorowanki', desc: 'Pomaluj moje ekscytujące przygody i dino-kolegów.', glowColor: '59, 130, 246', href: '/strefa-zabawy/kolorowanki' },
+      { id: 'urwisar', icon: <Target className="text-red-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Urwis AR', desc: 'Wyskoczę prosto na Twój dywan przez kamerę Twojego urządzenia!', glowColor: '239, 68, 68', href: '/strefa-zabawy/urwisar' },
+      { id: 'quiz', icon: <HelpCircle className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Quiz Urwisa', desc: 'Rozwiąż wesoły quiz i przekonaj się, jakim rodzajem Urwisa jesteś.', glowColor: '245, 158, 11', href: '/strefa-zabawy/quiz-urwisa', highlight: true, highlightTag: 'Nowość!' },
+    ]
+  },
+  {
+    title: 'Rozrywka & Zręczność',
+    icon: <Gamepad2 className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />,
+    games: [
+      { id: 'kulki', icon: <CircleDot className="text-cyan-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kulki', desc: 'Połącz trzy takie same bąbelki, by pękły! Dasz radę odeprzeć atak?', glowColor: '6, 182, 212', href: '/strefa-zabawy/lece-w-kulki', highlight: true, highlightTag: 'Popularne' },
+      { id: 'breaker', icon: <Blocks className="text-indigo-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Urwis Breaker', desc: 'Rozbij wszystkie klocki piłką, łap power-upy i bij rekordy!', glowColor: '99, 102, 241', href: '/strefa-zabawy/urwis-breaker' },
+      { id: 'fabryka', icon: <Factory className="text-emerald-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Fabryka Urwisa', desc: 'Buduj ogromną fabrykę! Zobacz, jak rośnie Twoje imperium (Idle).', glowColor: '16, 185, 129', href: '/strefa-zabawy/fabryka-urwisa' },
+    ]
+  },
+  {
+    title: 'Logika & Pamięć',
+    icon: <Brain className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />,
+    games: [
+      { id: 'memory', icon: <Brain className="text-purple-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Pamięć Urwisa', desc: 'Rozruszaj szare komórki! Szukaj moich ulubionych rzeczy w parach.', glowColor: '168, 85, 247', href: '/strefa-zabawy/memory' },
+      { id: 'tictactoe', icon: <XSquare className="text-pink-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kółko i Krzyżyk', desc: 'Zagrajmy w Kółko i Krzyżyk! Zobaczymy, czy uda Ci się mnie pokonać.', glowColor: '236, 72, 153', href: '/strefa-zabawy/kolko-i-krzyzyk' },
+    ]
+  }
+];
 
 export default function StrefaZabawyPage() {
+  const trackPlayZoneEvent = (gameId: string, gameTitle: string) => {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'strefa_zabawy_gra_klikniecie', {
+        'event_category': 'Play_Zone',
+        'event_label': gameTitle,
+        'game_id': gameId
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-transparent pt-24 md:pt-[120px] pb-32 relative z-10 text-zinc-900">
+    <div className="min-h-screen bg-transparent pt-20 md:pt-[120px] pb-24 md:pb-32 relative z-10 text-zinc-900 overflow-x-hidden">
+        
        {/* Nagłówek Huba */}
-       <div className="container mx-auto px-6 mb-16 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors mb-6 font-bold uppercase tracking-widest text-xs">
+       <div className="container mx-auto px-4 md:px-6 mb-10 md:mb-16 relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors mb-6 md:mb-8 font-bold uppercase tracking-widest text-xs">
           <MoveLeft size={16} /> Wróć do sklepu
         </Link>
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-          <img src="/urwis-icon.webp" alt="Wesoły sympatyczny dinozaur Urwis" className="w-32 h-32 md:w-48 md:h-48 drop-shadow-2xl animate-bounce-slow object-contain order-2 md:order-1 shrink-0 md:mt-12" />
-          <div className="order-1 md:order-2 text-center md:text-left">
-            <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter pr-4">
-              Strefa <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 pr-4">Zabawy <Sparkles className="inline-block text-orange-500 mb-2" size={48} /></span>
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12 text-center md:text-left">
+          <img src="/urwis-icon.webp" alt="Wesoły dinozaur Urwis" className="w-24 h-24 md:w-48 md:h-48 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] animate-bounce-slow object-contain shrink-0" />
+          <div className="flex-1">
+            <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter text-zinc-900 mb-4 md:mb-6">
+              Strefa <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Zabawy</span>
+              <Sparkles className="inline-block text-orange-500 ml-2 md:ml-3 mb-1 md:mb-2 w-8 h-8 md:w-10 md:h-10" />
             </h1>
-            {/* Desktop speech bubble — pod tytułem, obok ikony */}
-            <div className="hidden md:inline-block bg-white p-6 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/10 rounded-3xl mt-6 relative text-left">
-               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[16px] border-y-transparent border-r-[24px] border-r-yellow-400"></div>
-               <div className="absolute -left-[13px] top-1/2 -translate-y-1/2 w-0 h-0 border-y-[14px] border-y-transparent border-r-[22px] border-r-white"></div>
-               <p className="text-2xl text-zinc-800 font-bold italic leading-tight">
-                 "Cześć! Jestem Urwis! 🦖 Przygotowałem dla Ciebie mnóstwo niespodzianek na tej stronie. W co zagramy dzisiaj? Ty wybierasz!"
-               </p>
-            </div>
-          </div>
-          {/* Mobile speech bubble — pod ikonką */}
-          <div className="order-3 md:hidden">
-            <div className="bg-white p-6 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/10 rounded-3xl relative inline-block text-left">
-               <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-0 h-0 border-x-[16px] border-x-transparent border-b-[24px] border-b-yellow-400"></div>
-               <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 w-0 h-0 border-x-[14px] border-x-transparent border-b-[22px] border-b-white"></div>
-               <p className="text-xl text-zinc-800 font-bold italic leading-tight">
-                 "Cześć! Jestem Urwis! 🦖 Przygotowałem dla Ciebie mnóstwo niespodzianek na tej stronie. W co zagramy dzisiaj? Ty wybierasz!"
-               </p>
-            </div>
+            
+            <p className="text-sm md:text-xl text-zinc-500 font-medium max-w-2xl leading-relaxed mx-auto md:mx-0">
+              Witaj w centrum wirtualnej rozrywki Sklepu Urwis! Wybierz grę i zagraj za darmo prosto w przeglądarce.
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         
-        {/* Kafelek Wirtualny Zwierzak */}
-        <Link href="/strefa-zabawy/urwisek" className="group block">
-          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-yellow-200 transition-all h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-16 bg-yellow-400/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-yellow-400/10 transition-colors"></div>
-            
-            <div className="mb-6 bg-yellow-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Smile className="text-yellow-500" size={32} />
-            </div>
-            
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-yellow-500 transition-colors pr-2">
-              Wirtualny Urwis
-            </h2>
-            
-            <p className="text-zinc-500 font-medium flex-1">
-              Załóż konto, nakarm, umyj i baw się ze swoim własnym wirtualnym podopiecznym. Zdobywaj unikalne punkty!
-            </p>
-            
-            <div className="mt-8 flex items-center text-yellow-500 font-bold uppercase tracking-widest text-xs">
-              Zaopiekuj się mną! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
+        {/* Kategorie gier */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
+          {CATEGORIES.map((category, catIdx) => (
+            <div key={catIdx} className="flex flex-col gap-4 md:gap-6">
+              
+              {/* Nagłówek kategorii */}
+              <div className="flex items-center gap-2 md:gap-3 pb-3 md:pb-4 border-b border-zinc-200">
+                {category.icon}
+                <h2 className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-400">{category.title}</h2>
+              </div>
 
-        {/* Kafelek Kolorowanki */}
-        <Link href="/strefa-zabawy/kolorowanki" className="group block">
-          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-blue-200 transition-all h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-16 bg-blue-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-blue-500/10 transition-colors"></div>
-            
-            <div className="mb-6 bg-blue-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Paintbrush className="text-blue-500" size={32} />
-            </div>
-            
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-blue-500 transition-colors pr-2">
-              Kolorowanki
-            </h2>
-            
-            <p className="text-zinc-500 font-medium flex-1">
-              "Pomaluj moje ekscytujące przygody i dino-kolegów Twoimi ulubionymi kolorami!"
-            </p>
-            
-            <div className="mt-8 flex items-center text-blue-500 font-bold uppercase tracking-widest text-xs">
-              Pomaluj mój świat! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
+              {/* Gry w kategorii */}
+              <div className="flex flex-col gap-3 md:gap-4">
+                {category.games.map((game, i) => (
+                  <Link key={game.id} href={game.href} onClick={() => trackPlayZoneEvent(game.id, game.title)} className="block group outline-none h-full">
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1, duration: 0.5 }}
+                      className="h-full"
+                    >
+                      <MagicBento
+                        className={`bg-white/60 backdrop-blur-md rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-6 shadow-sm transition-all h-full flex flex-col relative overflow-hidden ${
+                          game.highlight 
+                            ? 'border-2 border-[rgba(var(--glow-color),0.4)] hover:shadow-[0_0_30px_rgba(var(--glow-color),0.3)] hover:-translate-y-1 md:hover:-translate-y-2' 
+                            : 'border border-white hover:shadow-xl hover:-translate-y-1'
+                        }`}
+                        glowColor={game.glowColor}
+                        enableTilt={false}
+                        spotlightRadius={game.highlight ? 400 : 250}
+                        disableAnimations={!game.highlight}
+                      >
+                        {/* Wyróżniony Background Glow */}
+                        {game.highlight && (
+                           <div className="absolute top-0 right-0 p-16 md:p-20 rounded-full blur-[40px] md:blur-[60px] opacity-10 pointer-events-none transition-all group-hover:opacity-30" style={{ backgroundColor: `rgb(${game.glowColor})` }} />
+                        )}
 
-        {/* Kafelek AR */}
-        <Link href="/strefa-zabawy/urwisar" className="group block">
-          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-red-200 transition-all h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-16 bg-red-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-red-500/10 transition-colors"></div>
-            
-            <div className="mb-6 bg-red-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Target className="text-red-500" size={32} />
+                        <div className="flex items-center md:items-start gap-4 relative z-10 flex-1">
+                          <div className={`shrink-0 bg-white ${game.highlight ? 'shadow-md border-[rgba(var(--glow-color),0.2)]' : 'shadow-sm border-zinc-100'} border p-3 md:p-4 rounded-xl md:rounded-2xl group-hover:scale-105 md:group-hover:scale-110 transition-transform`}>
+                            {game.icon}
+                          </div>
+                          
+                          <div className="flex-1 flex flex-col justify-center md:justify-start h-full relative">
+                            {game.highlight && (
+                               <div className="absolute -top-1 md:-top-3 right-0 text-[8px] md:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 md:px-2.5 md:py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: `rgb(${game.glowColor})` }}>
+                                 {game.highlightTag}
+                               </div>
+                            )}
+                            
+                            <h3 className={`text-lg md:text-xl font-black uppercase italic tracking-tight mb-0.5 md:mb-2 transition-colors pr-16 md:pr-0 ${game.highlight ? 'text-zinc-900' : 'text-zinc-900 group-hover:text-zinc-600'}`}>
+                              {game.title}
+                            </h3>
+                            <p className="text-zinc-500 font-medium text-[11px] md:text-xs leading-snug md:leading-relaxed flex-1 md:mt-0 line-clamp-2 md:line-clamp-none">
+                              {game.desc}
+                            </p>
+                            <div className="mt-2 md:mt-4 hidden md:flex items-center text-zinc-400 group-hover:text-zinc-900 font-black uppercase tracking-widest text-[10px] transition-colors">
+                              Uruchom <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          </div>
+                        </div>
+                      </MagicBento>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
             </div>
-            
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-red-500 transition-colors pr-2">
-              Zabierz mnie do Pokoju
-            </h2>
-            
-            <p className="text-zinc-500 font-medium flex-1">
-              "Dzięki magii kamery w telefonie mogę wyskoczyć prosto na Twój dywan! Sprawdźmy to!"
-            </p>
-            
-            <div className="mt-8 flex items-center text-red-500 font-bold uppercase tracking-widest text-xs">
-              Zaproś mnie do pokoju <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
+          ))}
+        </div>
 
-        {/* Kafelek Memory */}
-        <Link href="/strefa-zabawy/memory" className="group block">
-          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-green-200 transition-all h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-16 bg-green-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-green-500/10 transition-colors"></div>
-            
-            <div className="mb-6 bg-green-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M9 15h.01"/><path d="M15 15h.01"/></svg>
-            </div>
-            
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-green-500 transition-colors pr-2">
-              Pamięć Urwisa
-            </h2>
-            
-            <p className="text-zinc-500 font-medium flex-1">
-              "Rozruszajmy Twoje szare komórki! Szukaj moich ulubionych rzeczy w parach na planszy!"
-            </p>
-            
-            <div className="mt-8 flex items-center text-green-500 font-bold uppercase tracking-widest text-xs">
-              Trenuj ze mną pamięć! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
-
-        {/* Kafelek Kółko i Krzyżyk */}
-        <Link href="/strefa-zabawy/kolko-i-krzyzyk" className="group block">
-          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-purple-200 transition-all h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-16 bg-purple-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-purple-500/10 transition-colors"></div>
-            
-            <div className="mb-6 bg-purple-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-500"><path d="M3 12h18"/><path d="M12 3v18"/><path d="m3 3 18 18"/><path d="m3 21 18-18"/></svg>
-            </div>
-            
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-purple-500 transition-colors pr-2">
-              Kółko i Krzyżyk
-            </h2>
-            
-            <p className="text-zinc-500 font-medium flex-1">
-              "Zagrajmy w Kółko i Krzyżyk! Zobaczymy czy uda Ci się mnie pokonać w tej bitwie na logikę!"
-            </p>
-            
-            <div className="mt-8 flex items-center text-purple-500 font-bold uppercase tracking-widest text-xs">
-              Zagraj ze mną! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
-
-        {/* Kafelek Bubble Shooter - Lecę w Kulki */}
-        <Link href="/strefa-zabawy/lece-w-kulki" className="group block">
-          <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-cyan-200 transition-all h-full flex flex-col relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-16 bg-cyan-500/5 blur-[50px] rounded-full pointer-events-none group-hover:bg-cyan-500/10 transition-colors"></div>
-            
-            <div className="mb-6 bg-cyan-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <CircleDot className="text-cyan-500" size={32} />
-            </div>
-            
-            <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-cyan-500 transition-colors pr-2">
-              Kulki
-            </h2>
-            
-            <p className="text-zinc-500 font-medium flex-1">
-              "Pif, paf! Połącz trzy takie same bąbelki by pękły i zdobądź masę punktów! Dasz radę odeprzeć atak z góry?"
-            </p>
-            
-            <div className="mt-8 flex items-center text-cyan-500 font-bold uppercase tracking-widest text-xs">
-              Strzelaj balonami! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
-<Link href="/strefa-zabawy/urwis-breaker" className="group block">
-  <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-indigo-200 transition-all h-full flex flex-col relative overflow-hidden">
-    <div className="mb-6 bg-indigo-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-      <Blocks className="text-indigo-500" size={32} />
-    </div>
-    <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-indigo-500 transition-colors">
-      Urwis Breaker
-    </h2>
-    <p className="text-zinc-500 font-medium flex-1">
-      "Rozbij wszystkie klocki piłką, łap power-upy i bij rekordy!"
-    </p>
-    <div className="mt-8 flex items-center text-indigo-500 font-bold uppercase tracking-widest text-xs">
-      Graj teraz! <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-    </div>
-  </div>
-</Link>
-<Link href="/strefa-zabawy/fabryka-urwisa" className="group block">
-  <div className="bg-white rounded-[3rem] p-8 shadow-sm hover:shadow-xl border border-zinc-100 hover:border-emerald-200 transition-all h-full flex flex-col relative overflow-hidden">
-    <div className="mb-6 bg-emerald-50 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-      <Factory className="text-emerald-500" size={32} />
-    </div>
-    <h2 className="text-2xl font-black uppercase italic tracking-tight text-zinc-900 mb-3 group-hover:text-emerald-500 transition-colors">
-      Fabryka Urwisa
-    </h2>
-    <p className="text-zinc-500 font-medium flex-1">
-      "Klikaj, zatrudniaj Urwisków, buduj ogromną fabrykę! Zobacz, jak rośnie Twoje imperium (Gra typu Idle)."
-    </p>
-    <div className="mt-8 flex items-center text-emerald-500 font-bold uppercase tracking-widest text-xs">
-      Zarządzaj Fabryką <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-    </div>
-  </div>
-</Link>
       </div>
     </div>
   )
