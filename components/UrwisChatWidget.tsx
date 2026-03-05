@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
-import type { Message, ToolInvocation } from '@ai-sdk/react';
+import type { Message } from '@ai-sdk/react';
+import type { ToolInvocation } from 'ai';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
