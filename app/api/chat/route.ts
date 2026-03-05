@@ -31,16 +31,15 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
           productName: z.string().describe('Nazwa produktu, o który pyta klient (np. "czerwone buty", "kubek").'),
         }),
         // TUTA DODAJEMY TYP: { productName: string }
-        execute: async (args: { productName: string }) => {
-          const funnyResponse = await askCrystalBall(args.productName);
-          return {
-            product: args.productName,
-            magicVerdict: funnyResponse,
+     execute: async (args) => {
+  const funnyResponse = await askCrystalBall(args.productName);
+  return {
+    product: args.productName,
+    magicVerdict: funnyResponse,
           };
         },
       }),
     },
-    maxSteps: 5,
   });
 
   return result.toTextStreamResponse();
