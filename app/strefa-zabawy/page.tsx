@@ -15,7 +15,7 @@ const CATEGORIES = [
     icon: <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />,
     games: [
       { id: 'urwisek', icon: <Smile className="text-yellow-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Wirtualny Urwis', desc: 'Nakarm i baw się ze swoim wirtualnym podopiecznym. Zdobywaj punkty!', glowColor: '250, 204, 21', href: '/strefa-zabawy/urwisek', highlight: true, highlightTag: 'Hit!' },
-      { id: 'kolorowanki', icon: <Paintbrush className="text-blue-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kolorowanki', desc: 'Pomaluj moje ekscytujące przygody i dino-kolegów.', glowColor: '59, 130, 246', href: '/strefa-zabawy/kolorowanki' },
+      { id: 'kolorowanki', icon: <Paintbrush className="text-blue-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kolorowanki', desc: 'Pomaluj moje ekscytujące przygody i świat pełen kolorów.', glowColor: '59, 130, 246', href: '/strefa-zabawy/kolorowanki' },
       { id: 'urwisar', icon: <Target className="text-red-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Urwis AR', desc: 'Wyskoczę prosto na Twój dywan przez kamerę Twojego urządzenia!', glowColor: '239, 68, 68', href: '/strefa-zabawy/urwisar' },
       { id: 'quiz', icon: <HelpCircle className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Quiz Urwisa', desc: 'Rozwiąż wesoły quiz i przekonaj się, jakim rodzajem Urwisa jesteś.', glowColor: '245, 158, 11', href: '/strefa-zabawy/quiz-urwisa', highlight: true, highlightTag: 'Nowość!' },
     ]
@@ -59,7 +59,7 @@ export default function StrefaZabawyPage() {
           <MoveLeft size={16} /> Wróć do sklepu
         </Link>
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12 text-center md:text-left">
-          <img src="/urwis-icon.webp" alt="Wesoły dinozaur Urwis" className="w-24 h-24 md:w-48 md:h-48 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] animate-bounce-slow object-contain shrink-0" />
+          <img src="/urwis-icon.webp" alt="Superbohater Urwis" className="w-24 h-24 md:w-48 md:h-48 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] animate-bounce-slow object-contain shrink-0" />
           <div className="flex-1">
             <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter text-zinc-900 mb-4 md:mb-6">
               Strefa <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Zabawy</span>

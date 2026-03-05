@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
+    "@ai-sdk/react": "^3.0.118",
     "@formspree/react": "^3.0.0",
     "@gsap/react": "^2.1.2",
     "@nanostores/react": "github:ai/react",
