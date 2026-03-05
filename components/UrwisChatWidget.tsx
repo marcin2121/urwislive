@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
-import type { UIMessage } from '@ai-sdk/react';
-import type { UIToolInvocation } from 'ai';
+import type { UIMessage, UIToolInvocation } from '@ai-sdk/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,11 +150,13 @@ sendMessage({ text: input });
   )}
 </div>
                         
-                        {/* Tool Invocations (Magia) */}
-                      {m.parts
+             {m.parts
   ?.filter(p => p.type === 'tool-invocation')
   .map((part, i) => {
-    const ti = (part as { type: 'tool-invocation'; toolInvocation: UIToolInvocation }).toolInvocation;
+    const ti = (part as unknown as { 
+      type: 'tool-invocation'; 
+      toolInvocation: UIToolInvocation<any> 
+    }).toolInvocation;
     return (
       <div key={ti.toolCallId} className="mt-2 md:mt-3 text-[10px] md:text-[11px] font-bold tracking-widest uppercase bg-yellow-50 text-yellow-700 p-2 md:p-2.5 rounded-xl border-2 border-yellow-200 flex items-start gap-2 shadow-inner">
         <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 mt-0.5 shrink-0 text-yellow-500" />
@@ -170,6 +171,7 @@ sendMessage({ text: input });
     );
   })
 }
+
                       </div>
                     </div>
                   </div>
