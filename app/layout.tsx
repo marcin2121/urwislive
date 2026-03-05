@@ -15,6 +15,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import OnboardingTour from "@/components/ui/OnboardingTour";
 import { PopupProvider } from "@/components/PopupProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { UrwisChatWidget } from '@/components/UrwisChatWidget';
 const inter = Inter({ 
   subsets: ["latin"], 
   variable: "--font-inter",
@@ -225,6 +226,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Suspense>
             <OnboardingTour />
             <SpeedInsights />
+            <UrwisChatWidget />
           </PopupProvider>
         </AuthProvider>
 
