@@ -151,21 +151,24 @@ sendMessage({ text: input });
   )}
 </div>
                         
-             {m.parts
+            {m.parts
   ?.filter(p => p.type === 'tool-invocation')
   .map((part, i) => {
     const ti = (part as unknown as { 
-      type: 'tool-invocation'; 
       toolInvocation: UIToolInvocation<any> 
     }).toolInvocation;
     return (
-      <div key={ti.toolCallId} className="mt-2 md:mt-3 text-[10px] md:text-[11px] font-bold tracking-widest uppercase bg-yellow-50 text-yellow-700 p-2 md:p-2.5 rounded-xl border-2 border-yellow-200 flex items-start gap-2 shadow-inner">
-        <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 mt-0.5 shrink-0 text-yellow-500" />
+      <div key={ti.toolCallId} className="mt-2 ...">
+        <Sparkles className="..." />
         <div>
-          {ti.state === 'result' ? (
-            <span className="text-yellow-600">Magia zadziałała: "{ti.args?.productName}"</span>
+          {ti.state === 'output-available' ? (
+            <span className="text-yellow-600">
+              Magia zadziałała: "{ti.input?.productName}"
+            </span>
           ) : (
-            <span className="animate-pulse">Wróżę los dla: "{ti.args?.productName}"...</span>
+            <span className="animate-pulse">
+              Wróżę los dla: "{ti.input?.productName}"...
+            </span>
           )}
         </div>
       </div>

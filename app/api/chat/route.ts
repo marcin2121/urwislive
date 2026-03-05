@@ -4,16 +4,19 @@ import { z } from 'zod';
 import { askCrystalBall } from '@/lib/magic';
 import { PROJECT_CONTEXT } from '@/lib/project-context';
 
-// Pozwala uniknąć timeoutów na Vercel (zapobiega net::ERR_INCOMPLETE_CHUNKED_ENCODING)
 export const maxDuration = 60;
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
+
+const stockParams = z.object({
+  productName: z.string().describe('Nazwa produktu, o który pyta klient (np. "czerwone buty", "kubek").'),
+});
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-model: google('gemini-3.1-flash-lite-preview'),
+    model: google('gemini-2.0-flash-lite'), // ← poprawiona nazwa modelu
     system: `${PROJECT_CONTEXT}
 
 TWOJE NAJWAŻNIEJSZE ZASADY:
@@ -27,20 +30,17 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
     tools: {
       guessStockMagic: tool({
         description: 'Używa magicznej kuli, aby wywróżyć (wymyślić w formie żartu) dostępność produktu. Używaj ZAWSZE, gdy padnie pytanie o produkt.',
-        parameters: z.object({
-          productName: z.string().describe('Nazwa produktu, o który pyta klient (np. "czerwone buty", "kubek").'),
-        }),
-        // TUTA DODAJEMY TYP: { productName: string }
-     execute: async (args) => {
-  const funnyResponse = await askCrystalBall(args.productName);
-  return {
-    product: args.productName,
-    magicVerdict: funnyResponse,
+        parameters: stockParams,
+        execute: async ({ productName }: z.infer<typeof stockParams>) => {
+          const funnyResponse = await askCrystalBall(productName);
+          return {
+            product: productName,
+            magicVerdict: funnyResponse,
           };
         },
       }),
     },
   });
 
-  return result.toTextStreamResponse();
+  return result.toDataStreamResponse(); // ← toDataStreamResponse zamiast toTextStreamResponse
 }
