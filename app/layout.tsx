@@ -217,6 +217,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
 
               <Footer />
+              <UrwisChatWidget />
             </div>
 
             <Toaster position="bottom-right" richColors />
@@ -226,7 +227,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Suspense>
             <OnboardingTour />
             <SpeedInsights />
-            <UrwisChatWidget />
           </PopupProvider>
         </AuthProvider>
 
