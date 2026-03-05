@@ -1,10 +1,8 @@
-import { streamText, tool } from 'ai';
+import { streamText, tool, convertToModelMessages } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 import { askCrystalBall } from '@/lib/magic';
 import { PROJECT_CONTEXT } from '@/lib/project-context';
-// ✅ Dodaj konwerter do importu
-import { streamText, tool, convertToModelMessages } from 'ai';
 
 export const maxDuration = 60;
 export const runtime = 'edge';
@@ -18,23 +16,23 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-model: google('gemini-3.1-flash-lite-preview'),
-    system: `${PROJECT_CONTEXT},
-    
-
+    model: google('gemini-3.1-flash-lite-preview'),
+ system: `${PROJECT_CONTEXT}
 
 TWOJE NAJWAŻNIEJSZE ZASADY:
 1. Twoja wiedza o projekcie powyżej jest nadrzędna – używaj jej, aby nawigować użytkownika po stronie.
 2. Jeśli klient pyta o dostępność jakiegokolwiek produktu, ZAWSZE używaj narzędzia 'guessStockMagic'.
-3. Po użyciu narzędzia, przekaż wylosowaną odpowiedź z humorem.
+3. Po użyciu narzędzia 'guessStockMagic' ZAWSZE napisz odpowiedź tekstową bazując na jego wyniku (pole magicVerdict). Nigdy nie milcz po wywołaniu narzędzia!
 4. Bądź zwięzły, używaj emoji i nie bój się rzucić suchym żartem.
 5. Twoim celem jest sprawienie, by klient się uśmiechnął i chciał odwiedzić Sklep Urwis osobiście.
 6. Jeśli klient pyta o cenę odpowiadaj w wymyślonej walucie w śmieszny sposób.`,
-    messages: convertToModelMessages(messages), // ← jedyna zmiana
+
+    messages: await convertToModelMessages(messages),
+
     tools: {
       guessStockMagic: tool({
         description: 'Używa magicznej kuli, aby wywróżyć dostępność produktu.',
-        inputSchema: stockParams,   // ← kluczowa zmiana
+        inputSchema: stockParams,
         execute: async ({ productName }) => {
           const funnyResponse = await askCrystalBall(productName);
           return {
@@ -46,5 +44,5 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
     },
   });
 
-  return result.toTextStreamResponse();
+return result.toUIMessageStreamResponse();
 }

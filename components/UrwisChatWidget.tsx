@@ -19,6 +19,7 @@ export function UrwisChatWidget() {
   // useChat przechowuje stan rozmowy. Najnowsza wersja (v5+) używa sendMessage i status zamiast isLoading/handleSubmit
   const { messages, error, stop, sendMessage, status } = useChat({
   id: 'urwis-widget',  // api usunięte — /api/chat jest domyślne
+
 });
 
 
