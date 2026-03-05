@@ -14,12 +14,16 @@ export function UrwisChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [input, setInput] = useState('');
 
-  // useChat przechowuje stan rozmowy. Z racji bycia w layout.tsx, nie zniknie przy zmianie strony.
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+  // useChat przechowuje stan rozmowy. Najnowsza wersja (v5+) używa sendMessage i status zamiast isLoading/handleSubmit
+  const { messages, error, stop, sendMessage, status } = useChat({
     api: '/api/chat',
     id: 'urwis-widget', // Identyfikator pomagający w utrzymaniu cache'u hooka
   });
+
+  const isLoading = status === 'submitted' || status === 'streaming';
+  console.log("UrwisChatWidget state =>", { status, inputLength: input.length, error });
 
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
@@ -33,7 +37,7 @@ export function UrwisChatWidget() {
     if (isOpen && autoScroll) {
       messagesEndRef.current?.scrollIntoView();
     }
-  }, [messages, isOpen, autoScroll, error]);
+  }, [messages, isOpen, autoScroll, error, status]);
 
   // Gdy użytkownik sam otworzy czat, automatycznie włącz przewijanie
   useEffect(() => {
@@ -44,6 +48,16 @@ export function UrwisChatWidget() {
       }, 100);
     }
   }, [isOpen]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    sendMessage(input);
+    setInput('');
+  };
+
+  // Bezpieczne sprawdzenie wpisywanego tekstu
+  const isInputEmpty = input.trim() === '';
 
   return (
     <div className="fixed z-[100] font-sans bottom-[85px] md:bottom-6 right-4 left-4 md:left-auto md:right-6 flex flex-col items-end pointer-events-none">
@@ -88,8 +102,15 @@ export function UrwisChatWidget() {
                 <img src="/urwissleep.webp" alt="Urwis Śpi" className="w-24 h-24 md:w-32 md:h-32 drop-shadow-lg object-contain" />
                 <p className="text-[11px] md:text-sm font-bold text-zinc-600 px-4 md:px-6 tracking-tight">
                   <span className="text-sm md:text-lg text-zinc-800 uppercase italic font-black block mb-1">Zzz...</span>
-                  Urwis poszedł spać! Wykorzystano cały limit zapytań do AI. Spróbuj ponownie później. 🛌
+                  Urwis poszedł spać! Wykorzystano cały limit zapytań do AI lub wystąpił inny błąd.
                 </p>
+                {/* Pokazujemy faktyczny błąd, aby ułatwić debugowanie */}
+                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-xs md:text-[11px] text-red-600 font-medium max-w-[90%] text-left break-words overflow-hidden">
+                  <span className="font-bold">Błąd:</span> {error.message || "Nieznany błąd serwera."}
+                </div>
+                <Button variant="outline" size="sm" onClick={() => stop()} className="mt-2 h-8 text-xs font-bold rounded-full">
+                  Odblokuj wpisywanie
+                </Button>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center gap-2 md:gap-4 mt-4 flex-1">
@@ -149,11 +170,12 @@ export function UrwisChatWidget() {
           </CardContent>
 
           {/* POLE FORMULARZA */}
-          <CardFooter className="p-2.5 md:p-3 bg-white border-t-2 border-zinc-100 shrink-0 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] z-10">
+          <CardFooter className="p-2.5 md:p-3 bg-white border-t-2 border-zinc-100 shrink-0 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.05)] z-10 flex-col items-stretch">
+            {isLoading && <div className="text-[10px] text-zinc-400 font-bold mb-1 ml-2 animate-pulse uppercase tracking-wider">Urwis pisze...</div>}
             <form onSubmit={handleSubmit} className="flex w-full gap-2 items-center">
               <Input 
                 value={input} 
-                onChange={handleInputChange} 
+                onChange={e => setInput(e.target.value)} 
                 placeholder={error ? "Urwis teraz śpi..." : "Napisz do Urwisa..."}
                 className="flex-1 rounded-full border-2 border-zinc-200 focus-visible:ring-[#0055ff] focus-visible:border-[#0055ff] bg-zinc-50 font-bold text-[13px] md:text-sm h-10 md:h-12 px-4 md:px-5 shadow-inner"
                 disabled={isLoading}
@@ -161,10 +183,14 @@ export function UrwisChatWidget() {
               <Button 
                 type="submit" 
                 size="icon"
-                className="rounded-full w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#0055ff] to-blue-700 hover:scale-105 shrink-0 transition-all active:scale-95 shadow-md border-2 border-blue-400/50"
-                disabled={isLoading || !input.trim()}
+                className={`rounded-full w-10 h-10 md:w-12 md:h-12 shrink-0 shadow-md border-2 transition-all ${
+                  (isLoading || isInputEmpty) 
+                    ? 'bg-zinc-100 border-zinc-200 text-zinc-400 opacity-50' 
+                    : 'bg-gradient-to-br from-[#0055ff] to-blue-700 hover:scale-105 active:scale-95 border-blue-400/50 text-white'
+                }`}
+                disabled={isLoading || isInputEmpty}
               >
-                <Send className="w-4 h-4 md:w-5 md:h-5 text-white ml-0.5" />
+                <Send className="w-4 h-4 md:w-5 md:h-5 ml-0.5" />
               </Button>
             </form>
           </CardFooter>

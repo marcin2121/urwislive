@@ -4,6 +4,11 @@ import { z } from 'zod';
 import { askCrystalBall } from '@/lib/magic';
 import { PROJECT_CONTEXT } from '@/lib/project-context';
 
+// Pozwala uniknąć timeoutów na Vercel (zapobiega net::ERR_INCOMPLETE_CHUNKED_ENCODING)
+export const maxDuration = 60;
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   const { messages } = await req.json();
 
@@ -38,5 +43,5 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
     maxSteps: 5,
   });
 
-  return result.toDataStreamResponse();
+  return result.toTextStreamResponse();
 }
