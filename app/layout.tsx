@@ -74,6 +74,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: 'cover',
+  interactiveWidget: 'overlays-content',
 };
 
 const GA_MEASUREMENT_ID = "G-FE44ZTQ7GT";
