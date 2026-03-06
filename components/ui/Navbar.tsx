@@ -70,6 +70,57 @@ export default function Navbar() {
     label: "...", 
     subLabel: "" 
   });
+const bottomNavRef = useRef<HTMLDivElement>(null);
+const topNavRef = useRef<HTMLElement>(null);
+
+useEffect(() => {
+  if (typeof window === 'undefined' || !window.visualViewport) return;
+
+  const updatePosition = () => {
+    const vv = window.visualViewport!;
+    
+    // Stabilizacja dolnej nawigacji
+    if (bottomNavRef.current) {
+      const keyboardHeight = window.innerHeight - vv.height;
+      if (keyboardHeight > 100) {
+        // Klawiatura otwarta
+        bottomNavRef.current.style.bottom = `${keyboardHeight}px`;
+        bottomNavRef.current.style.transform = 'none';
+      } else {
+        // Klawiatura zamknięta
+        bottomNavRef.current.style.bottom = '0px';
+        bottomNavRef.current.style.transform = 'translateZ(0)';
+      }
+    }
+
+    // Stabilizacja górnej nawigacji (zapobiega "odklejaniu" przy scrollu po klawiaturze)
+    if (topNavRef.current) {
+      topNavRef.current.style.top = `${vv.offsetTop}px`;
+    }
+  };
+
+  const handleKeyboardHide = () => {
+    // Wymuszamy na iOS Safari przeliczenie pozycjonowania fixed
+    setTimeout(() => {
+      window.scrollTo(window.scrollX, window.scrollY + 1);
+      window.scrollTo(window.scrollX, window.scrollY - 1);
+      updatePosition();
+    }, 100);
+  };
+
+  window.visualViewport.addEventListener('resize', updatePosition);
+  window.visualViewport.addEventListener('scroll', updatePosition);
+  document.addEventListener('focusout', handleKeyboardHide);
+
+  updatePosition();
+
+  return () => {
+    window.visualViewport?.removeEventListener('resize', updatePosition);
+    window.visualViewport?.removeEventListener('scroll', updatePosition);
+    document.removeEventListener('focusout', handleKeyboardHide);
+  };
+}, []);
+
 
   const isAdmin = user?.user_metadata?.role === 'admin';
 
@@ -174,6 +225,7 @@ export default function Navbar() {
   return (
     <header>
       <motion.nav
+        ref={topNavRef}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
@@ -414,8 +466,12 @@ export default function Navbar() {
 
       {/* MOBILE BOTTOM NAVIGATION (Native App Feel) */}
       {!isUrwisekPage && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
-        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}>
+        <div ref={bottomNavRef}   className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
+  style={{ 
+    transform: 'translateZ(0)',
+    willChange: 'transform',
+  }}
+>
           <div className="flex items-center justify-around px-2 relative">
             <Link href="/" onClick={() => trackEvent('nawigacja_dolna_start')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
               <Home size={24} className={pathname === '/' ? 'fill-current' : ''} />
