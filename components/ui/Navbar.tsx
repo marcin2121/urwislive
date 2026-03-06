@@ -176,6 +176,7 @@ export default function Navbar() {
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
+        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
         className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4"
       >
         <div className="w-full max-w-[1200px] bg-white/95 shadow-sm border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between">
@@ -413,7 +414,8 @@ export default function Navbar() {
 
       {/* MOBILE BOTTOM NAVIGATION (Native App Feel) */}
       {!isUrwisekPage && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
+        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}>
           <div className="flex items-center justify-around px-2 relative">
             <Link href="/" onClick={() => trackEvent('nawigacja_dolna_start')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
               <Home size={24} className={pathname === '/' ? 'fill-current' : ''} />

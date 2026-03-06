@@ -36,10 +36,11 @@ export function UrwisChatWidget() {
   };
 
   return (
-    <div className="fixed z-[100] font-sans bottom-[85px] md:bottom-6 right-4 left-4 md:left-auto md:right-6 flex flex-col items-end pointer-events-none">
+    <div
+  className="fixed z-[100] font-sans md:bottom-6 right-4 left-4 md:left-auto md:right-6 flex flex-col items-end pointer-events-none">
 
       {isOpen && (
-        <Card className="w-full md:w-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-white border-0 overflow-hidden flex flex-col h-[65vh] md:h-[550px] mb-4 animate-in slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto">
+        <Card className="w-full md:w-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-white border-0 overflow-hidden flex flex-col h-[65dvh] md:h-[550px] mb-4 animate-in slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto">
 
           {/* NAGŁÓWEK */}
           <CardHeader className="bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white p-3 md:p-4 shrink-0 flex flex-row items-center justify-between border-b-4 border-yellow-400">
@@ -123,7 +124,7 @@ export function UrwisChatWidget() {
                         )}
                       </div>
 
-                   <div className={`rounded-[1.25rem] px-3 md:px-4 py-2.5 text-[13px] md:text-sm shadow-sm font-medium leading-relaxed ${
+                   <div className={`rounded-[1.25rem] px-3 md:px-4 py-2.5 text-base md:text-sm shadow-sm font-medium leading-relaxed ${
   m.role === 'user'
     ? 'bg-zinc-900 text-white rounded-br-sm'
     : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-sm'
@@ -193,7 +194,7 @@ export function UrwisChatWidget() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder={error ? 'Urwis teraz śpi...' : 'Napisz do Urwisa...'}
-                className="flex-1 rounded-full border-2 border-zinc-200 focus-visible:ring-[#0055ff] focus-visible:border-[#0055ff] bg-zinc-50 font-medium text-[13px] md:text-sm h-11 md:h-12 px-5 shadow-inner"
+                className="flex-1 rounded-full border-2 border-zinc-200 focus-visible:ring-[#0055ff] focus-visible:border-[#0055ff] bg-zinc-50 font-medium text-base md:text-sm h-11 md:h-12 px-5 shadow-inner"
                 disabled={isLoading || !!error}
                 autoComplete="off"
               />
