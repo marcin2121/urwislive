@@ -74,7 +74,6 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: 'cover',
-  interactiveWidget: 'overlays-content',
 };
 
 const GA_MEASUREMENT_ID = "G-FE44ZTQ7GT";
@@ -190,34 +189,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
 
-      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white overflow-x-hidden" suppressHydrationWarning>
+      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white h-dvh overflow-hidden" suppressHydrationWarning>
         <AuthProvider>
           
           <PopupProvider>
             <Suspense fallback={null}>
               <WelcomeScreen />
             </Suspense>
-
+ 
             <Suspense fallback={null}>
               <OrphansFixer />
             </Suspense>
-
+ 
+            {/* Tło i baza shella */}
             <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
-
-            <div className="relative z-20 flex flex-col min-h-screen bg-transparent overflow-x-hidden w-full max-w-full">
+ 
+            <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
               <Navbar />
-
-              <Suspense fallback={null}>
-                <InstallPrompt />
-              </Suspense>
-
-              <RibbonsBg />
-
-              <main className="grow bg-transparent">
-                {children}
-              </main>
-
-              <Footer />
+ 
+              {/* Dedykowany obszar przewijania (Mobile Shell) */}
+              <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] pt-[72px] md:pt-32">
+                <div className="relative min-h-full flex flex-col">
+                  <Suspense fallback={null}>
+                    <InstallPrompt />
+                  </Suspense>
+ 
+                  <RibbonsBg />
+ 
+                  <main className="grow bg-transparent">
+                    {children}
+                  </main>
+ 
+                  <Footer />
+                  
+                  {/* Padding na dole, aby treść nie chowała się pod dolnym menu w PWA */}
+                  <div className="h-20 md:hidden" />
+                </div>
+              </div>
+ 
               <UrwisChatWidget />
             </div>
 

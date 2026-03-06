@@ -70,58 +70,6 @@ export default function Navbar() {
     label: "...", 
     subLabel: "" 
   });
-const bottomNavRef = useRef<HTMLDivElement>(null);
-const topNavRef = useRef<HTMLElement>(null);
-
-useEffect(() => {
-  if (typeof window === 'undefined' || !window.visualViewport) return;
-
-  const updatePosition = () => {
-    const vv = window.visualViewport!;
-    
-    // Stabilizacja dolnej nawigacji
-    if (bottomNavRef.current) {
-      const keyboardHeight = window.innerHeight - vv.height;
-      if (keyboardHeight > 100) {
-        // Klawiatura otwarta
-        bottomNavRef.current.style.bottom = `${keyboardHeight}px`;
-        bottomNavRef.current.style.transform = 'none';
-      } else {
-        // Klawiatura zamknięta
-        bottomNavRef.current.style.bottom = '0px';
-        bottomNavRef.current.style.transform = 'translateZ(0)';
-      }
-    }
-
-    // Stabilizacja górnej nawigacji (zapobiega "odklejaniu" przy scrollu po klawiaturze)
-    if (topNavRef.current) {
-      topNavRef.current.style.top = `${vv.offsetTop}px`;
-    }
-  };
-
-  const handleKeyboardHide = () => {
-    // Wymuszamy na iOS Safari przeliczenie pozycjonowania fixed
-    setTimeout(() => {
-      window.scrollTo(window.scrollX, window.scrollY + 1);
-      window.scrollTo(window.scrollX, window.scrollY - 1);
-      updatePosition();
-    }, 100);
-  };
-
-  window.visualViewport.addEventListener('resize', updatePosition);
-  window.visualViewport.addEventListener('scroll', updatePosition);
-  document.addEventListener('focusout', handleKeyboardHide);
-
-  updatePosition();
-
-  return () => {
-    window.visualViewport?.removeEventListener('resize', updatePosition);
-    window.visualViewport?.removeEventListener('scroll', updatePosition);
-    document.removeEventListener('focusout', handleKeyboardHide);
-  };
-}, []);
-
-
   const isAdmin = user?.user_metadata?.role === 'admin';
 
   const trackEvent = useCallback((name: string, params: object = {}) => {
@@ -225,13 +173,11 @@ useEffect(() => {
   return (
     <header>
       <motion.nav
-        ref={topNavRef}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)' }}
-        className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4"
+        className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4 pointer-events-none"
       >
-        <div className="w-full max-w-[1200px] bg-white/95 shadow-sm border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between">
+        <div className="w-full max-w-[1200px] bg-white/95 shadow-sm border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between pointer-events-auto">
           
           <div className="relative flex items-center gap-2 md:gap-4 shrink-0" ref={hoursRef}>
             {/* LOGO */}
@@ -466,45 +412,42 @@ useEffect(() => {
 
       {/* MOBILE BOTTOM NAVIGATION (Native App Feel) */}
       {!isUrwisekPage && (
-        <div ref={bottomNavRef}   className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-3xl border-t border-zinc-200 z-[90] pb-2 pt-1 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]"
-  style={{ 
-    transform: 'translateZ(0)',
-    willChange: 'transform',
-  }}
->
-          <div className="flex items-center justify-around px-2 relative">
-            <Link href="/" onClick={() => trackEvent('nawigacja_dolna_start')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
-              <Home size={24} className={pathname === '/' ? 'fill-current' : ''} />
-              <span className="text-[9px] font-black uppercase tracking-tighter">Start</span>
-            </Link>
-            <Link href="/strefa-zabawy" onClick={() => trackEvent('nawigacja_dolna_strefa')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname.startsWith('/strefa-zabawy') ? 'text-yellow-500' : 'text-zinc-500'}`}>
-              <Smile size={24} />
-              <span className="text-[9px] font-black uppercase tracking-tighter">Zabawa</span>
-            </Link>
-
-            {/* Fab Button: Rabaty */}
-            <Link href="/rabaty" onClick={() => trackEvent('nawigacja_dolna_rabaty')} className="relative flex flex-col items-center gap-1 w-16 -mt-8 mx-2 z-10 group">
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl border-[5px] border-white/80 backdrop-blur-sm transition-transform group-active:scale-95 ${pathname === '/rabaty' ? 'bg-[#BF2024] text-white shadow-red-500/40' : 'bg-gradient-to-tr from-amber-400 to-orange-500 text-white'}`}>
-                <BadgePercent size={28} className={pathname === '/rabaty' ? 'fill-current' : ''} />
-              </div>
-              <span className={`text-[10px] font-black uppercase tracking-tighter ${pathname === '/rabaty' ? 'text-[#BF2024]' : 'text-zinc-900'}`}>Rabaty</span>
-            </Link>
-
-            {user ? (
-              <Link href="/profil" onClick={() => trackEvent('nawigacja_dolna_profil')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
-                <User size={24} className={pathname === '/profil' ? 'fill-current' : ''} />
-                <span className="text-[9px] font-black uppercase tracking-tighter">Profil</span>
+        <div className="md:hidden fixed bottom-0 left-0 right-0 w-full z-[90] pb-env(safe-area-inset-bottom) pointer-events-none">
+          <div className="bg-white/95 backdrop-blur-3xl border-t border-zinc-200 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pointer-events-auto">
+            <div className="flex items-center justify-around px-2 py-1 relative">
+              <Link href="/" onClick={() => trackEvent('nawigacja_dolna_start')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+                <Home size={24} className={pathname === '/' ? 'fill-current' : ''} />
+                <span className="text-[9px] font-black uppercase tracking-tighter">Start</span>
               </Link>
-            ) : (
-              <button onClick={() => { trackEvent('nawigacja_dolna_logowanie'); setIsAuthModalOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500">
-                <User size={24} />
-                <span className="text-[9px] font-black uppercase tracking-tighter">Konto</span>
+              <Link href="/strefa-zabawy" onClick={() => trackEvent('nawigacja_dolna_strefa')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname.startsWith('/strefa-zabawy') ? 'text-yellow-500' : 'text-zinc-500'}`}>
+                <Smile size={24} />
+                <span className="text-[9px] font-black uppercase tracking-tighter">Zabawa</span>
+              </Link>
+  
+              {/* Fab Button: Rabaty */}
+              <Link href="/rabaty" onClick={() => trackEvent('nawigacja_dolna_rabaty')} className="relative flex flex-col items-center gap-1 w-16 -mt-8 mx-2 z-10 group">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-xl border-[5px] border-white/80 backdrop-blur-sm transition-transform group-active:scale-95 ${pathname === '/rabaty' ? 'bg-[#BF2024] text-white shadow-red-500/40' : 'bg-gradient-to-tr from-amber-400 to-orange-500 text-white'}`}>
+                  <BadgePercent size={28} className={pathname === '/rabaty' ? 'fill-current' : ''} />
+                </div>
+                <span className={`text-[10px] font-black uppercase tracking-tighter ${pathname === '/rabaty' ? 'text-[#BF2024]' : 'text-zinc-900'}`}>Rabaty</span>
+              </Link>
+  
+              {user ? (
+                <Link href="/profil" onClick={() => trackEvent('nawigacja_dolna_profil')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+                  <User size={24} className={pathname === '/profil' ? 'fill-current' : ''} />
+                  <span className="text-[9px] font-black uppercase tracking-tighter">Profil</span>
+                </Link>
+              ) : (
+                <button onClick={() => { trackEvent('nawigacja_dolna_logowanie'); setIsAuthModalOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500">
+                  <User size={24} />
+                  <span className="text-[9px] font-black uppercase tracking-tighter">Konto</span>
+                </button>
+              )}
+              <button onClick={() => { trackEvent('nawigacja_dolna_menu'); setMobileMenuOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none">
+                <Menu size={24} />
+                <span className="text-[9px] font-black uppercase tracking-tighter">Menu</span>
               </button>
-            )}
-            <button onClick={() => { trackEvent('nawigacja_dolna_menu'); setMobileMenuOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none">
-              <Menu size={24} />
-              <span className="text-[9px] font-black uppercase tracking-tighter">Menu</span>
-            </button>
+            </div>
           </div>
         </div>
       )}
