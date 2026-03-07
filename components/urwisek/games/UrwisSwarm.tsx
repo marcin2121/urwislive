@@ -664,7 +664,7 @@ export default function UrwisSwarm() {
 
           {/* LISTA JEDNOSTEK */}
           {activeTab === 'units' && (
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2.5 pb-20">
+            <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 py-4 space-y-2.5 pb-20">
               {(Object.keys(UNIT_DATA) as UnitKey[]).map((unitKey) => {
                 const data = UNIT_DATA[unitKey];
                 const count = state.units[unitKey];
@@ -745,7 +745,7 @@ export default function UrwisSwarm() {
 
           {/* LISTA ULEPSZEŃ */}
           {activeTab === 'upgrades' && (
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2.5 pb-20">
+            <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 py-4 space-y-2.5 pb-20">
               {availableUpgrades.length === 0 && boughtUpgradesCount === 0 && (
                 <div className="text-center py-16 text-zinc-600">
                   <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-30" />

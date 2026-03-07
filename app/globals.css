@@ -20,6 +20,9 @@ html, body {
   max-width: 100dvw;
   overflow-x: hidden;
   width: 100%;
+  overscroll-behavior: none; /* Zapobiega efektowi sprężynowania iOS, który zacina scroll */
+  user-select: none; /* Blokuje zaznaczanie tekstu - ważne w PWA i grach */
+  -webkit-user-select: none;
 }
 
 body {
@@ -28,6 +31,12 @@ body {
   
   /* KLUCZOWA ZMIANA: Tło musi być przezroczyste, żeby odsłonić RibbonsBg pod spodem */
   background-color: transparent; 
+}
+
+/* Wyjątek dla pól tekstowych - muszą być klikalne i zaznaczalne */
+input, textarea, [contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 /* Klasa .light-superhero-bg teraz służy tylko do ewentualnych akcentów,

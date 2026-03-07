@@ -325,16 +325,16 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[120]" 
-              onClick={() => {
-                setMobileMenuOpen(false);
-                trackEvent('nawigacja_mobilna_zamkniecie_tlo');
-              }} 
-            />
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0, pointerEvents: "none" }} 
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[120] touch-none" 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  trackEvent('nawigacja_mobilna_zamkniecie_tlo');
+                }} 
+              />
             <motion.div 
               initial={{ x: "100%" }} 
               animate={{ x: 0 }} 
@@ -361,7 +361,7 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto overscroll-y-contain space-y-4 pr-2 custom-scrollbar">
 
                 {/* Usunięto dublujące się z Bottom Navbar elementy: Strefę Rabatów i Profil.
                     Panel Admina pozostaje w Hamburgerze. */}

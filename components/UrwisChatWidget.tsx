@@ -37,10 +37,10 @@ export function UrwisChatWidget() {
 
   return (
     <div
-  className="fixed z-[100] font-sans md:bottom-6 right-4 left-4 md:left-auto md:right-6 flex flex-col items-end pointer-events-none">
+  className="fixed z-[100] font-sans top-[7px] right-2 md:top-auto md:bottom-6 md:right-6 flex flex-col items-end pointer-events-none">
 
       {isOpen && (
-        <Card className="w-full md:w-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-white border-0 overflow-hidden flex flex-col h-[65dvh] md:h-[550px] mb-4 animate-in slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto">
+        <Card className="w-full md:w-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-white border-0 overflow-hidden flex flex-col h-[65dvh] md:h-[550px] mt-16 md:mt-0 mb-4 animate-in slide-in-from-top-10 md:slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto">
 
           {/* NAGŁÓWEK */}
           <CardHeader className="bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white p-3 md:p-4 shrink-0 flex flex-row items-center justify-between border-b-4 border-yellow-400">
@@ -218,14 +218,14 @@ export function UrwisChatWidget() {
       {/* Przycisk toggle */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-14 h-14 md:w-16 md:h-16 rounded-full shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-[3px] md:border-4 bg-white pointer-events-auto ${
+        className={`w-10 h-10 md:w-16 md:h-16 rounded-full shadow-lg md:shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-2 md:border-4 bg-white pointer-events-auto ${
           isOpen ? 'border-[#BF2024]' : 'border-[#0055ff]'
         }`}
       >
         {isOpen ? (
-          <X className="w-6 h-6 md:w-8 md:h-8 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
+          <X className="w-5 h-5 md:w-8 md:h-8 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
         ) : (
-          <img src="/urwischat.webp" alt="Uruchom czat" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-1" />
+          <img src="/urwischat.webp" alt="Uruchom czat" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
         )}
       </Button>
     </div>

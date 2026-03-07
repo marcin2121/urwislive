@@ -909,7 +909,7 @@ export default function BubbleShooter() {
 
   return (
     <div 
-      className="relative flex flex-col items-center justify-center bg-black/80 font-sans w-full h-[100dvh] overflow-hidden overscroll-none touch-none scale-100 p-0 m-0" 
+      className="relative flex flex-col items-center justify-center bg-black/80 font-sans w-full h-[100dvh] overflow-hidden overscroll-none touch-none scale-100 p-0 m-0 select-none" 
       ref={containerRef}
       onContextMenu={(e) => {
          e.preventDefault();

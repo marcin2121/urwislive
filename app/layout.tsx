@@ -208,7 +208,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Navbar />
  
               {/* Dedykowany obszar przewijania (Mobile Shell) */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] pt-[72px] md:pt-32">
+              <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] overscroll-y-contain pt-[72px] md:pt-32">
                 <div className="relative min-h-full flex flex-col">
                   <Suspense fallback={null}>
                     <InstallPrompt />
