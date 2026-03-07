@@ -486,7 +486,7 @@ export default function UrwisSwarm() {
   );
 
   return (
-    <div className="w-full min-h-[100dvh] flex flex-col bg-zinc-950 text-emerald-500 font-mono overflow-hidden select-none">
+    <div className="w-full h-full flex flex-col bg-zinc-950 text-emerald-500 font-mono overflow-hidden">
 
       {/* OFFLINE MODAL */}
       {offlineGains && (
@@ -559,7 +559,7 @@ export default function UrwisSwarm() {
       </div>
 
       {/* GŁÓWNA ZAWARTOŚĆ */}
-      <div className="flex-1 w-full flex flex-col md:flex-row overflow-hidden max-w-6xl mx-auto w-full">
+      <div className="flex-1 min-h-0 w-full flex flex-col md:flex-row overflow-hidden max-w-6xl mx-auto w-full">
 
         {/* LEWY PANEL */}
         <div className="w-full md:w-[280px] border-b md:border-b-0 md:border-r border-emerald-900/20 p-5 flex flex-col items-center justify-center relative bg-gradient-to-b from-zinc-950 to-zinc-950/90 shrink-0 h-[28vh] md:h-auto">
@@ -615,7 +615,7 @@ export default function UrwisSwarm() {
         </div>
 
         {/* PRAWY PANEL */}
-        <div className="w-full flex-1 flex flex-col overflow-hidden bg-[#0a0a0c]">
+        <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden bg-[#0a0a0c]">
 
           {/* Tabs + Buy Amount */}
           <div className="flex items-center justify-between px-5 py-3 border-b border-emerald-900/20 bg-[#0d0d12] shrink-0 gap-3 flex-wrap">
@@ -664,7 +664,7 @@ export default function UrwisSwarm() {
 
           {/* LISTA JEDNOSTEK */}
           {activeTab === 'units' && (
-            <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 py-4 space-y-2.5 pb-20">
+            <div className="flex-1 overflow-y-auto overscroll-y-contain [WebkitOverflowScrolling:touch] px-4 py-4 space-y-2.5 pb-20">
               {(Object.keys(UNIT_DATA) as UnitKey[]).map((unitKey) => {
                 const data = UNIT_DATA[unitKey];
                 const count = state.units[unitKey];
@@ -745,7 +745,7 @@ export default function UrwisSwarm() {
 
           {/* LISTA ULEPSZEŃ */}
           {activeTab === 'upgrades' && (
-            <div className="flex-1 overflow-y-auto overscroll-y-contain px-4 py-4 space-y-2.5 pb-20">
+            <div className="flex-1 overflow-y-auto overscroll-y-contain [WebkitOverflowScrolling:touch] px-4 py-4 space-y-2.5 pb-20">
               {availableUpgrades.length === 0 && boughtUpgradesCount === 0 && (
                 <div className="text-center py-16 text-zinc-600">
                   <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-30" />

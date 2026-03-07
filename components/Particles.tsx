@@ -118,10 +118,18 @@ const Particles: React.FC<ParticlesProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || isMobile) return;
 
     const renderer = new Renderer({ dpr: pixelRatio, depth: false, alpha: true });
     const gl = renderer.gl;
@@ -253,6 +261,8 @@ const Particles: React.FC<ParticlesProps> = ({
     disableRotation,
     pixelRatio
   ]);
+
+  if (isMobile) return null;
 
   // 🚀 Zabezpieczenie CSS: overflow-hidden powstrzyma wylewanie się elementów poza kontener
   return <div ref={containerRef} className={`absolute inset-0 w-full h-full pointer-events-none overflow-hidden ${className || ''}`} />;

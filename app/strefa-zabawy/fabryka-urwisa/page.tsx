@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function UrwisSwarmPage() {
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-zinc-950 text-emerald-500 z-[9999]">
+    <div className="relative min-h-[100dvh] bg-zinc-950 text-emerald-500">
        <UrwisSwarm />
     </div>
   )

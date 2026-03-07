@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { Renderer, Transform, Vec3, Color, Polyline } from 'ogl';
 import { usePathname } from 'next/navigation';
 import { useGpuAcceleration } from '@/lib/useGpu';
@@ -225,8 +225,17 @@ export function RibbonsBg({ colors: overrideColors }: RibbonsProps) {
     return ['#BF2024', '#0055ff'];
   }, [pathname, overrideColors]);
 
-  // 3. DOPIERO PO HOOKACH przerywamy renderowanie, jeśli brak sprzętowego przyspieszenia
-  if (!hasGpu) return null;
+  // 3. DOPIERO PO HOOKACH przerywamy renderowanie, jeśli brak sprzętowego przyspieszenia LUB jesteśmy na mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (!hasGpu || isMobile) return null;
 
   return (
     // Zmiana na "inset-0" - najczystszy sposób na div pełnoekranowy bez ryzyka scrollbara
