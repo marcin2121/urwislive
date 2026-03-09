@@ -11,7 +11,8 @@ export default function GameLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] overflow-hidden overscroll-none touch-none bg-zinc-950 text-white z-[9999]" style={{ width: '100vw', height: '100dvh' }}>
+    // Zastąp "h-[100dvh] w-full" żelaznym zestawem klas absolute/fixed
+    <div className="fixed top-0 left-0 right-0 bottom-0 overflow-hidden overscroll-none touch-none bg-zinc-950 text-white z-[9999]">
        {children}
     </div>
   )
