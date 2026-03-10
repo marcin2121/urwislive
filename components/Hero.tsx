@@ -3,9 +3,13 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { 
-  MapPin, ShoppingBag, Sparkles, 
-  Store, Gift, ArrowRight, X 
+  ShoppingBag, Sparkles, Store, Gift, ArrowRight, X 
 } from 'lucide-react';
+
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
+import { SparklesText } from "@/components/ui/sparkles-text";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { cn } from "@/lib/utils";
 
 export default function HeroSection() {
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -18,14 +22,21 @@ export default function HeroSection() {
   ];
 
   return (
-    <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-transparent pt-32 pb-20">
+    <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-white text-zinc-900 pt-32 pb-20">
       
-      {/* 🟢 TŁO: Radial gradient */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-[radial-gradient(circle,rgba(0,85,255,0.08)_0%,transparent_70%)] rounded-full" />
-      </div>
+      {/* 🔮 NOWE TŁO - MAGIC UI ANIMATED GRID PATTERN */}
+      <AnimatedGridPattern
+        numSquares={30}
+        maxOpacity={0.1}
+        duration={3}
+        repeatDelay={1}
+        className={cn(
+          "[mask-image:radial-gradient(1000px_circle_at_center,white,transparent)]",
+          "inset-0 h-full w-full skew-y-12"
+        )}
+      />
 
-      {/* 🟢 PŁYWAJĄCE IKONY: Teraz w czystym CSS dla 0% obciążenia JS */}
+      {/* 🟢 PŁYWAJĄCE IKONY: CSS Float */}
       {floatingElements.map((item, i) => (
         <div
           key={i}
@@ -46,56 +57,70 @@ export default function HeroSection() {
       <div className="relative z-10 container mx-auto px-6 text-center">
         
         <div className="mb-8">
-          {/* 🚀 OPTYMALIZACJA LCP: Brak opacity: 0. Startujemy od razu widocznym tekstem. */}
-          <motion.h1 
-            initial={{ y: 15 }}
-            animate={{ y: 0 }}
-            className="text-5xl md:text-7xl lg:text-[6.5vw] font-black tracking-tighter leading-[0.9] flex items-center justify-center flex-wrap md:flex-nowrap"
+          <motion.div 
+            initial={{ y: 20, rotateX: -10, opacity: 0 }}
+            animate={{ y: 0, rotateX: 0, opacity: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+            className="flex items-center justify-center flex-wrap md:flex-nowrap"
+            style={{ perspective: 1000 }}
           >
-            <span className="text-zinc-900">SKLEP</span>
-            <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] ml-4 md:ml-8 pr-[0.05em]">
-              URWIS
-            </span>
-          </motion.h1>
+            <h1 className="text-5xl md:text-7xl lg:text-[7vw] font-black tracking-tighter leading-[0.9] text-zinc-900 drop-shadow-sm">
+              SKLEP
+            </h1>
+            
+            {/* 🔮 MAGIC UI SPARKLES TEXT */}
+            <div className="ml-4 md:ml-8 -mt-2">
+              <SparklesText 
+                colors={{ first: '#BF2024', second: '#0055ff' }}
+                className="text-5xl md:text-7xl lg:text-[7vw] font-black tracking-tighter leading-[0.9] text-zinc-900" 
+                sparklesCount={8}
+              >
+                URWIS
+              </SparklesText>
+            </div>
+          </motion.div>
           
           <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl md:text-3xl lg:text-4xl font-medium text-zinc-500 mt-6 tracking-tight italic"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+            className="text-xl md:text-3xl lg:text-4xl font-medium text-zinc-500 mt-6 md:mt-8 tracking-tight italic"
           >
             Nie tylko dla grzecznych dzieci
           </motion.p>
         </div>
 
-        {/* 🚀 KLUCZOWA ZMIANA SEO: Dodano LEGO i wyprawkę szkolną */}
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-bold leading-relaxed balance"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="text-lg md:text-2xl text-zinc-600 max-w-4xl mx-auto mb-16 font-medium leading-relaxed balance"
         >
-          Największy w regionie wybór klocków <span className="text-[#BF2024]">LEGO</span>, zabawek 
-          i pełnej <span className="text-[#0055ff]">wyprawki szkolnej</span> przy ul. Reymonta 38A.  
+          Największy w regionie wybór klocków <span className="font-black text-[#BF2024]">LEGO</span>, zabawek 
+          i pełnej <span className="font-black text-[#0055ff]">wyprawki szkolnej</span> przy ul. Reymonta 38A.  
           Prawdziwy sklep stacjonarny, w którym rządzisz Ty i Twoja wyobraźnia!
         </motion.p>
 
-        <div className="flex justify-center items-center mt-4">
-          <Link 
-            href="/rabaty" 
-            className="group relative w-full sm:w-auto px-12 py-6 md:px-16 md:py-8 bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white rounded-full font-black text-2xl md:text-3xl overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-2xl hover:shadow-[0_0_40px_rgba(0,85,255,0.4)]"
-          >
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <span className="relative z-10 flex items-center justify-center gap-4 italic tracking-tight uppercase">
-              Odbierz rabat! <ArrowRight size={28} strokeWidth={3} className="group-hover:translate-x-2 transition-transform" />
-            </span>
+        <motion.div 
+           initial={{ opacity: 0, scale: 0.9 }}
+           animate={{ opacity: 1, scale: 1 }}
+           transition={{ delay: 0.8, duration: 0.5, type: 'spring', stiffness: 100 }}
+           className="flex justify-center items-center mt-4 w-full sm:w-auto"
+        >
+          {/* 🚀 MAGIC UI SHIMMER BUTTON */}
+          <Link href="/rabaty" className="inline-block">
+            <ShimmerButton className="shadow-2xl hover:scale-105 active:scale-95 transition-transform" background="#18181b">
+              <span className="whitespace-pre-wrap text-center text-xl md:text-2xl font-black italic tracking-tight uppercase leading-none text-white flex items-center gap-3">
+                Odbierz rabat! <ArrowRight size={24} strokeWidth={3} className="text-white drop-shadow-sm" />
+              </span>
+            </ShimmerButton>
           </Link>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Indykator scrolla (CSS Only) */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30 animate-pulse hidden md:flex">
-        <div className="w-[2px] h-10 bg-gradient-to-b from-zinc-900 to-transparent rounded-full" />
+      {/* Indykator scrolla */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30 hidden md:flex animate-bounce">
+        <div className="w-[3px] h-12 bg-gradient-to-b from-zinc-400 to-transparent rounded-full" />
       </div>
 
       {/* MODAL MAPY */}
@@ -123,9 +148,7 @@ export default function HeroSection() {
                   <h2 className="text-2xl md:text-3xl font-black text-zinc-900 uppercase italic">Białobrzegi, Reymonta 38A</h2>
                 </div>
                 <button 
-                  onClick={() => {
-                    setIsMapOpen(false);
-                  }}
+                  onClick={() => setIsMapOpen(false)}
                   className="w-12 h-12 flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 text-zinc-600 rounded-full transition-all"
                 >
                   <X size={24} strokeWidth={3} />
@@ -133,7 +156,6 @@ export default function HeroSection() {
               </div>
               
               <div className="aspect-square md:aspect-video w-full rounded-[2rem] overflow-hidden border-2 border-zinc-100 bg-zinc-50 relative">
-                {/* 🚀 Zaktualizowany i przekonwertowany Iframe z Google Maps */}
                 <iframe 
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.7798969279215!2d20.950946668338!3d51.645555856910185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4718fdfaefa939bb%3A0x70c667b47a29301c!2sUrwis%20-%20Zabawki%20-%20Art.%20Szkolne%20i%20Biurowe!5e0!3m2!1spl!2spl!4v1771662047423!5m2!1spl!2spl" 
                   width="100%" 
@@ -150,6 +172,7 @@ export default function HeroSection() {
       </AnimatePresence>
 
       <style jsx global>{`
+        /* ✨ Floating elements geometry */
         @keyframes float {
           0%, 100% { transform: translateY(0) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(10deg); }
@@ -158,6 +181,7 @@ export default function HeroSection() {
           animation: float linear infinite;
           will-change: transform;
         }
+        
         .balance {
           text-wrap: balance;
         }

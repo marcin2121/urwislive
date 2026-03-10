@@ -46,9 +46,18 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     finishIntro();
   };
 
-  // Przed hydratacją — children niewidoczne ale w DOM (SEO + LCP)
+  // Przed hydratacją — children niewidoczne tylko na desktopie (SEO + LCP na mobile)
   if (!mounted) {
-    return <div style={{ visibility: 'hidden' }}>{children}</div>;
+    return (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media (min-width: 768px) {
+            .urwis-ssr-hide { visibility: hidden; }
+          }
+        `}} />
+        <div className="urwis-ssr-hide">{children}</div>
+      </>
+    );
   }
 
   // Drugi i kolejne wizyty — zero animacji, zero narzutu

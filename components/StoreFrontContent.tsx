@@ -58,14 +58,13 @@ export default function StoreFrontContent() {
   // ✅ Opóźnione Particles — nie blokują głównego wątku przy starcie
   const [showParticles, setShowParticles] = useState(false);
 
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-  }, []);
-
   // ✅ Particles ładowane 3s po mountowaniu — zero wpływu na TBT/LCP
   useEffect(() => {
     if (!hasGpu) return;
-    const timer = setTimeout(() => setShowParticles(true), 3000);
+    const timer = setTimeout(() => {
+      setIsMobile(window.innerWidth < 768);
+      setShowParticles(true);
+    }, 3000);
     return () => clearTimeout(timer);
   }, [hasGpu]);
 

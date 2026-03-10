@@ -14,6 +14,8 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { spinWheel } from "@/app/actions/spin-wheel";
 import { toast } from "sonner";
+import NextSpinTimer from "@/components/rabaty/NextSpinTimer";
+import ActiveCouponOverlay from "@/components/rabaty/ActiveCouponOverlay";
 
 type ActiveCoupon = { id: string; expiresAt: number; created_at?: string; user_id?: string; };
 type UsedCoupon = { id: string; usedAt: number; };
@@ -29,7 +31,7 @@ export default function RabatyPage() {
   const { user } = useAuth();
   const supabase = createClient();
   const [mounted, setMounted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // ✅ Nowy stan ładowania niwelujący CLS
+  const [isLoading, setIsLoading] = useState(true);
 
   // --- PWA States ---
   const [isPWA, setIsPWA] = useState(true);
@@ -47,12 +49,10 @@ export default function RabatyPage() {
   const [wheelPrizes, setWheelPrizes] = useState<any[]>([]);
   const [activeCoupon, setActiveCoupon] = useState<ActiveCoupon | null>(null);
   const [usedCoupons, setUsedCoupons] = useState<UsedCoupon[]>([]);
-  const [timeLeft, setTimeLeft] = useState<number>(0);
 
   // --- Wheel Of Fortune States ---
   const [canSpin, setCanSpin] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [timeToNextSpin, setTimeToNextSpin] = useState<string>("");
   
   const wheelCurrentAngle = useRef(0); 
   const [wheelRotation, setWheelRotation] = useState(0);
@@ -85,7 +85,7 @@ export default function RabatyPage() {
 
   const fetchData = useCallback(async () => {
     if (!user) {
-      setIsLoading(false); // Jeśli brak usera, kończymy ładowanie
+      setIsLoading(false);
       return;
     }
     
@@ -112,7 +112,7 @@ export default function RabatyPage() {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false); // Zatrzymujemy Skeletona po asynchronicznym wczytaniu danych
+      setIsLoading(false);
     }
   }, [user, supabase]);
 
@@ -128,48 +128,7 @@ export default function RabatyPage() {
     if (savedUsed) setUsedCoupons(JSON.parse(savedUsed));
   }, [fetchData]);
 
-  // Timer dla aktywnego kuponu
-  useEffect(() => {
-    if (!activeCoupon) return;
-    const interval = setInterval(() => {
-      const remaining = Math.max(0, Math.floor((activeCoupon.expiresAt - Date.now()) / 1000));
-      setTimeLeft(remaining);
-      if (remaining === 0) {
-        clearInterval(interval);
-        handleExpire(activeCoupon.id, activeCoupon.expiresAt);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activeCoupon]);
-
-  // 🚀 ODLICZANIE DO PÓŁNOCY (Timer zablokowanego koła)
-  useEffect(() => {
-    if (canSpin) return;
-
-    const updateCountdown = () => {
-      const now = new Date();
-      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-      const diff = tomorrow.getTime() - now.getTime();
-
-      if (diff <= 0) {
-        setCanSpin(true);
-        fetchData();
-        return;
-      }
-
-      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const m = Math.floor((diff / 1000 / 60) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-
-      setTimeToNextSpin(
-        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
-      );
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, [canSpin, fetchData]);
+  // Timer logic moved to ActiveCouponOverlay and NextSpinTimer components
 
   const handleExpire = (id: string, timestamp: number) => {
     setActiveCoupon(null);
@@ -205,6 +164,35 @@ export default function RabatyPage() {
     }
   };
 
+  const todayIndex = new Date().getDay();
+  const isUsedToday = (usedAt: number) => {
+    const usedDate = new Date(usedAt);
+    const now = new Date();
+    return usedDate.getDate() === now.getDate() && usedDate.getMonth() === now.getMonth() && usedDate.getFullYear() === now.getFullYear();
+  };
+
+  const getDayNames = (days: number[]) => {
+    if (!days || days.length === 0) return 'Codziennie';
+    const sorted = [...days].sort();
+    return sorted.map(d => DAYS_OF_WEEK.find(dw => dw.id === d)?.label).join(', ');
+  }
+
+  const availableCouponsList = dbCoupons.filter(c => {
+    if (c.expires_at && new Date(c.expires_at) < new Date()) return false;
+    if (c.usage_limit && c.current_usage >= c.usage_limit) return false;
+    if (activeCoupon?.id === c.id) return false;
+
+    const useData = usedCoupons.find(uc => uc.id === c.id);
+    if (useData) {
+      if (!c.is_reusable) return false;
+      if (isUsedToday(useData.usedAt)) return false; 
+    }
+    return true;
+  });
+
+  // ✅ LOGIKA: Liczymy wyłącznie kupony przypisane do danego użytkownika (Wylosowane z koła)
+  const wheelCouponsCount = availableCouponsList.filter(c => c.user_id !== null).length;
+
   const handleSpinWheel = async () => {
     if (isMobile && !isPWA) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -214,8 +202,8 @@ export default function RabatyPage() {
 
     if (!canSpin || isSpinning) return;
     
-    // Blokada gdy ekwipunek kuponów jest pełny (≥6 kuponów)
-    if (availableCouponsList.length >= MAX_COUPON_INVENTORY) {
+    // Blokada w oparciu o TYLKO kupony z koła
+    if (wheelCouponsCount >= MAX_COUPON_INVENTORY) {
       setShowCouponFullModal(true);
       return;
     }
@@ -252,46 +240,17 @@ export default function RabatyPage() {
     }, 5500);
   };
 
-  const todayIndex = new Date().getDay();
-  const isUsedToday = (usedAt: number) => {
-    const usedDate = new Date(usedAt);
-    const now = new Date();
-    return usedDate.getDate() === now.getDate() && usedDate.getMonth() === now.getMonth() && usedDate.getFullYear() === now.getFullYear();
-  };
-
-  const getDayNames = (days: number[]) => {
-    if (!days || days.length === 0) return 'Codziennie';
-    const sorted = [...days].sort();
-    return sorted.map(d => DAYS_OF_WEEK.find(dw => dw.id === d)?.label).join(', ');
-  }
-
-  const availableCouponsList = dbCoupons.filter(c => {
-    if (c.expires_at && new Date(c.expires_at) < new Date()) return false;
-    if (c.usage_limit && c.current_usage >= c.usage_limit) return false;
-    if (activeCoupon?.id === c.id) return false;
-
-    const useData = usedCoupons.find(uc => uc.id === c.id);
-    if (useData) {
-      if (!c.is_reusable) return false;
-      if (isUsedToday(useData.usedAt)) return false; 
-    }
-    return true;
-  });
-
   const usedCouponsList = dbCoupons.filter(c => usedCoupons.some(uc => uc.id === c.id));
   const currentActiveData = dbCoupons.find(c => c.id === activeCoupon?.id);
   const hasConsent = user?.user_metadata?.marketing_consent === true;
   const [showNotifBanner, setShowNotifBanner] = useState(true);
 
-  // Filtrujemy nagrody - z koła losowania (szansy) uciekają kupony, które już zdobyliśmy
   const filteredWheelPrizes = wheelPrizes.filter(prize => 
     !availableCouponsList.some(coupon => coupon.title === prize.title)
   );
   
-  // Jesli zdobyliśmy już wszystko tzn. brakuje nagród - wyswietlamy jedno pole zastępcze
   const displayPrizes = filteredWheelPrizes.length > 0 ? filteredWheelPrizes : [{ id: 'empty', title: '"Ojej! Zdobyłeś już wszystkie dostępne zniżki! 🦖 Zużyj coś przy kasie, żeby zrobić mi trochę miejsca!"' }];
 
-  // ✅ Zamiast return null; renderujemy płynnie Skeleton z loading.tsx
   if (!mounted || isLoading) {
     return (
       <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
@@ -391,14 +350,12 @@ export default function RabatyPage() {
             </div>
 
             <div className="relative w-64 h-64 md:w-80 md:h-80 mx-auto my-8">
-              {/* Ticker Indicator (Czerwona strzałka) */}
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20 text-[#BF2024] drop-shadow-lg">
                  <svg width="46" height="46" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                    <path d="M12 21L22 9H2L12 21Z" stroke="white" strokeWidth="2" strokeLinejoin="round" />
                  </svg>
               </div>
 
-              {/* 🚀 OBERLAY ZABLOKOWANIA (SOFT LOCK) */}
               <AnimatePresence>
                 {!canSpin && !isSpinning && (
                   <motion.div 
@@ -409,12 +366,11 @@ export default function RabatyPage() {
                       <LockKeyhole size={24} />
                     </div>
                     <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Nowe losowanie za</span>
-                    <span className="text-2xl md:text-3xl font-black text-amber-500 font-mono tracking-tighter">{timeToNextSpin}</span>
+                    <NextSpinTimer onReady={() => { setCanSpin(true); fetchData(); }} />
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Obracające się Koło */}
               <motion.div
                 className={`w-full h-full rounded-full border-[6px] border-zinc-900 overflow-hidden shadow-inner relative ${filteredWheelPrizes.length === 0 ? 'grayscale opacity-70' : ''}`}
                 animate={{ rotate: wheelRotation }}
@@ -444,7 +400,6 @@ export default function RabatyPage() {
                 })}
               </motion.div>
               
-              {/* Centralny punkt na kole */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full border-4 border-zinc-900 z-20 shadow-lg flex items-center justify-center">
                 <div className="w-5 h-5 bg-amber-500 rounded-full animate-pulse" />
               </div>
@@ -452,12 +407,12 @@ export default function RabatyPage() {
 
               <div className="text-center">
               
-                {/* Komunikat o pełnym ekwipunku */}
-                {availableCouponsList.length >= MAX_COUPON_INVENTORY && canSpin && (
+                {/* Zmiana logiki: Blokujemy tylko, gdy ma >= 6 kuponów WYLOSOWANYCH */}
+                {wheelCouponsCount >= MAX_COUPON_INVENTORY && canSpin && (
                   <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-start gap-3 text-left">
                     <span className="text-2xl shrink-0">🦖</span>
                     <p className="text-xs font-bold text-amber-800">
-                      Masz już {availableCouponsList.length} kuponów! Wykorzystaj obecne kupony w sklepie,<br/>żeby zrobić miejsce na nowe!
+                      Masz już {wheelCouponsCount} kuponów z koła! Wykorzystaj je w sklepie,<br/>żeby zrobić miejsce na nowe nagrody!
                     </p>
                   </div>
                 )}
@@ -467,13 +422,13 @@ export default function RabatyPage() {
                   disabled={!canSpin || isSpinning || filteredWheelPrizes.length === 0}
                   className={`px-8 py-4 rounded-2xl font-black uppercase text-sm shadow-xl transition-all w-full md:w-auto ${
                     canSpin && !isSpinning && filteredWheelPrizes.length > 0
-                    ? availableCouponsList.length >= MAX_COUPON_INVENTORY
+                    ? wheelCouponsCount >= MAX_COUPON_INVENTORY
                       ? 'bg-amber-100 text-amber-700 border-2 border-amber-300 cursor-not-allowed'
                       : 'bg-amber-500 text-white hover:bg-amber-600 hover:scale-105 active:scale-95 cursor-pointer outline-none' 
                     : 'bg-zinc-100 text-zinc-400 cursor-not-allowed border-2 border-zinc-200 shadow-none'
                   }`}
                 >
-                  {filteredWheelPrizes.length === 0 ? 'Zrób miejsce na tarczy!' : isSpinning ? 'Losowanie w toku...' : !canSpin ? 'Zablokowane do Jutra 🔒' : availableCouponsList.length >= MAX_COUPON_INVENTORY ? 'Ekwipunek pełny! 🦖' : 'ZAKRĘĆ KOŁEM!'}
+                  {filteredWheelPrizes.length === 0 ? 'Zrób miejsce na tarczy!' : isSpinning ? 'Losowanie w toku...' : !canSpin ? 'Zablokowane do Jutra 🔒' : wheelCouponsCount >= MAX_COUPON_INVENTORY ? 'Ekwipunek pełny! 🦖' : 'ZAKRĘĆ KOŁEM!'}
                 </button>
               </div>
           </section>
@@ -587,7 +542,6 @@ export default function RabatyPage() {
           )}
         </section>
 
-        {/* 🔔 Miękki baner — zachęta do powiadomień (non-blocking) */}
         {user && !hasConsent && showNotifBanner && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -720,11 +674,11 @@ export default function RabatyPage() {
               <div className="text-6xl mb-4 mt-2">🦖</div>
               <h3 className="text-sm font-black uppercase text-amber-600 tracking-widest mb-1">Ekwipunek pełny!</h3>
               <h2 className="text-2xl font-black italic uppercase text-zinc-900 mb-4 leading-tight">
-                Hej Urwisie!<br />Masz już {availableCouponsList.length} kuponów!
+                Hej Urwisie!<br />Masz już {wheelCouponsCount} kuponów z koła!
               </h2>
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 text-left">
                 <p className="text-sm font-bold text-amber-900 leading-relaxed">
-                  Zanim zakręcisz kołem i zdobędziesz nowe zniżki, wykorzystaj swoje obecne kupony przy zakupach w sklepie. Zrobimy wtedy miejsce na nowe nagrody! 😄
+                  Zanim zakręcisz kołem i zdobędziesz nowe zniżki, wykorzystaj swoje obecne kupony z losowania przy zakupach w sklepie. Zrobimy wtedy miejsce na nowe nagrody! 😄
                 </p>
               </div>
               <button
@@ -768,74 +722,15 @@ export default function RabatyPage() {
         )}
       </AnimatePresence>
 
-      {/* PEŁNOEKRANOWY TIMER KUPONU */}
-      <AnimatePresence>
-        {currentActiveData && showActiveOverlay && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            className="fixed inset-0 z-[6000] bg-white text-zinc-900 flex flex-col items-center justify-center p-6 text-center"
-          >
-            <div className={`absolute top-0 left-0 right-0 h-10 flex items-center justify-between px-4 text-white ${timeLeft < 60 ? 'bg-red-500 animate-pulse' : 'bg-[#0055ff]'}`}>
-              <span className="text-sm md:text-xl font-black uppercase tracking-widest flex-1 text-center">
-                Pokaż ten ekran kasjerce
-              </span>
-              <button
-                onClick={() => setShowActiveOverlay(false)}
-                className="ml-4 shrink-0 bg-white/20 hover:bg-white/30 transition-colors rounded-lg px-3 py-1 text-white text-xs font-black uppercase tracking-widest flex items-center gap-1 cursor-pointer"
-                aria-label="Minimalizuj widok kuponu"
-              >
-                <X size={14} /> Minimalizuj
-              </button>
-            </div>
-            
-            <motion.div 
-              animate={{ scale: timeLeft < 60 ? [1, 1.05, 1] : 1 }}
-              transition={{ repeat: timeLeft < 60 ? Infinity : 0, duration: 1 }}
-              className="mt-12 mb-8"
-            >
-              <Timer size={80} className={`mx-auto mb-4 ${timeLeft < 60 ? 'text-red-500' : 'text-[#0055ff]'}`} />
-              <div className={`text-8xl md:text-[10rem] font-black font-mono tracking-tighter leading-none ${timeLeft < 60 ? 'text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]' : 'text-zinc-900'}`}>
-                {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
-              </div>
-              <p className="text-xl md:text-2xl font-black text-zinc-400 uppercase mt-4">Czas do wygaśnięcia</p>
-            </motion.div>
-
-            <div className={`w-full max-w-2xl bg-gradient-to-br ${currentActiveData.gradient || 'from-[#0055ff] to-blue-600'} p-8 md:p-12 rounded-[3rem] text-white shadow-2xl`}>
-               <h3 className="text-3xl md:text-5xl font-black italic uppercase mb-8 leading-tight">{currentActiveData.title}</h3>
-               <div className="bg-white text-zinc-900 py-6 px-10 rounded-3xl inline-block border-4 border-white/20 shadow-xl">
-                 <span className="block text-sm uppercase font-black text-zinc-400 mb-2">Twój Kod Rabatu:</span>
-                 <span className="text-5xl md:text-6xl font-black tracking-widest">{currentActiveData.code}</span>
-               </div>
-            </div>
-            
-            <p className="absolute bottom-8 text-zinc-400 font-bold text-sm">
-              Prosimy nie zamykać okna. Kupon po upływie czasu przepadnie.
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* MINIMALIZOWANY PASEK KUPONU */}
-      <AnimatePresence>
-        {currentActiveData && !showActiveOverlay && (
-          <motion.button
-            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-            onClick={() => setShowActiveOverlay(true)}
-            className={`fixed top-0 left-0 right-0 z-[5500] flex items-center justify-center gap-3 py-3 px-4 text-white font-black text-sm uppercase tracking-widest cursor-pointer shadow-lg ${
-              timeLeft < 60 ? 'bg-red-500 animate-pulse' : 'bg-[#0055ff]'
-            }`}
-          >
-            <Timer size={16} />
-            <span>Aktywny kupon: {currentActiveData.title}</span>
-            <span className="font-mono">
-              {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
-            </span>
-            <span className="ml-2 bg-white/20 rounded px-2 py-0.5 text-xs">Dotknij by pokazać</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {activeCoupon && (
+        <ActiveCouponOverlay
+          activeCoupon={activeCoupon}
+          currentActiveData={currentActiveData}
+          showActiveOverlay={showActiveOverlay}
+          setShowActiveOverlay={setShowActiveOverlay}
+          onExpire={handleExpire}
+        />
+      )}
     </div>
   );
 }

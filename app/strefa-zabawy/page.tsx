@@ -42,11 +42,13 @@ const CATEGORIES = [
 export default function StrefaZabawyPage() {
   const trackPlayZoneEvent = (gameId: string, gameTitle: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'strefa_zabawy_gra_klikniecie', {
-        'event_category': 'Play_Zone',
-        'event_label': gameTitle,
-        'game_id': gameId
-      });
+      setTimeout(() => {
+        (window as any).gtag('event', 'strefa_zabawy_gra_klikniecie', {
+          'event_category': 'Play_Zone',
+          'event_label': gameTitle,
+          'game_id': gameId
+        });
+      }, 0);
     }
   };
 

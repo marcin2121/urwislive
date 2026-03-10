@@ -138,6 +138,7 @@ const MagicBento: React.FC<MagicBentoProps> = ({
     const element = cardRef.current;
 
     const handleMouseEnter = () => {
+      if (window.matchMedia('(pointer: coarse)').matches) return;
       isHoveredRef.current = true;
       if (enableStars) {
         animateParticles();
@@ -155,6 +156,7 @@ const MagicBento: React.FC<MagicBentoProps> = ({
     };
 
     const handleMouseLeave = () => {
+      if (window.matchMedia('(pointer: coarse)').matches) return;
       isHoveredRef.current = false;
       clearAllParticles();
 
@@ -181,6 +183,7 @@ const MagicBento: React.FC<MagicBentoProps> = ({
     };
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (window.matchMedia('(pointer: coarse)').matches) return;
       const rect = element.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -224,7 +227,7 @@ const MagicBento: React.FC<MagicBentoProps> = ({
     };
 
     const handleClick = (e: MouseEvent) => {
-      if (!clickEffect) return;
+      if (!clickEffect || window.matchMedia('(pointer: coarse)').matches) return;
 
       const rect = element.getBoundingClientRect();
       const x = e.clientX - rect.left;
