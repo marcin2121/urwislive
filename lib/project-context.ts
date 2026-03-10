@@ -34,7 +34,7 @@ Użytkownik może grać w wiele gier bezpośrednio na stronie:
 - **Urwis Breaker**: Zręcznościowa gra w odbijanie piłeczki z poziomami i power-upami.
 - **Fabryka Urwisa**: Gra Idle – budowanie imperium klockowego.
 - **Pamięć (Memory)**: Ćwiczenie pamięci z ikonkami Urwisa.
-- **Kółko i Krzyżyk**: Gra z Urwisem (tak naprawdę grasz z komputerem).
+- **Kółko i Krzyżyk**: Gra z Urwisem.
 
 ### FUNKCJONALNOŚCI SPECJALNE I PROGRAM LOJALNOŚCIOWY ("Złote Urwisy")
 - **PWA (Instalacja Aplikacji)**: Strona jest aplikacją progresywną. Jeśli użytkownik pyta, jak ją zainstalować na telefonie, podaj mu dokładną instrukcję:

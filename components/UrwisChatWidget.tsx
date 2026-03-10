@@ -41,41 +41,55 @@ export function UrwisChatWidget() {
     >
 
       {isOpen && (
-        <Card className="w-full md:w-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-white border-0 overflow-hidden flex flex-col h-[65dvh] md:h-[550px] mt-16 md:mt-0 mb-4 animate-in slide-in-from-top-10 md:slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto">
+        <Card className="w-full md:w-[400px] shadow-[0_30px_80px_-15px_rgba(0,0,0,0.35),0_0_40px_-10px_rgba(0,85,255,0.2)] bg-white border border-zinc-200 overflow-hidden flex flex-col h-[65dvh] md:h-[550px] mt-16 md:mt-0 mb-4 animate-in slide-in-from-top-10 md:slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto ring-1 ring-zinc-900/5">
 
           {/* NAGŁÓWEK */}
-          <CardHeader className="bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white p-3 md:p-4 shrink-0 flex flex-row items-center justify-between border-b-4 border-yellow-400">
-            <div className="flex items-center gap-3">
-              <div className="bg-white p-1 rounded-full shadow-inner overflow-hidden w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border-2 border-white/20">
-                <img src="/urwischat.webp" alt="Urwis" className="w-full h-full object-cover scale-110" />
+          <CardHeader className="relative overflow-hidden bg-zinc-950 p-4 shrink-0 flex flex-row items-center justify-between border-b border-zinc-800 z-20 shadow-sm">
+            {/* Górny pasek z kolorami marki */}
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#BF2024] via-[#0055ff] to-[#fbbf24]" />
+            
+            {/* Subtelne światła na rogach */}
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-[#BF2024]/20 blur-3xl rounded-full pointer-events-none" />
+            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-[#0055ff]/20 blur-3xl rounded-full pointer-events-none" />
+            
+            {/* Treść nagłówka */}
+            <div className="flex items-center gap-3 relative z-10 pt-1">
+              <div className="relative shrink-0">
+                <div className="bg-zinc-800 p-[3px] rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden w-12 h-12 flex items-center justify-center border border-zinc-700">
+                  <div className="bg-white rounded-full w-full h-full flex items-center justify-center overflow-hidden">
+                    <img src="/urwischat.webp" alt="Urwis" className="w-[115%] h-[115%] object-cover pt-1" />
+                  </div>
+                </div>
+                {/* Kontrolka statusu przeniesiona u dołu Avatara */}
+                <span className={`absolute bottom-0 -right-0.5 w-[14px] h-[14px] rounded-full border-[2.5px] border-zinc-950 shadow-sm ${isLoading ? 'bg-yellow-400 animate-pulse' : 'bg-emerald-500'}`} />
               </div>
-              <div>
-                <CardTitle className="text-lg md:text-xl font-black italic uppercase tracking-tighter drop-shadow-md leading-none">
+              
+              <div className="flex flex-col justify-center">
+                <CardTitle className="text-[17px] md:text-[19px] font-black italic uppercase tracking-tight leading-none text-white">
                   Wirtualny Urwis
                 </CardTitle>
-                <p className="text-[10px] md:text-xs text-blue-100 font-bold uppercase tracking-widest opacity-90 drop-shadow-sm mt-0.5">
-                  {isLoading ? (
-                    <span className="animate-pulse">pisze...</span>
-                  ) : (
-                    'Superbohater Sklepu'
-                  )}
-                </p>
+                <div className="mt-1">
+                  <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
+                    {isLoading ? 'Odpowiada...' : 'Czat Online'}
+                  </p>
+                </div>
               </div>
             </div>
+
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(false)}
-              className="text-white hover:bg-white/20 hover:text-white rounded-full transition-colors active:scale-95 w-8 h-8 md:w-10 md:h-10"
+              className="relative z-10 text-zinc-400 hover:bg-zinc-800 hover:text-white rounded-full transition-colors active:scale-95 w-9 h-9 border border-transparent hover:border-zinc-700"
             >
-              <Minus className="w-5 h-5 md:w-6 md:h-6" />
+              <Minus className="w-5 h-5" strokeWidth={2.5} />
             </Button>
           </CardHeader>
 
           {/* ZAWARTOŚĆ */}
           <CardContent
             ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto p-3 md:p-4 flex flex-col gap-3 bg-zinc-50"
+            className="flex-1 overflow-y-auto p-3 md:p-5 flex flex-col gap-4 bg-zinc-50"
           >
             {error ? (
               <div className="flex flex-col items-center justify-center h-full text-center gap-3 animate-in fade-in">
@@ -92,15 +106,29 @@ export function UrwisChatWidget() {
                 </Button>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center gap-3">
-                <img src="/urwischat.webp" alt="Urwis" className="w-24 h-24 md:w-28 md:h-28 drop-shadow-2xl animate-bounce-slow object-contain" />
-                <div className="space-y-1">
-                  <p className="text-xs md:text-sm font-black text-zinc-700 uppercase tracking-tight italic">
-                    Cześć! Jestem Urwis.
+              <div className="flex flex-col items-center justify-center h-full text-center gap-5 animate-in fade-in zoom-in-95 duration-500 pt-4 pb-2">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-[#0055ff]/10 blur-2xl rounded-full scale-150" />
+                  <img src="/urwischat.webp" alt="Urwis" className="relative w-24 h-24 md:w-28 md:h-28 drop-shadow-2xl animate-bounce-slow object-contain" />
+                </div>
+                <div className="space-y-1.5 px-2 text-balance">
+                  <h3 className="text-sm md:text-base font-black text-zinc-800 uppercase tracking-tight italic">
+                    Cześć! Tu Twój asystent 🦸‍♂️
+                  </h3>
+                  <p className="text-[11px] md:text-sm text-zinc-500 font-medium leading-relaxed max-w-[260px] mx-auto pb-1">
+                    Zapytaj o program lojalnościowy, klocki LEGO, godziny otwarcia lub po prostu przywitaj się!
                   </p>
-                  <p className="text-xs text-zinc-500 font-medium">
-                    Zapytaj o produkty, godziny, atrakcje 🦸‍♂️
-                  </p>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2 mt-2 w-full max-w-[95%] mx-auto">
+                  {['O której zamykacie?', 'Jak działają rabaty?', 'Gry i zabawy?'].map(q => (
+                    <button 
+                      key={q}
+                      onClick={() => sendMessage({ text: q })}
+                      className="text-[10px] md:text-xs font-bold leading-none bg-white text-zinc-600 border border-zinc-200 px-3.5 py-2.5 rounded-xl hover:bg-blue-50 hover:text-[#0055ff] hover:border-blue-200 transition-all shadow-sm active:scale-95 text-center flex-1 min-w-[max-content]"
+                    >
+                      {q}
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : (
@@ -110,13 +138,13 @@ export function UrwisChatWidget() {
                     key={m.id}
                     className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`flex gap-2 max-w-[88%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                    <div className={`flex gap-2 max-w-[92%] md:max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-end`}>
 
                       {/* Avatar */}
                       <div className="shrink-0 mb-1">
                         {m.role === 'user' ? (
-                          <div className="bg-zinc-200 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                            <User className="w-3.5 h-3.5 text-zinc-500" />
+                          <div className="bg-gradient-to-br from-zinc-200 to-zinc-300 w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                            <User className="w-3.5 h-3.5 text-zinc-600" />
                           </div>
                         ) : (
                           <div className="bg-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-[#0055ff] overflow-hidden shadow-sm shrink-0">
@@ -125,11 +153,11 @@ export function UrwisChatWidget() {
                         )}
                       </div>
 
-                   <div className={`rounded-[1.25rem] px-3 md:px-4 py-2.5 text-base md:text-sm shadow-sm font-medium leading-relaxed ${
-  m.role === 'user'
-    ? 'bg-zinc-900 text-white rounded-br-sm'
-    : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-sm'
-}`}>
+                      <div className={`rounded-[1.25rem] px-4 py-3 text-[13px] md:text-sm shadow-sm font-medium leading-relaxed ${
+                        m.role === 'user'
+                          ? 'bg-gradient-to-br from-zinc-800 to-zinc-900 text-white rounded-br-[6px]'
+                          : 'bg-white text-zinc-800 border border-zinc-100 rounded-bl-[6px] shadow-[0_2px_15px_rgba(0,0,0,0.03)]'
+                      }`}>
   {m.parts?.map((part, i) =>
     part.type === 'text' ? (
      <ReactMarkdown
@@ -189,13 +217,13 @@ export function UrwisChatWidget() {
           </CardContent>
 
           {/* FORMULARZ */}
-          <CardFooter className="p-2.5 md:p-3 bg-white border-t border-zinc-100 shrink-0 z-10">
+          <CardFooter className="p-3 md:p-3.5 bg-white border-t border-zinc-100 shrink-0 z-10">
             <form onSubmit={handleSubmit} className="flex w-full gap-2 items-center">
               <Input
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder={error ? 'Urwis teraz śpi...' : 'Napisz do Urwisa...'}
-                className="flex-1 rounded-full border-2 border-zinc-200 focus-visible:ring-[#0055ff] focus-visible:border-[#0055ff] bg-zinc-50 font-medium text-base md:text-sm h-11 md:h-12 px-5 shadow-inner"
+                className="flex-1 rounded-full border-2 border-zinc-200 focus-visible:ring-[#0055ff] focus-visible:border-[#0055ff] bg-zinc-50 font-medium text-base md:text-sm h-11 md:h-12 px-5 shadow-sm"
                 disabled={isLoading || !!error}
                 autoComplete="off"
               />
