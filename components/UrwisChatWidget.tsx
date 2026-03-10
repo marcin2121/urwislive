@@ -37,7 +37,8 @@ export function UrwisChatWidget() {
 
   return (
     <div
-  className="fixed z-[100] font-sans top-[7px] right-2 md:top-auto md:bottom-6 md:right-6 flex flex-col items-end pointer-events-none">
+      className="fixed z-[100] font-sans bottom-[90px] right-3 md:bottom-6 md:right-6 flex flex-col items-end pointer-events-none"
+    >
 
       {isOpen && (
         <Card className="w-full md:w-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] bg-white border-0 overflow-hidden flex flex-col h-[65dvh] md:h-[550px] mt-16 md:mt-0 mb-4 animate-in slide-in-from-top-10 md:slide-in-from-bottom-10 fade-in duration-300 rounded-[2rem] pointer-events-auto">
@@ -215,19 +216,43 @@ export function UrwisChatWidget() {
         </Card>
       )}
 
-      {/* Przycisk toggle */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-10 h-10 md:w-16 md:h-16 rounded-full shadow-lg md:shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-2 md:border-4 bg-white pointer-events-auto ${
-          isOpen ? 'border-[#BF2024]' : 'border-[#0055ff]'
-        }`}
-      >
-        {isOpen ? (
-          <X className="w-5 h-5 md:w-8 md:h-8 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
-        ) : (
-          <img src="/urwischat.webp" alt="Uruchom czat" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
+      {/* Przycisk toggle wraz z zachętą i pierścieniem pulsowania */}
+      <div className="relative pointer-events-auto">
+        
+        {/* Wyskakujący WIDŻET Powitalny (Kropeczki) */}
+        {!isOpen && (
+          <div 
+            onClick={() => setIsOpen(true)}
+            className="absolute -top-12 right-1 flex items-center justify-center bg-white border-2 border-zinc-300 px-3 py-2.5 rounded-full shadow-md animate-bounce cursor-pointer hover:bg-zinc-50 transition-colors z-20"
+          >
+            <div className="absolute bottom-[-6px] right-4 w-2.5 h-2.5 bg-white border-b-2 border-r-2 border-zinc-300 transform rotate-45"></div>
+            {/* Animowane kropeczki */}
+            <div className="flex gap-1 items-center">
+              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+              <span className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></span>
+            </div>
+          </div>
         )}
-      </Button>
+
+        {/* Pierścień pulsujący wokół przycisku */}
+        {!isOpen && (
+          <div className="absolute inset-0 rounded-full border-[3px] border-[#0055ff] opacity-40 animate-ping [animation-duration:3s]" />
+        )}
+
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg md:shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-2 md:border-4 bg-white ${
+            isOpen ? 'border-[#BF2024]' : 'border-[#0055ff]'
+          }`}
+        >
+          {isOpen ? (
+            <X className="w-6 h-6 md:w-8 md:h-8 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
+          ) : (
+            <img src="/urwischat.webp" alt="Uruchom czat" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

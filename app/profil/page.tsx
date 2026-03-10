@@ -269,8 +269,8 @@ export default function ProfilePage() {
           <button onClick={() => setActiveTab("dane")} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black uppercase tracking-wide transition-all ${activeTab === "dane" ? "bg-[#0055ff] text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"}`}>
             <User size={16} /> Moje Dane
           </button>
-          <button onClick={() => setActiveTab("ustawienia")} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-black uppercase tracking-wide transition-all ${activeTab === "ustawienia" ? "bg-zinc-900 text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"}`}>
-            <Settings size={16} /> Powiadomienia i Zgody
+          <button onClick={() => setActiveTab("ustawienia")} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wide transition-all ${activeTab === "ustawienia" ? "bg-zinc-900 text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50"}`}>
+            <Settings size={16} /> Powiadomienia
           </button>
         </div>
 
@@ -335,9 +335,9 @@ export default function ProfilePage() {
                   
                   <button 
                     onClick={handleDeleteAccount} 
-                    className="flex items-center justify-center w-full sm:w-auto gap-2 text-[10px] font-black text-red-500 hover:text-red-700 transition-colors uppercase tracking-widest bg-red-50 hover:bg-red-100 px-6 py-4 rounded-2xl border border-red-100"
+                    className="flex items-center justify-center w-full sm:w-auto gap-2 text-[10px] font-black text-red-500 hover:text-red-700 transition-colors uppercase tracking-widest bg-red-50 hover:bg-red-100 px-6 py-4 rounded-2xl border border-red-100 text-center leading-tight"
                   >
-                    <Trash2 size={16} /> Usuń konto bezpowrotnie
+                    <Trash2 size={16} className="shrink-0" /> Usuń konto bezpowrotnie
                   </button>
                 </div>
 
@@ -352,12 +352,14 @@ export default function ProfilePage() {
                 <section>
                   <h3 className="text-[10px] font-black text-[#0055ff] uppercase tracking-widest mb-3 pl-2">Konto i Rabaty</h3>
                   <div className="bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden divide-y divide-zinc-200">
-                    <div className="p-5 flex items-center justify-between gap-4">
-                      <div>
-                        <p className="font-black text-sm uppercase text-zinc-900 mb-1">Uczestnictwo w promocjach</p>
+                    <div className="p-4 sm:p-5 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-4">
+                      <div className="pr-2">
+                        <p className="font-black text-sm sm:text-base uppercase text-zinc-900 mb-1 leading-tight">Uczestnictwo w promocjach</p>
                         <p className="text-xs text-zinc-500 font-medium leading-relaxed">Pozwala na zbieranie punktów i losowanie zniżek w Kole Fortuny.</p>
                       </div>
-                      <Toggle isOn={marketingConsent} onClick={toggleMarketingConsent} disabled={updatingData} />
+                      <div className="shrink-0 pt-2 xs:pt-0 self-start xs:self-center">
+                        <Toggle isOn={marketingConsent} onClick={toggleMarketingConsent} disabled={updatingData} />
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -368,32 +370,34 @@ export default function ProfilePage() {
                   
                   <div className="bg-zinc-50 border border-zinc-200 rounded-3xl overflow-hidden divide-y divide-zinc-200">
                     
-                    <div className="p-5 flex items-center justify-between gap-4">
-                      <div>
-                        <p className="font-black text-sm uppercase text-zinc-900 mb-1">Powiadomienia na ekranie</p>
+                    <div className="p-4 sm:p-5 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-4">
+                      <div className="pr-2">
+                        <p className="font-black text-sm sm:text-base uppercase text-zinc-900 mb-1 leading-tight">Powiadomienia na ekranie</p>
                         <p className="text-xs text-zinc-500 font-medium leading-relaxed">Otrzymuj dymki o nowych zestawach LEGO i błyskawicznych wyprzedażach.</p>
                       </div>
                       
-                      {pushState === 'UNSUPPORTED' && <span className="text-[10px] font-black uppercase text-zinc-400 bg-zinc-200 px-2 py-1 rounded">Brak wsparcia</span>}
-                      
-                      {pushState === 'INSTALL_PWA' && (
-                        <div className="text-right">
-                          <span className="text-[10px] font-black uppercase text-[#BF2024] flex items-center gap-1"><ShieldAlert size={12}/> Zablokowane</span>
-                        </div>
-                      )}
+                      <div className="shrink-0 pt-2 xs:pt-0 self-start xs:self-center">
+                        {pushState === 'UNSUPPORTED' && <span className="text-[10px] font-black uppercase text-zinc-400 bg-zinc-200 px-2 py-1 rounded">Brak wsparcia</span>}
+                        
+                        {pushState === 'INSTALL_PWA' && (
+                          <div className="text-left xs:text-right">
+                            <span className="text-[10px] font-black uppercase text-[#BF2024] flex items-center gap-1"><ShieldAlert size={12}/> Zablokowane</span>
+                          </div>
+                        )}
 
-                      {pushState === 'NOT_SUBSCRIBED' && (
-                        <button onClick={subscribeToPush} disabled={updatingData} className="bg-[#0055ff] hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors whitespace-nowrap">
-                           Włącz
-                        </button>
-                      )}
+                        {pushState === 'NOT_SUBSCRIBED' && (
+                          <button onClick={subscribeToPush} disabled={updatingData} className="bg-[#0055ff] hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-colors whitespace-nowrap">
+                             Włącz
+                          </button>
+                        )}
 
-                      {pushState === 'SUBSCRIBED' && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase text-green-600 tracking-widest hidden sm:inline-block">Aktywne</span>
-                          <CheckCircle2 size={24} className="text-green-500" />
-                        </div>
-                      )}
+                        {pushState === 'SUBSCRIBED' && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-green-600 tracking-widest hidden sm:inline-block">Aktywne</span>
+                            <CheckCircle2 size={24} className="text-green-500" />
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {pushState === 'INSTALL_PWA' && (

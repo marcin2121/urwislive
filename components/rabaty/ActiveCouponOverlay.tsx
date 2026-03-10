@@ -99,10 +99,6 @@ export default function ActiveCouponOverlay({
               </div>
             </div>
 
-            {/* ODSUNIĘTY DOLNY TEKST OMIJAJĄCY DOLNE MENU IOS */}
-            <p className="absolute bottom-12 sm:bottom-16 md:bottom-12 px-6 text-zinc-400 font-bold text-xs sm:text-sm w-full max-w-md mx-auto left-0 right-0">
-              Prosimy nie zamykać okna. Kupon po upływie czasu przepadnie.
-            </p>
           </motion.div>
         )}
       </AnimatePresence>

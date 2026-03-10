@@ -22,12 +22,14 @@ export interface AnimatedGridPatternProps extends ComponentPropsWithoutRef<"svg"
   maxOpacity?: number
   duration?: number
   repeatDelay?: number
+  colors?: string[]
 }
 
 type Square = {
   id: number
   pos: [number, number]
   iteration: number
+  color: string
 }
 
 export function AnimatedGridPattern({
@@ -41,6 +43,7 @@ export function AnimatedGridPattern({
   maxOpacity = 0.5,
   duration = 4,
   repeatDelay = 0.5,
+  colors = ["currentColor"],
   ...props
 }: AnimatedGridPatternProps) {
   const id = useId()
@@ -61,6 +64,7 @@ export function AnimatedGridPattern({
         id: i,
         pos: getPos(),
         iteration: 0,
+        color: colors[i % colors.length]
       }))
     },
     [getPos]
@@ -150,7 +154,7 @@ export function AnimatedGridPattern({
       </defs>
       <rect width="100%" height="100%" fill={`url(#${id})`} />
       <svg x={x} y={y} className="overflow-visible">
-        {squares.map(({ pos: [squareX, squareY], id, iteration }, index) => (
+        {squares.map(({ pos: [squareX, squareY], id, iteration, color }, index) => (
           <motion.rect
             initial={{ opacity: 0 }}
             animate={{ opacity: maxOpacity }}
@@ -167,7 +171,7 @@ export function AnimatedGridPattern({
             height={height - 1}
             x={squareX * width + 1}
             y={squareY * height + 1}
-            fill="currentColor"
+            fill={color}
             strokeWidth="0"
           />
         ))}
