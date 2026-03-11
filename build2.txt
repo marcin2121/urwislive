@@ -1,0 +1,170 @@
+﻿node.exe : [@serwist/ne
+xt] WARNING: You are us
+ing '@serwist/next' wit
+h `next dev --turbopack
+`, but it doesn't suppo
+rt Turbopack. Do one of
+ the following:
+At line:1 char:1
++ & "C:\Program Files\n
+odejs/node.exe" "C:\Pro
+gram Files\nodejs/node_
+mo ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecified
+: ([@s    erwist/next].
+.. the fo    llowing::S
+tring) [], R    emoteEx
+ception
+    + FullyQualifiedErr
+orI    d : NativeComman
+dError
+ 
+
+- Set `disable` to `pro
+cess.env.NODE_ENV !== "
+production"`.
+
+- Use webpack by runnin
+g `next dev --webpack` 
+instead of `next dev --
+turbopack`.
+
+- Migrate to '@serwist/
+turbopack' which has ex
+perimental support for 
+Turbopack. See https://
+serwist.pages.dev/docs/
+next/turbo for more inf
+ormation.
+
+- Migrate to configurat
+or mode which has suppo
+rt for Turbopack. See h
+ttps://serwist.pages.de
+v/docs/next/config for 
+more information. 
+
+Follow https://github.c
+om/serwist/serwist/issu
+es/54 for progress on S
+erwist + Turbopack. You
+ can also suppress this
+ warning by setting SER
+WIST_SUPPRESS_TURBOPACK
+_WARNING=1.
+
+The Next Bundle Analyze
+r is not compatible wit
+h Turbopack builds, no 
+report will be generate
+d.
+
+Consider trying the new
+ Turbopack analyzer via
+ `next experimental-ana
+lyze`.
+
+See https://nextjs.org/
+docs/app/guides/package
+-bundling for more info
+rmation
+
+To run this analysis pa
+ss the `--webpack` flag
+ to `next build`
+Ôľ▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ÔÜá The "middleware" fi
+le convention is deprec
+ated. Please use "proxy
+" instead. Learn more: 
+https://nextjs.org/docs
+/messages/middleware-to
+-proxy
+  Creating an optimized production build ...
+The Next Bundle Analyze
+r is not compatible wit
+h Turbopack builds, no 
+report will be generate
+d.
+
+Consider trying the new
+ Turbopack analyzer via
+ `next experimental-ana
+lyze`.
+
+See https://nextjs.org/
+docs/app/guides/package
+-bundling for more info
+rmation
+
+To run this analysis pa
+ss the `--webpack` flag
+ to `next build`
+Ôťô Compiled successfully in 10.1s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/42) ...
+  Generating static pages using 11 workers (10/42) 
+  Generating static pages using 11 workers (20/42) 
+  Generating static pages using 11 workers (31/42) 
+Ôťô Generating static pages using 11 workers (42/42) in 981.1ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî ÔŚő /
+Ôöť ÔŚő /_not-found
+Ôöť ÔŚő /admin
+Ôöť ÔŚő /aktualnosci
+Ôöť Ăĺ /api/chat
+Ôöť Ăĺ /api/cron/push-scheduler
+Ôöť Ăĺ /api/cron/urwis-decay
+Ôöť Ăĺ /api/push
+Ôöť Ăĺ /api/push/send-all
+Ôöť Ăĺ /api/push/send-welcome
+Ôöť Ăĺ /api/push/track
+Ôöť Ăĺ /api/urwis/sync
+Ôöť ÔŚő /karta
+Ôöť ÔŚő /kontakt
+Ôöť ÔŚő /manifest.webmanifest
+Ôöť ÔŚő /oferta
+Ôöť ÔŚő /oferta/gry
+Ôöť ÔŚő /oferta/imprezy
+Ôöť ÔŚő /oferta/promocje
+Ôöť ÔŚő /oferta/szkola-i-biuro
+Ôöť ÔŚő /oferta/zabawki
+Ôöť ÔŚő /offline
+Ôöť ÔŚő /polityka-prywatnosci
+Ôöť ÔŚő /poznaj-urwisa
+Ôöť ÔŚő /profil
+Ôöť ÔŚő /rabaty
+Ôöť ÔŚő /regulamin
+Ôöť ÔŚő /robots.txt
+Ôöť ÔŚő /salazabaw
+Ôöť ÔŚő /share-target
+Ôöť Ăĺ /share-target/api
+Ôöť ÔŚő /sitemap.xml
+Ôöť ÔŚő /strefa-zabawy
+Ôöť ÔŚő /strefa-zabawy/fabryka-urwisa
+Ôöť ÔŚő /strefa-zabawy/kolko-i-krzyzyk
+Ôöť ÔŚő /strefa-zabawy/kolorowanki
+Ôöť ÔŚő /strefa-zabawy/lece-w-kulki
+Ôöť ÔŚő /strefa-zabawy/memory
+Ôöť ÔŚő /strefa-zabawy/quiz-urwisa
+Ôöť ÔŚő /strefa-zabawy/urwis-breaker
+Ôöť ÔŚő /strefa-zabawy/urwisar
+Ôöť Ăĺ /strefa-zabawy/urwisek
+Ôöö ÔŚő /zmien-haslo
+
+
+Ăĺ Proxy (Middleware)
+
+ÔŚő  (Static)   prerendered as static content
+Ăĺ  (Dynamic)  server-rendered on demand
+

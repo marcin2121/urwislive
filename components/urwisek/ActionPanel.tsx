@@ -98,6 +98,7 @@ export default function ActionPanel({ state, onAction, onModeChange, activeMode 
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Zamknij panel akcji" : "Otwórz panel akcji z Urwisem"}
         className={cn(
           "w-16 h-16 rounded-[1.6rem] flex items-center justify-center border-4 border-white shadow-xl z-20 transition-all duration-300",
           isOpen ? "bg-gray-100 text-gray-500 shadow-none border-gray-200" : "bg-urwis-blue text-white shadow-blue-500/40 hover:bg-blue-600 hover:-translate-y-1"

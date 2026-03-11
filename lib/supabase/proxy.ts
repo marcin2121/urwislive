@@ -54,7 +54,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Sprawdzamy, czy w metadanych (user_metadata) ma wpisaną rolę "admin"
-    const isAdmin = user.user_metadata?.role === 'admin';
+    const isAdmin = user.app_metadata?.role === 'admin';
     
     if (!isAdmin) {
       const url = request.nextUrl.clone()

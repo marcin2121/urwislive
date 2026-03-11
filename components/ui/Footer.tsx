@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
 import { 
   MapPin, Phone, Mail, Facebook, 
   Instagram, ArrowRight, Store, Gamepad2, Globe, ShieldCheck, Heart 

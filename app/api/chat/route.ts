@@ -2,12 +2,36 @@ import { streamText, convertToModelMessages } from 'ai';
 import { google } from '@ai-sdk/google';
 import { askCrystalBall } from '@/lib/magic';
 import { PROJECT_CONTEXT } from '@/lib/project-context';
+import { rateLimit } from '@/lib/rate-limit';
+import { headers } from 'next/headers';
 
 export const maxDuration = 60;
-export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
+
+const MAX_MESSAGES_PER_CONVERSATION = 20;
+
 export async function POST(req: Request) {
+  // Rate-limiting po IP
+  const headersList = await headers();
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const { allowed } = rateLimit(ip);
+  
+  if (!allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Zbyt wiele zapytań. Spróbuj ponownie za chwilę.' }),
+      { status: 429, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   const { messages } = await req.json();
+
+  // Limit długości konwersacji
+  if (messages.length > MAX_MESSAGES_PER_CONVERSATION) {
+    return new Response(
+      JSON.stringify({ error: 'Konwersacja jest zbyt długa. Odśwież czat, aby zacząć nową.' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   // Zawsze losuj przepowiednię — model zdecyduje czy jej użyć
   const magicVerdict = await askCrystalBall('produkt');

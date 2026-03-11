@@ -33,7 +33,7 @@ export default function RankingModal({ isOpen, onClose, ranking }: {
             </div>
             <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">Najlepsze Urwisy</h2>
           </div>
-          <button onClick={onClose} className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors">
+          <button onClick={onClose} aria-label="Zamknij ranking" className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>

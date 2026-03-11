@@ -4,18 +4,12 @@ import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { Toaster } from 'sonner';
-import { RibbonsBg } from '@/components/Ribbons';
-import OrphansFixer from "@/components/utils/OrphansFixer";
-import CookieModal from "@/components/ui/CookieModal";
-import InstallPrompt from "@/components/ui/InstallPrompt";
 import { Suspense } from "react";
 import Script from "next/script";
-import WelcomeScreen from "@/components/ui/WelcomeScreen";
 import { AuthProvider } from "@/components/AuthProvider";
-import OnboardingTour from "@/components/ui/OnboardingTour";
 import { PopupProvider } from "@/components/PopupProvider";
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { UrwisChatWidget } from '@/components/UrwisChatWidget';
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ClientLayoutComponents } from "@/components/ClientLayoutComponents";
 const inter = Inter({ 
   subsets: ["latin"], 
   variable: "--font-inter",
@@ -193,13 +187,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           
           <PopupProvider>
-            <Suspense fallback={null}>
-              <WelcomeScreen />
-            </Suspense>
- 
-            <Suspense fallback={null}>
-              <OrphansFixer />
-            </Suspense>
  
             {/* Tło i baza shella */}
             <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
@@ -209,12 +196,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
  
               {/* Dedykowany obszar przewijania (Mobile Shell) */}
               <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] overscroll-y-contain pt-[72px] md:pt-32">
-                <div className="relative min-h-full flex flex-col">
-                  <Suspense fallback={null}>
-                    <InstallPrompt />
-                  </Suspense>
- 
-                  <RibbonsBg />
+                <div className="relative min-h-full flex flex-col"> 
  
                   <main className="grow bg-transparent">
                     {children}
@@ -226,25 +208,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <div className="h-20 md:hidden" />
                 </div>
               </div>
- 
-              <UrwisChatWidget />
             </div>
 
             <Toaster position="bottom-right" richColors />
 
-            <Suspense fallback={null}>
-              <CookieModal />
-            </Suspense>
-            <OnboardingTour />
+            <ClientLayoutComponents />
+            
             <SpeedInsights />
           </PopupProvider>
         </AuthProvider>
 
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
@@ -275,7 +253,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
-        <Script id="register-sw" strategy="afterInteractive">
+        <Script id="register-sw" strategy="lazyOnload">
           {`
             const isTestBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
 

@@ -1,0 +1,19 @@
+first-contentful-paint: 1.2 s
+largest-contentful-paint: 8.1 s
+speed-index: 3.5 s
+total-blocking-time: 700 ms
+max-potential-fid: 290 ms
+cumulative-layout-shift: 0
+server-response-time: Root document took 130 ms
+interactive: 8.4 s
+mainthread-work-breakdown: 6.2 s
+bootup-time: 3.1 s
+network-rtt: 10 ms
+network-server-latency: 90 ms
+long-tasks: 19 long tasks found
+non-composited-animations: 1 animated element found
+total-byte-weight: Total size was 1,047 KiB
+unused-javascript: Est savings of 218 KiB
+image-delivery-insight: Est savings of 31 KiB
+legacy-javascript-insight: Est savings of 12 KiB
+render-blocking-insight: Est savings of 340 ms

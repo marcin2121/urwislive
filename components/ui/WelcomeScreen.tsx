@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Sparkles } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { usePopupControl } from '@/components/PopupProvider';
@@ -146,13 +145,10 @@ export default function WelcomeScreen() {
   if (!mounted) return null;
 
   return (
-    <AnimatePresence>
+    <>
       {isVisible && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          className="fixed inset-0 z-[100000] bg-urwis-blue flex flex-col items-center justify-center p-6 text-white overflow-hidden"
+        <div
+          className="fixed inset-0 z-[100000] bg-urwis-blue flex flex-col items-center justify-center p-6 text-white overflow-hidden animate-fade-in"
         >
           {/* Tło dekoracyjne */}
           <div className="absolute top-10 left-10 text-white/10 rotate-12 pointer-events-none">
@@ -162,11 +158,9 @@ export default function WelcomeScreen() {
             <Sparkles size={120} />
           </div>
 
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, type: 'spring', damping: 25 }}
-            className="relative z-10 flex flex-col items-center text-center max-w-sm px-6"
+          <div 
+            className="relative z-10 flex flex-col items-center text-center max-w-sm px-6 animate-zoom-in"
+            style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
           >
             <div className="w-80 h-80 relative mb-4 drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
               <Image 
@@ -206,9 +200,25 @@ export default function WelcomeScreen() {
                 Może innym razem, koleżko.
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes zoomIn {
+          from { opacity: 0; transform: scale(0.8); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .animate-zoom-in {
+          animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}} />
+    </>
   );
 }

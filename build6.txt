@@ -1,0 +1,870 @@
+﻿node.exe : [@serwist/ne
+xt] WARNING: You are us
+ing '@serwist/next' wit
+h `next dev --turbopack
+`, but it doesn't suppo
+rt Turbopack. Do one of
+ the following:
+At line:1 char:1
++ & "C:\Program Files\n
+odejs/node.exe" "C:\Pro
+gram Files\nodejs/node_
+mo ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([@serwist/nex   
+ t]... the followin    
+g::String) [], Rem    o
+teException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+
+- Set `disable` to `pro
+cess.env.NODE_ENV !== "
+production"`.
+
+- Use webpack by runnin
+g `next dev --webpack` 
+instead of `next dev --
+turbopack`.
+
+- Migrate to '@serwist/
+turbopack' which has ex
+perimental support for 
+Turbopack. See https://
+serwist.pages.dev/docs/
+next/turbo for more inf
+ormation.
+
+- Migrate to configurat
+or mode which has suppo
+rt for Turbopack. See h
+ttps://serwist.pages.de
+v/docs/next/config for 
+more information. 
+
+Follow https://github.c
+om/serwist/serwist/issu
+es/54 for progress on S
+erwist + Turbopack. You
+ can also suppress this
+ warning by setting SER
+WIST_SUPPRESS_TURBOPACK
+_WARNING=1.
+
+Ôľ▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+ÔÜá The "middleware" fi
+le convention is deprec
+ated. Please use "proxy
+" instead. Learn more: 
+https://nextjs.org/docs
+/messages/middleware-to
+-proxy
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build 
+failed with 6 errors:
+./app/layout.tsx:15:22
+Ecmascript file had an 
+error
+[0m [90m 13 |[39m [
+36mimport[39m dynamic 
+[36mfrom[39m [32m"ne
+xt/dynamic"[39m[33m;
+[39m
+ [90m 14 |[39m
+[31m[1m>[22m[39m[9
+0m 15 |[39m [36mconst
+[39m [33mOrphansFixer
+[39m [33m=[39m dynam
+ic(() [33m=>[39m [36
+mimport[39m([32m"@/co
+mponents/utils/OrphansF
+ixer"[39m)[33m,[39m 
+{ ssr[33m:[39m [36mf
+alse[39m })[33m;[39m
+ [90m    |[39m       
+               [31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m
+ [90m 16 |[39m [36mc
+onst[39m [33mCookieMo
+dal[39m [33m=[39m dy
+namic(() [33m=>[39m 
+[36mimport[39m([32m"@
+/components/ui/CookieMo
+dal"[39m)[33m,[39m {
+ ssr[33m:[39m [36mfa
+lse[39m })[33m;[39m
+ [90m 17 |[39m [36mc
+onst[39m [33mInstallP
+rompt[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Instal
+lPrompt"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+ [90m 18 |[39m [36mc
+onst[39m [33mWelcomeS
+creen[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Welcom
+eScreen"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m[0m
+
+`ssr: false` is not all
+owed with `next/dynamic
+` in Server Components.
+ Please move it into a 
+Client Component.
+
+
+./app/layout.tsx:16:21
+Ecmascript file had an 
+error
+[0m [90m 14 |[39m
+ [90m 15 |[39m [36mc
+onst[39m [33mOrphansF
+ixer[39m [33m=[39m d
+ynamic(() [33m=>[39m 
+[36mimport[39m([32m"
+@/components/utils/Orph
+ansFixer"[39m)[33m,[
+39m { ssr[33m:[39m [
+36mfalse[39m })[33m;
+[39m
+[31m[1m>[22m[39m[9
+0m 16 |[39m [36mconst
+[39m [33mCookieModal
+[39m [33m=[39m dynami
+c(() [33m=>[39m [36m
+import[39m([32m"@/com
+ponents/ui/CookieModal"
+[39m)[33m,[39m { ssr
+[33m:[39m [36mfalse
+[39m })[33m;[39m
+ [90m    |[39m       
+              [31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m
+ [90m 17 |[39m [36mc
+onst[39m [33mInstallP
+rompt[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Instal
+lPrompt"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+ [90m 18 |[39m [36mc
+onst[39m [33mWelcomeS
+creen[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Welcom
+eScreen"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+ [90m 19 |[39m [36mc
+onst[39m [33mOnboardi
+ngTour[39m [33m=[39m
+ dynamic(() [33m=>[39
+m [36mimport[39m([32
+m"@/components/ui/Onboa
+rdingTour"[39m)[33m,
+[39m { ssr[33m:[39m 
+[36mfalse[39m })[33m;
+[39m[0m
+
+`ssr: false` is not all
+owed with `next/dynamic
+` in Server Components.
+ Please move it into a 
+Client Component.
+
+
+./app/layout.tsx:17:23
+Ecmascript file had an 
+error
+[0m [90m 15 |[39m [
+36mconst[39m [33mOrph
+ansFixer[39m [33m=[3
+9m dynamic(() [33m=>[
+39m [36mimport[39m([
+32m"@/components/utils/
+OrphansFixer"[39m)[33
+m,[39m { ssr[33m:[39
+m [36mfalse[39m })[3
+3m;[39m
+ [90m 16 |[39m [36mc
+onst[39m [33mCookieMo
+dal[39m [33m=[39m dy
+namic(() [33m=>[39m 
+[36mimport[39m([32m"@
+/components/ui/CookieMo
+dal"[39m)[33m,[39m {
+ ssr[33m:[39m [36mfa
+lse[39m })[33m;[39m
+[31m[1m>[22m[39m[9
+0m 17 |[39m [36mconst
+[39m [33mInstallPromp
+t[39m [33m=[39m dyna
+mic(() [33m=>[39m [3
+6mimport[39m([32m"@/c
+omponents/ui/InstallPro
+mpt"[39m)[33m,[39m {
+ ssr[33m:[39m [36mfa
+lse[39m })[33m;[39m
+ [90m    |[39m       
+                [31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m
+ [90m 18 |[39m [36mc
+onst[39m [33mWelcomeS
+creen[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Welcom
+eScreen"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+ [90m 19 |[39m [36mc
+onst[39m [33mOnboardi
+ngTour[39m [33m=[39m
+ dynamic(() [33m=>[39
+m [36mimport[39m([32
+m"@/components/ui/Onboa
+rdingTour"[39m)[33m,
+[39m { ssr[33m:[39m 
+[36mfalse[39m })[33m;
+[39m
+ [90m 20 |[39m [36mc
+onst[39m [33mUrwisCha
+tWidget[39m [33m=[39
+m dynamic(() [33m=>[3
+9m [36mimport[39m([3
+2m"@/components/UrwisCh
+atWidget"[39m)[33m.[
+39mthen(mod [33m=>[39
+m mod[33m.[39m[33mUr
+wisChatWidget[39m)[33
+m,[39m { ssr[33m:[39
+m [36mfalse[39m })[3
+3m;[39m[0m
+
+`ssr: false` is not all
+owed with `next/dynamic
+` in Server Components.
+ Please move it into a 
+Client Component.
+
+
+./app/layout.tsx:18:23
+Ecmascript file had an 
+error
+[0m [90m 16 |[39m [
+36mconst[39m [33mCook
+ieModal[39m [33m=[39
+m dynamic(() [33m=>[3
+9m [36mimport[39m([3
+2m"@/components/ui/Cook
+ieModal"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+ [90m 17 |[39m [36mc
+onst[39m [33mInstallP
+rompt[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Instal
+lPrompt"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+[31m[1m>[22m[39m[9
+0m 18 |[39m [36mconst
+[39m [33mWelcomeScree
+n[39m [33m=[39m dyna
+mic(() [33m=>[39m [3
+6mimport[39m([32m"@/c
+omponents/ui/WelcomeScr
+een"[39m)[33m,[39m {
+ ssr[33m:[39m [36mfa
+lse[39m })[33m;[39m
+ [90m    |[39m       
+                [31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m
+ [90m 19 |[39m [36mc
+onst[39m [33mOnboardi
+ngTour[39m [33m=[39m
+ dynamic(() [33m=>[39
+m [36mimport[39m([32
+m"@/components/ui/Onboa
+rdingTour"[39m)[33m,
+[39m { ssr[33m:[39m 
+[36mfalse[39m })[33m;
+[39m
+ [90m 20 |[39m [36mc
+onst[39m [33mUrwisCha
+tWidget[39m [33m=[39
+m dynamic(() [33m=>[3
+9m [36mimport[39m([3
+2m"@/components/UrwisCh
+atWidget"[39m)[33m.[
+39mthen(mod [33m=>[39
+m mod[33m.[39m[33mUr
+wisChatWidget[39m)[33
+m,[39m { ssr[33m:[39
+m [36mfalse[39m })[3
+3m;[39m
+ [90m 21 |[39m [36mc
+onst[39m inter [33m=
+[39m [33mInter[39m({ 
+[0m
+
+`ssr: false` is not all
+owed with `next/dynamic
+` in Server Components.
+ Please move it into a 
+Client Component.
+
+
+./app/layout.tsx:19:24
+Ecmascript file had an 
+error
+[0m [90m 17 |[39m [
+36mconst[39m [33mInst
+allPrompt[39m [33m=[
+39m dynamic(() [33m=>
+[39m [36mimport[39m(
+[32m"@/components/ui/In
+stallPrompt"[39m)[33m
+,[39m { ssr[33m:[39m
+ [36mfalse[39m })[33
+m;[39m
+ [90m 18 |[39m [36mc
+onst[39m [33mWelcomeS
+creen[39m [33m=[39m 
+dynamic(() [33m=>[39m
+ [36mimport[39m([32m
+"@/components/ui/Welcom
+eScreen"[39m)[33m,[3
+9m { ssr[33m:[39m [3
+6mfalse[39m })[33m;[
+39m
+[31m[1m>[22m[39m[9
+0m 19 |[39m [36mconst
+[39m [33mOnboardingTo
+ur[39m [33m=[39m dyn
+amic(() [33m=>[39m [
+36mimport[39m([32m"@/
+components/ui/Onboardin
+gTour"[39m)[33m,[39m
+ { ssr[33m:[39m [36m
+false[39m })[33m;[39
+m
+ [90m    |[39m       
+                 [31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m
+ [90m 20 |[39m [36mc
+onst[39m [33mUrwisCha
+tWidget[39m [33m=[39
+m dynamic(() [33m=>[3
+9m [36mimport[39m([3
+2m"@/components/UrwisCh
+atWidget"[39m)[33m.[
+39mthen(mod [33m=>[39
+m mod[33m.[39m[33mUr
+wisChatWidget[39m)[33
+m,[39m { ssr[33m:[39
+m [36mfalse[39m })[3
+3m;[39m
+ [90m 21 |[39m [36mc
+onst[39m inter [33m=
+[39m [33mInter[39m({ 
+ [90m 22 |[39m   subs
+ets[33m:[39m [[32m"l
+atin"[39m][33m,[39m 
+[0m
+
+`ssr: false` is not all
+owed with `next/dynamic
+` in Server Components.
+ Please move it into a 
+Client Component.
+
+
+./app/layout.tsx:20:25
+Ecmascript file had an 
+error
+[0m [90m 18 |[39m [
+36mconst[39m [33mWelc
+omeScreen[39m [33m=[
+39m dynamic(() [33m=>
+[39m [36mimport[39m(
+[32m"@/components/ui/We
+lcomeScreen"[39m)[33m
+,[39m { ssr[33m:[39m
+ [36mfalse[39m })[33
+m;[39m
+ [90m 19 |[39m [36mc
+onst[39m [33mOnboardi
+ngTour[39m [33m=[39m
+ dynamic(() [33m=>[39
+m [36mimport[39m([32
+m"@/components/ui/Onboa
+rdingTour"[39m)[33m,
+[39m { ssr[33m:[39m 
+[36mfalse[39m })[33m;
+[39m
+[31m[1m>[22m[39m[9
+0m 20 |[39m [36mconst
+[39m [33mUrwisChatWid
+get[39m [33m=[39m dy
+namic(() [33m=>[39m 
+[36mimport[39m([32m"@
+/components/UrwisChatWi
+dget"[39m)[33m.[39mt
+hen(mod [33m=>[39m mo
+d[33m.[39m[33mUrwisC
+hatWidget[39m)[33m,[
+39m { ssr[33m:[39m [
+36mfalse[39m })[33m;
+[39m
+ [90m    |[39m       
+                  [31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m[31m[1m^[
+22m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[3
+9m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31
+m[1m^[22m[39m[31m[
+1m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[2
+2m[39m[31m[1m^[22m
+[39m[31m[1m^[22m[39
+m[31m[1m^[22m[39m[
+31m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1
+m^[22m[39m[31m[1m^
+[22m[39m[31m[1m^[22
+m[39m[31m[1m^[22m[
+39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[3
+1m[1m^[22m[39m[31m
+[1m^[22m[39m[31m[1m
+^[22m[39m
+ [90m 21 |[39m [36mc
+onst[39m inter [33m=
+[39m [33mInter[39m({ 
+ [90m 22 |[39m   subs
+ets[33m:[39m [[32m"l
+atin"[39m][33m,[39m 
+ [90m 23 |[39m   vari
+able[33m:[39m [32m"-
+-font-inter"[39m[33m,
+[39m[0m
+
+`ssr: false` is not all
+owed with `next/dynamic
+` in Server Components.
+ Please move it into a 
+Client Component.
+
+
+    at <unknown> (./app
+/layout.tsx:15:22)
+    at <unknown> (./app
+/layout.tsx:16:21)
+    at <unknown> (./app
+/layout.tsx:17:23)
+    at <unknown> (./app
+/layout.tsx:18:23)
+    at <unknown> (./app
+/layout.tsx:19:24)
+    at <unknown> (./app
+/layout.tsx:20:25)

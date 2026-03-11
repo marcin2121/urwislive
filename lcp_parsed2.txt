@@ -1,0 +1,16 @@
+﻿--- SCORES ---
+Performance: 56.99999999999999
+FCP: 1.2┬ás
+LCP: 8.1┬ás
+TBT: 700┬áms
+
+--- LCP ELEMENT ---
+
+--- MAIN THREAD WORK ---
+Script Evaluation: 3015.7799999999024ms
+Other: 1335.407999999995ms
+Style & Layout: 1237.9160000000002ms
+Rendering: 302.45599999999894ms
+Script Parsing & Compilation: 240.94800000000006ms
+Parse HTML & CSS: 37.644ms
+Garbage Collection: 25.256ms

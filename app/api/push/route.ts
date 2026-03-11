@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
+import { rateLimit } from '@/lib/rate-limit';
+import { headers } from 'next/headers';
 
 // Bezpieczna inicjalizacja VAPID
 const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -15,7 +17,14 @@ if (publicKey && privateKey) {
 
 export async function POST(req: Request) {
   try {
-    // 🚀 POPRAWKA: Dodaliśmy 'topic' do pobieranych danych z zapytania
+    // Rate-limiting
+    const headersList = await headers();
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const { allowed } = rateLimit(ip);
+    if (!allowed) {
+      return NextResponse.json({ error: 'Zbyt wiele zapytań' }, { status: 429 });
+    }
+
     const { subscription, title, message, topic } = await req.json();
 
     if (!publicKey || !privateKey) {
@@ -29,7 +38,6 @@ export async function POST(req: Request) {
         body: message, 
         icon: '/android-chrome-192x192.png',
         data: { 
-          // 🚀 POPRAWKA: Teraz 'topic' jest rozpoznawany przez TypeScript
           url: `/?utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}` 
         }
       })

@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Check, X, Info, Cookie } from 'lucide-react' 
 import Link from 'next/link'
 import Image from 'next/image'
@@ -41,17 +40,13 @@ export default function CookieModal() {
   }
 
   return (
-    <AnimatePresence>
+    <>
       {isVisible && (
         <>
           {pathname === '/polityka-prywatnosci' ? (
             // Wersja dyskretna (Mini Banner) na stronie polityki prywatności
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 z-[10000] bg-white p-4 md:p-6 shadow-[0_-20px_60px_rgba(0,0,0,0.15)] border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 rounded-t-[2rem]"
+            <div
+              className="fixed bottom-0 left-0 right-0 z-[10000] bg-white p-4 md:p-6 shadow-[0_-20px_60px_rgba(0,0,0,0.15)] border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 rounded-t-[2rem] animate-slide-up"
             >
               <div className="flex items-center gap-4 md:gap-6">
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-50 rounded-full flex items-center justify-center shrink-0 border-2 border-blue-100">
@@ -76,35 +71,28 @@ export default function CookieModal() {
                   <Check size={14} strokeWidth={4} className="shrink-0 md:size-4" /> Akceptuję
                 </button>
               </div>
-            </motion.div>
+            </div>
           ) : (
             // Wersja pełnoekranowa (Modal) na wszystkich innych stronach
             <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
               {/* Overlay */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-zinc-950/80 backdrop-blur-[2px]"
+              <div
+                className="fixed inset-0 bg-zinc-950/80 backdrop-blur-[2px] animate-fade-in"
               />
 
               {/* Kontener Modala */}
-              <motion.div
+              <div
                 role="dialog"
                 aria-modal="true"
-                initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                className="relative w-full max-w-2xl bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden"
+                className="relative w-full max-w-2xl bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden animate-zoom-in"
               >
                 {/* Gradienty w tle */}
                 <div className="absolute -top-32 -right-32 w-80 h-80 bg-[radial-gradient(circle,rgba(0,85,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none" />
                 <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-[radial-gradient(circle,rgba(191,32,36,0.15)_0%,transparent_70%)] rounded-full pointer-events-none" />
 
                 <div className="relative z-10 flex flex-col items-center text-center">
-                  <motion.div 
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="relative w-56 h-56 md:w-64 md:h-64 mb-4 drop-shadow-2xl"
+                  <div 
+                    className="relative w-56 h-56 md:w-64 md:h-64 mb-4 drop-shadow-2xl animate-float-slow"
                   >
                     <Image 
                       src="/urwis-cookies.webp" 
@@ -113,7 +101,7 @@ export default function CookieModal() {
                       className="object-contain"
                       sizes="(max-width: 768px) 224px, 256px"
                     />
-                  </motion.div>
+                  </div>
 
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center justify-center gap-2 text-[#BF2024] font-black uppercase tracking-widest text-[10px]">
@@ -157,11 +145,41 @@ export default function CookieModal() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           )}
         </>
       )}
-    </AnimatePresence>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+          animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes zoomIn {
+          from { opacity: 0; transform: scale(0.9) translateY(30px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-zoom-in {
+          animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float-slow {
+          animation: floatSlow 4s ease-in-out infinite;
+        }
+      `}} />
+    </>
   )
 }

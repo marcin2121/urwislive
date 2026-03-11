@@ -31,7 +31,7 @@ export default function AchievementsPanel({ unlockedIds, totalPoints, onClose }:
             </p>
           </div>
         </div>
-        <button onClick={onClose} className="bg-zinc-50 p-2.5 rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer border border-zinc-200">
+        <button onClick={onClose} aria-label="Zamknij gablotkę" className="bg-zinc-50 p-2.5 rounded-full text-zinc-500 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer border border-zinc-200">
            <X size={24} strokeWidth={3} />
         </button>
       </div>

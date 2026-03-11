@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -172,10 +171,8 @@ export default function Navbar() {
 
   return (
     <header>
-      <motion.nav
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4 pointer-events-none"
+      <nav
+        className="fixed top-0 md:top-6 left-0 right-0 z-50 flex justify-center px-1.5 md:px-4 pointer-events-none transition-all duration-500 ease-out animate-navbar-enter"
       >
         <div className="w-full max-w-[1200px] bg-white/95 shadow-sm border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-full py-1 pl-1.5 pr-1.5 md:pl-2 md:pr-4 flex items-center justify-between pointer-events-auto">
           
@@ -202,6 +199,7 @@ export default function Navbar() {
                 setIsHoursDropdownOpen(newState);
                 trackEvent('nawigacja_godziny_zmiana', { stan: newState ? 'otwarte' : 'zamkniete' });
               }}
+              aria-label="Sprawdź godziny otwarcia"
               className="flex items-center gap-1.5 px-2 py-1.5 md:px-4 md:py-2 rounded-full bg-white/50 border border-white/60 shadow-sm shrink-0 hover:bg-white transition-colors"
             >
               <div className="relative flex h-2 w-2 md:h-2.5 md:w-2.5 shrink-0">
@@ -215,14 +213,7 @@ export default function Navbar() {
               <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            <AnimatePresence>
-              {isHoursDropdownOpen && (
-                <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }} 
-                    animate={{ opacity: 1, y: 0, scale: 1 }} 
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }} 
-                    className="absolute top-full left-0 md:left-14 mt-4 w-[260px] md:w-72 bg-white/95 backdrop-blur-3xl rounded-4xl shadow-2xl border border-white/60 p-5 z-[100]"
-                >
+            <div className={`transition-all duration-300 origin-top ${isHoursDropdownOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'} absolute top-full left-0 md:left-14 mt-4 w-[260px] md:w-72 bg-white/95 backdrop-blur-3xl rounded-4xl shadow-2xl border border-white/60 p-5 z-[100]`}>
                   <div className="flex items-center gap-2 mb-4 text-zinc-400">
                     <Clock size={14} strokeWidth={2.5} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">Godziny Otwarcia</span>
@@ -235,9 +226,7 @@ export default function Navbar() {
                       </div>
                     ))}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            </div>
           </div>
 
           {/* DESKTOP NAV ITEMS */}
@@ -313,33 +302,26 @@ export default function Navbar() {
                 setMobileMenuOpen(true);
                 trackEvent('nawigacja_mobilna_otwarcie');
               }} 
+              aria-label="Otwórz menu mobilne"
               className="hidden md:flex xl:hidden p-1.5 md:p-3 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm hover:bg-zinc-100 text-zinc-600 active:scale-90 transition-transform shrink-0 min-w-[44px] min-h-[44px] items-center justify-center"
             >
               <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       {/* MOBILE MENU MODAL */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
           <>
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0, pointerEvents: "none" }} 
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[120] touch-none" 
+              <div 
+                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[120] touch-none transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
                 onClick={() => {
                   setMobileMenuOpen(false);
                   trackEvent('nawigacja_mobilna_zamkniecie_tlo');
                 }} 
               />
-            <motion.div 
-              initial={{ x: "100%" }} 
-              animate={{ x: 0 }} 
-              exit={{ x: "100%" }} 
-              className="fixed inset-y-0 right-0 z-[130] w-full max-w-sm bg-white shadow-2xl p-6 flex flex-col"
+            <div 
+              className={`fixed inset-y-0 right-0 z-[130] w-full max-w-sm bg-white shadow-2xl p-6 flex flex-col transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
               
               <div className="flex justify-between items-center mb-8">
@@ -355,6 +337,7 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     trackEvent('nawigacja_mobilna_zamkniecie_przycisk');
                   }} 
+                  aria-label="Zamknij menu"
                   className="p-3 bg-zinc-50 border border-zinc-200 shadow-sm rounded-full text-zinc-600 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <X size={24} />
@@ -405,10 +388,8 @@ export default function Navbar() {
                   </Link>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </>
-        )}
-      </AnimatePresence>
 
       {/* MOBILE BOTTOM NAVIGATION (Native App Feel) */}
       {!isUrwisekPage && (
@@ -433,17 +414,25 @@ export default function Navbar() {
               </Link>
   
               {user ? (
-                <Link href="/profil" onClick={() => trackEvent('nawigacja_dolna_profil')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+                <Link href="/profil" aria-label="Przejdź do profilu" onClick={() => trackEvent('nawigacja_dolna_profil')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
                   <User size={24} className={pathname === '/profil' ? 'fill-current' : ''} />
                   <span className="text-[9px] font-black uppercase tracking-tighter">Profil</span>
                 </Link>
               ) : (
-                <button onClick={() => { trackEvent('nawigacja_dolna_logowanie'); setIsAuthModalOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500">
+                <button 
+                  onClick={() => { trackEvent('nawigacja_dolna_logowanie'); setIsAuthModalOpen(true); }} 
+                  aria-label="Zaloguj się"
+                  className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500"
+                >
                   <User size={24} />
                   <span className="text-[9px] font-black uppercase tracking-tighter">Konto</span>
                 </button>
               )}
-              <button onClick={() => { trackEvent('nawigacja_dolna_menu'); setMobileMenuOpen(true); }} className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none">
+              <button 
+                onClick={() => { trackEvent('nawigacja_dolna_menu'); setMobileMenuOpen(true); }} 
+                aria-label="Otwórz menu"
+                className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500 cursor-pointer outline-none"
+              >
                 <Menu size={24} />
                 <span className="text-[9px] font-black uppercase tracking-tighter">Menu</span>
               </button>

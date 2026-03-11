@@ -663,28 +663,29 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
       {/* LEFT PANEL */}
       {!zenMode && (
         <motion.div initial={{ x: -100 }} animate={{ x: 0 }} className="w-14 lg:w-72 shrink-0 flex flex-col gap-2 overflow-y-auto py-1 bg-zinc-950 lg:bg-transparent border-r border-white/5 z-40 scrollbar-hide">
-          <button onClick={() => setShowExitConfirm(true)} aria-label="Wróć" className="w-full aspect-square lg:aspect-auto lg:py-4 lg:px-5 bg-white/10 rounded-2xl flex items-center justify-center lg:justify-start border border-white/20 hover:bg-red-600 transition-colors cursor-pointer outline-none">
+          <button onClick={() => setShowExitConfirm(true)} aria-label="Wróć do listy kolorowanek" className="w-full aspect-square lg:aspect-auto lg:py-4 lg:px-5 bg-white/10 rounded-2xl flex items-center justify-center lg:justify-start border border-white/20 hover:bg-red-600 transition-colors cursor-pointer outline-none">
             <ChevronLeft size={20} /><span className="hidden lg:block ml-3 font-black uppercase text-xs">Wróć</span>
           </button>
           
           <div className="flex lg:hidden flex-col gap-2 mt-1">
             <button 
               onClick={() => setShowColorPicker(true)} 
+              aria-label="Wybierz kolor"
               className={`w-full aspect-square rounded-2xl border-4 transition-all flex items-center justify-center border-white/30 cursor-pointer outline-none relative overflow-hidden`} 
               style={{ backgroundColor: tool === 'magic' ? 'transparent' : selectedColor }}
             >
               {tool === 'magic' ? <div className="absolute inset-0 bg-[conic-gradient(from_0deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000)] animate-spin-slow rounded-xl" /> : <Palette size={20} />}
             </button>
-            <button onClick={() => setTool('brush')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'brush' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Paintbrush size={20}/></button>
-            <button onClick={() => setTool('fill')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'fill' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><PaintBucket size={20}/></button>
-            <button onClick={() => setTool('picker')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'picker' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Pipette size={20}/></button>
-            <button onClick={() => setTool('pan')} className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'pan' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Hand size={20}/></button>
+            <button onClick={() => setTool('brush')} aria-label="Pędzel" className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'brush' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Paintbrush size={20}/></button>
+            <button onClick={() => setTool('fill')} aria-label="Wypełnij kolorem" className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'fill' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><PaintBucket size={20}/></button>
+            <button onClick={() => setTool('picker')} aria-label="Pipeta (pobierz kolor)" className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'picker' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Pipette size={20}/></button>
+            <button onClick={() => setTool('pan')} aria-label="Przesuń widok" className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all border cursor-pointer outline-none ${tool === 'pan' ? 'bg-white text-zinc-900 border-white scale-110 shadow-lg' : 'bg-white/5 border-white/20 text-white'}`}><Hand size={20}/></button>
           </div>
 
           <div className="hidden lg:flex flex-col gap-8 p-4">
              <div className="grid grid-cols-2 gap-3">
                {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'fill',n:'Wiadro',i:PaintBucket}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'picker',n:'Pipeta',i:Pipette}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
-                 <button key={t.id} onClick={() => setTool(t.id as any)} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all cursor-pointer outline-none ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
+                 <button key={t.id} onClick={() => setTool(t.id as any)} aria-label={t.n} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all cursor-pointer outline-none ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
                    <t.i size={24} /><span className="text-[10px] font-black uppercase">{t.n}</span>
                  </button>
                ))}
@@ -720,7 +721,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             )}
           </AnimatePresence>
 
-          <button onClick={() => setZenMode(!zenMode)} className="absolute bottom-4 left-4 z-30 w-10 h-10 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer outline-none">
+          <button onClick={() => setZenMode(!zenMode)} aria-label={zenMode ? "Pokaż interfejs" : "Ukryj interfejs (Tryb Zen)"} className="absolute bottom-4 left-4 z-30 w-10 h-10 bg-zinc-900/80 rounded-full flex items-center justify-center border border-white/20 backdrop-blur-md cursor-pointer outline-none">
             {zenMode ? <Eye size={20} /> : <EyeOff size={20} />}
           </button>
         </div>
@@ -755,7 +756,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
               <div className="space-y-4 pt-4 border-t border-white/10">
                 <div className="flex justify-between text-[10px] font-black uppercase"><span>Głośność</span><span>{isMuted ? 0 : ambientVolume}%</span></div>
                 <div className="flex items-center gap-3">
-                  <button onClick={toggleMute} className="cursor-pointer outline-none">{getVolumeIcon()}</button>
+                  <button onClick={toggleMute} aria-label={isMuted ? "Włącz dźwięk" : "Wycisz dźwięk"} className="cursor-pointer outline-none">{getVolumeIcon()}</button>
                   <input type="range" min="0" max="100" value={isMuted ? 0 : ambientVolume} onChange={(e) => handleVolumeChange(parseInt(e.target.value))} className="w-full accent-green-400" />
                 </div>
               </div>
@@ -793,13 +794,13 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-zinc-900 border border-white/10 p-6 rounded-[2.5rem] w-full max-w-sm" onClick={e => e.stopPropagation()}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-black uppercase italic tracking-tighter">Rozmiar Pędzla: {lineWidth}px</h3>
-                <button onClick={() => setShowMobileSizePicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
+                <button onClick={() => setShowMobileSizePicker(false)} aria-label="Zamknij wybór rozmiaru" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
               </div>
               
               <div className="flex items-center gap-4 mb-8 bg-zinc-950 p-4 rounded-3xl border border-white/5">
-                <button onClick={() => setLineWidth(Math.max(1, lineWidth - 1))} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 text-white font-black hover:bg-white/10 active:scale-95 transition-all outline-none"><Minus size={20} /></button>
-                <input type="range" min="1" max="60" value={lineWidth} onChange={(e) => setLineWidth(parseInt(e.target.value))} className="w-full accent-[#0055ff] h-8" />
-                <button onClick={() => setLineWidth(Math.min(60, lineWidth + 1))} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 text-white font-black hover:bg-white/10 active:scale-95 transition-all outline-none"><Plus size={20} /></button>
+                <button onClick={() => setLineWidth(Math.max(1, lineWidth - 1))} aria-label="Zmniejsz pędzel" className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 text-white font-black hover:bg-white/10 active:scale-95 transition-all outline-none"><Minus size={20} /></button>
+                <input type="range" aria-label="Suwak rozmiaru pędzla" min="1" max="60" value={lineWidth} onChange={(e) => setLineWidth(parseInt(e.target.value))} className="w-full accent-[#0055ff] h-8" />
+                <button onClick={() => setLineWidth(Math.min(60, lineWidth + 1))} aria-label="Zwiększ pędzel" className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0 text-white font-black hover:bg-white/10 active:scale-95 transition-all outline-none"><Plus size={20} /></button>
               </div>
 
               <div className="flex justify-between">
@@ -821,7 +822,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
             <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-zinc-900 border border-white/10 p-6 rounded-[2.5rem] max-w-sm w-full">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-black uppercase italic tracking-tighter">Paleta Urwisa</h3>
-                <button onClick={() => setShowColorPicker(false)} className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
+                <button onClick={() => setShowColorPicker(false)} aria-label="Zamknij paletę" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center cursor-pointer outline-none"><X size={20}/></button>
               </div>
               <div className="grid grid-cols-6 gap-3 mb-4">
                 {PRESET_PALETTE.map(c => <button key={c} onClick={() => selectColor(c)} className={`aspect-square rounded-full border-2 cursor-pointer outline-none ${selectedColor === c ? 'border-white scale-110 shadow-lg' : 'border-white/10'}`} style={{ backgroundColor: c }} />)}

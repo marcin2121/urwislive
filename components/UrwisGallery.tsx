@@ -211,8 +211,20 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
       </div>
 
       <div className="relative group">
-        <button onClick={handleScrollLeft} className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 p-4 bg-white/90 text-blue-600 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all"><ChevronLeft size={28} /></button>
-        <button onClick={handleScrollRight} className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 p-4 bg-white/90 text-blue-600 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all"><ChevronRight size={28} /></button>
+        <button 
+          onClick={handleScrollLeft} 
+          aria-label="Przewiń galerię w lewo"
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 p-4 bg-white/90 text-blue-600 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all"
+        >
+          <ChevronLeft size={28} />
+        </button>
+        <button 
+          onClick={handleScrollRight} 
+          aria-label="Przewiń galerię w prawo"
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 p-4 bg-white/90 text-blue-600 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all"
+        >
+          <ChevronRight size={28} />
+        </button>
 
         <div 
           ref={scrollRef}
@@ -232,7 +244,11 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
                 {item.isNew && <div className="absolute top-4 left-4 z-20 bg-[#BF2024] text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase animate-pulse shadow-lg">Nowość</div>}
                 {item.isPromo && !item.isNew && <div className="absolute top-4 left-4 z-20 bg-amber-400 text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase shadow-lg">Hit</div>}
 
-                <button onClick={(e) => toggleFavorite(e, item.id)} className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white/80 transition-colors">
+                <button 
+                  onClick={(e) => toggleFavorite(e, item.id)} 
+                  aria-label={isFav ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+                  className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-white/30 backdrop-blur-md hover:bg-white/80 transition-colors"
+                >
                   <Heart size={20} fill={isFav ? "#BF2024" : "none"} className={isFav ? "text-[#BF2024]" : "text-white"} />
                 </button>
 
@@ -267,14 +283,42 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
 
               {/* PRZYCISKI MODALA */}
               <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-3">
-                <motion.button initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} onClick={(e) => toggleFavorite(e, selectedItem.id)} className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md">
+                <motion.button 
+                  initial={{ scale: 0.5, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }} 
+                  onClick={(e) => toggleFavorite(e, selectedItem.id)} 
+                  aria-label={favorites.includes(selectedItem.id) ? "Usuń z ulubionych" : "Dodaj do ulubionych"}
+                  className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md"
+                >
                   <Heart size={24} fill={favorites.includes(selectedItem.id) ? "#ef4444" : "none"} className={favorites.includes(selectedItem.id) ? "text-red-500" : ""} />
                 </motion.button>
-                <motion.button initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); setIsZoomed(!isZoomed); }}>
+                <motion.button 
+                  initial={{ scale: 0.5, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }} 
+                  aria-label={isZoomed ? "Pomniejsz zdjęcie" : "Powiększ zdjęcie"}
+                  className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md" 
+                  onClick={(e) => { e.stopPropagation(); setIsZoomed(!isZoomed); }}
+                >
                   {isZoomed ? <ZoomOut size={24} /> : <ZoomIn size={24} />}
                 </motion.button>
-                <motion.button initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-3 md:p-4 bg-blue-600 text-white rounded-full shadow-lg" onClick={handleShare}><Share2 size={24} /></motion.button>
-                <motion.button initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md" onClick={() => { setSelectedId(null); setIsZoomed(false); }}><X size={24} /></motion.button>
+                <motion.button 
+                  initial={{ scale: 0.5, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }} 
+                  className="p-3 md:p-4 bg-blue-600 text-white rounded-full shadow-lg" 
+                  onClick={handleShare}
+                  aria-label="Udostępnij produkt"
+                >
+                  <Share2 size={24} />
+                </motion.button>
+                <motion.button 
+                  initial={{ scale: 0.5, opacity: 0 }} 
+                  animate={{ scale: 1, opacity: 1 }} 
+                  className="p-3 md:p-4 bg-white/10 text-white rounded-full border border-white/20 backdrop-blur-md" 
+                  onClick={() => { setSelectedId(null); setIsZoomed(false); }}
+                  aria-label="Zamknij galerię"
+                >
+                  <X size={24} />
+                </motion.button>
               </div>
               
               {!isZoomed && visibleItems.length > 1 && (

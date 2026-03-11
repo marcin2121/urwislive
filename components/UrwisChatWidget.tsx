@@ -80,6 +80,7 @@ export function UrwisChatWidget() {
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(false)}
+              aria-label="Zminimalizuj czat"
               className="relative z-10 text-zinc-400 hover:bg-zinc-800 hover:text-white rounded-full transition-colors active:scale-95 w-9 h-9 border border-transparent hover:border-zinc-700"
             >
               <Minus className="w-5 h-5" strokeWidth={2.5} />
@@ -230,6 +231,7 @@ export function UrwisChatWidget() {
               <Button
                 type="submit"
                 size="icon"
+                aria-label="Wyślij wiadomość"
                 className={`rounded-full w-11 h-11 md:w-12 md:h-12 shrink-0 shadow-md border-2 transition-all duration-200 ${
                   isLoading || isInputEmpty
                     ? 'bg-zinc-100 border-zinc-200 text-zinc-400 opacity-50 cursor-not-allowed'
@@ -270,6 +272,7 @@ export function UrwisChatWidget() {
 
         <Button
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Zamknij czat" : "Otwórz czat z Urwisem"}
           className={`relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg md:shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-2 md:border-4 bg-white ${
             isOpen ? 'border-[#BF2024]' : 'border-[#0055ff]'
           }`}
@@ -277,7 +280,7 @@ export function UrwisChatWidget() {
           {isOpen ? (
             <X className="w-6 h-6 md:w-8 md:h-8 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
           ) : (
-            <img src="/urwischat.webp" alt="Uruchom czat" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
+            <img src="/urwischat.webp" alt="Urwis" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
           )}
         </Button>
       </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { X, Mail, Lock, User, Phone, ArrowRight, Loader2, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -87,19 +86,13 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+    <>
+      <div
+        className="fixed inset-0 z-[200000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       >
-        <motion.div
-          initial={{ y: 50, scale: 0.95 }}
-          animate={{ y: 0, scale: 1 }}
-          exit={{ y: 20, scale: 0.95 }}
-          className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden relative max-h-[90vh] overflow-y-auto"
+        <div
+          className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl overflow-hidden relative max-h-[90vh] overflow-y-auto animate-zoom-in"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -107,7 +100,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
             <h2 className="text-xl font-black uppercase italic tracking-tighter text-zinc-800">
               {view === 'login' ? "Witaj ponownie!" : view === 'register' ? "Dołącz do nas!" : "Reset hasła"}
             </h2>
-            <button onClick={onClose} className="p-2 bg-white rounded-full shadow-sm text-zinc-400 hover:text-zinc-800 transition-colors">
+            <button onClick={onClose} aria-label="Zamknij okno logowania" className="p-2 bg-white rounded-full shadow-sm text-zinc-400 hover:text-zinc-800 transition-colors">
               <X size={20} />
             </button>
           </div>
@@ -207,8 +200,24 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
               </p>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+      </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes zoomIn {
+          from { opacity: 0; transform: scale(0.95) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-zoom-in {
+          animation: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}} />
+    </>
   );
 }

@@ -57,7 +57,7 @@ export default function UrwisShop({ coins, level, inventory, equippedItems, onCl
             </p>
           </div>
         </div>
-        <button onClick={onClose} className="bg-red-50 p-2.5 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer border border-red-100">
+        <button onClick={onClose} aria-label="Zamknij sklep" className="bg-red-50 p-2.5 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-colors cursor-pointer border border-red-100">
            <X size={24} strokeWidth={3} />
         </button>
       </div>
