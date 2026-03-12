@@ -9,6 +9,7 @@ import { usePopupControl } from '@/components/PopupProvider'
 
 export default function CookieModal() {
   const [isVisible, setIsVisible] = useState(false)
+  const [showImage, setShowImage] = useState(false)
   const { currentPopup, nextPopup } = usePopupControl()
   const pathname = usePathname()
 
@@ -43,7 +44,7 @@ export default function CookieModal() {
           window.addEventListener(e, showModal, { once: true, passive: true })
         );
 
-        const timer = setTimeout(showModal, 7000);
+        const timer = setTimeout(showModal, 500);
         
         return () => {
           clearTimeout(timer);
@@ -56,6 +57,15 @@ export default function CookieModal() {
       }
     }
   }, [currentPopup, nextPopup])
+
+  useEffect(() => {
+    if (isVisible) {
+      // ✅ Opóźniamy ładowanie obrazka o 1.5s po pokazaniu modala, 
+      // aby na pewno nie został uznany za LCP (Largest Contentful Paint)
+      const timer = setTimeout(() => setShowImage(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible])
 
   const saveConsent = (status: 'true' | 'false') => {
     localStorage.setItem('urwis_cookie_accepted', status)
@@ -97,64 +107,74 @@ export default function CookieModal() {
               </div>
             </div>
           ) : (
-            // Wersja Modala - Bottom Sheet na mobile, Full Modal na desktop
-            <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center sm:p-4 pointer-events-none">
-              {/* Overlay */}
+            // Wersja Modala - Popup na mobile (floating card), Full Modal na desktop
+            <div className="fixed z-[10000] bottom-4 left-4 right-4 sm:inset-0 sm:bottom-0 sm:left-0 sm:right-0 sm:p-4 flex flex-col sm:items-center justify-end sm:justify-center pointer-events-none">
+              {/* Overlay (tylko na desktopie, by mobile nie miało zaciemnionego tła) */}
               <div
-                className="fixed inset-0 bg-zinc-950/60 backdrop-blur-sm animate-fade-in pointer-events-auto"
+                className="hidden sm:block fixed inset-0 bg-zinc-950/60 backdrop-blur-sm animate-fade-in pointer-events-auto"
               />
 
-              {/* Kontener Modala */}
+              {/* Kontener Popupa/Modala */}
               <div
                 role="dialog"
                 aria-modal="true"
-                className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[3rem] p-6 pt-10 sm:p-8 md:p-12 shadow-[0_-20px_60px_rgba(0,0,0,0.5)] sm:shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden pointer-events-auto modal-animation-responsive"
+                className="relative w-full max-w-2xl bg-white rounded-[2rem] sm:rounded-[3rem] p-5 sm:p-8 md:p-12 shadow-[0_10px_40px_rgba(0,0,0,0.15)] sm:shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden pointer-events-auto modal-animation-responsive border border-zinc-100 sm:border-none mb-[calc(env(safe-area-inset-bottom)+76px)] sm:mb-0"
               >
                 {/* Gradienty w tle */}
                 <div className="absolute -top-32 -right-32 w-80 h-80 bg-[radial-gradient(circle,rgba(0,85,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none" />
                 <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-[radial-gradient(circle,rgba(191,32,36,0.15)_0%,transparent_70%)] rounded-full pointer-events-none" />
 
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <div 
-                    className="relative w-36 h-36 sm:w-48 sm:h-48 md:w-64 md:h-64 mb-2 sm:mb-4 drop-shadow-2xl animate-float-slow shrink-0"
-                  >
-                    <Image 
-                      src="/urwis-cookies.webp" 
-                      alt="Urwis je ciastka" 
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 640px) 144px, (max-width: 768px) 192px, 256px"
-                    />
-                  </div>
-
-                  <div className="space-y-2 sm:space-y-4 mb-6 sm:mb-8">
-                    <div className="flex items-center justify-center gap-2 text-[#BF2024] font-black uppercase tracking-widest text-[9px] sm:text-[10px]">
-                      <Cookie size={14} />
-                      <span>Polityka plików cookies</span>
+                <div className="relative z-10 flex flex-col items-center">
+                  <div className="flex flex-row sm:flex-col items-center text-left sm:text-center w-full gap-4 sm:gap-0">
+                    <div 
+                      className="relative w-24 h-24 sm:w-48 sm:h-48 md:w-64 md:h-64 sm:mb-4 drop-shadow-2xl animate-float-slow shrink-0"
+                    >
+                      {showImage && (
+                        <Image 
+                          src="/urwis-cookies.webp" 
+                          alt="Urwis je ciastka" 
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 640px) 96px, (max-width: 768px) 192px, 256px"
+                          loading="lazy"
+                          // @ts-ignore
+                          fetchPriority="low"
+                        />
+                      )}
                     </div>
 
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 uppercase italic tracking-tighter leading-[0.9]">
-                      Złapaliśmy Cię na <span className="text-blue-600">CIASTKACH!</span>
-                    </h2>
+                    <div className="flex flex-col space-y-1 sm:space-y-4">
+                      <div className="flex items-center sm:justify-center gap-1.5 sm:gap-2 text-[#BF2024] font-black uppercase tracking-widest text-[9px] sm:text-[10px]">
+                        <Cookie size={12} className="sm:hidden" />
+                        <Cookie size={14} className="hidden sm:block" />
+                        <span>Polityka plików cookies</span>
+                      </div>
 
-                    <p className="text-zinc-600 font-bold uppercase italic text-xs sm:text-sm md:text-base leading-tight max-w-md mx-auto px-2">
+                      <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-zinc-900 uppercase italic tracking-tighter leading-[0.9]">
+                        Złapaliśmy <br className="hidden sm:block"/> cię na <span className="text-blue-600 block sm:inline">CIASTKACH!</span>
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 sm:mt-0 sm:mb-8 text-left sm:text-center w-full border-t border-zinc-100 sm:border-none pt-3 sm:pt-0">
+                    <p className="text-zinc-600 font-bold uppercase italic text-[10px] sm:text-sm md:text-base leading-[1.3] sm:leading-tight sm:max-w-md sm:mx-auto px-1 sm:px-2">
                       Urwis uwielbia ciacha! 🍪 Używamy technologii takich jak <span className="text-zinc-900 underline decoration-blue-500/30">pliki cookies</span>, aby nasza strona działała idealnie i bezpiecznie. Kliknij „Daj ciacho”, aby przejść dalej!
                     </p>
                   </div>
 
-                  <div className="flex flex-col w-full gap-2 sm:gap-3">
+                  <div className="flex flex-col w-full gap-2 sm:gap-3 mt-4 sm:mt-0">
                     <button
                       onClick={() => { trackCookieEvent('akceptacja'); saveConsent('true'); }}
                       className="w-full py-3.5 sm:py-4 md:py-5 px-4 bg-zinc-900 text-white rounded-[1.2rem] sm:rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] sm:text-[11px] md:text-sm shadow-xl hover:bg-blue-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 md:gap-3 group pointer-events-auto"
                     >
                       <Check size={16} strokeWidth={4} className="shrink-0 group-hover:rotate-12 transition-transform sm:w-4 sm:h-4 md:w-5 md:h-5" /> 
-                      <span className="text-center">Daj ciacho! (Akceptuję cookies)</span>
+                      <span className="text-center">Daj ciacho! (Akceptuję)</span>
                     </button>
 
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
                       <button
                         onClick={() => { trackCookieEvent('odrzucenie'); saveConsent('false'); }}
-                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100 text-zinc-400 rounded-xl sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
+                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100/80 text-zinc-400 rounded-[1rem] sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
                       >
                         <X size={14} strokeWidth={3} className="shrink-0" /> Odrzuć zbędne
                       </button>
@@ -162,7 +182,7 @@ export default function CookieModal() {
                       <Link 
                         href="/polityka-prywatnosci"
                         onClick={() => trackCookieEvent('polityka_prywatnosci_klikniecie')}
-                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100 text-zinc-400 rounded-xl sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
+                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100/80 text-zinc-400 rounded-[1rem] sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
                       >
                         <Info size={14} strokeWidth={3} className="shrink-0" /> Co to za ciastka?
                       </Link>

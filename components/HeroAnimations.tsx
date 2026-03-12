@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 const PARTICLES = Array.from({length: 40}).map((_, i) => ({
   id: i,
@@ -9,36 +9,41 @@ const PARTICLES = Array.from({length: 40}).map((_, i) => ({
   size: 10 + (i % 12),
   type: ['star', 'circle', 'cross'][i % 3],
   color: ['#BF2024', '#0055ff', '#fbbf24'][i % 3],
-  duration: 20 + (i % 15),
+  durationY: 20 + (i % 15),
+  durationX: (20 + (i % 15)) * 0.8,
+  durationR: (20 + (i % 15)) * 0.6,
   delay: -(i % 30),
   xOffset: (i % 10) - 5
 }));
 
 /**
- * Animowane tło Hero — ładowane dynamicznie (ssr: false).
- * Nie blokuje FCP/LCP — pojawia się po załadowaniu framer-motion.
+ * Animowane tło Hero — Czysty CSS (zamiast Framer Motion).
+ * Optymalizacja Total Blocking Time (TBT).
  */
 export default function HeroAnimations() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-transparent">
       {PARTICLES.map((p) => (
-        <motion.div
+        <div
           key={p.id}
-          className="absolute opacity-40"
+          className="absolute opacity-40 will-change-transform"
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
             color: p.color,
-          }}
-          animate={{
-            y: ["0vh", "-100vh"],
-            x: ["0vw", `${p.xOffset}vw`],
-            rotate: [0, 360],
-          }}
-          transition={{
-            y: { duration: p.duration, repeat: Infinity, ease: "linear", delay: p.delay },
-            x: { duration: p.duration * 0.8, repeat: Infinity, ease: "easeInOut", repeatType: "mirror", delay: p.delay },
-            rotate: { duration: p.duration * 0.6, repeat: Infinity, ease: "linear" }
+            animation: `
+              floatY-${p.id} ${p.durationY}s linear ${p.delay}s infinite,
+              floatX-${p.id} ${p.durationX}s ease-in-out ${p.delay}s infinite alternate,
+              spinRotate ${p.durationR}s linear ${p.delay}s infinite
+            `,
           }}
         >
           {p.type === 'star' && (
@@ -56,8 +61,25 @@ export default function HeroAnimations() {
               <path d="M19 11H13V5C13 4.45 12.55 4 12 4C11.45 4 11 4.45 11 5V11H5C4.45 11 4 11.45 4 12C4 12.55 4.45 13 5 13H11V19C11 19.55 11.45 20 12 20C12.55 20 13 19.55 13 19V13H19C19.55 13 20 12.55 20 12C20 11.45 19.55 11 19 11Z" />
             </svg>
           )}
-        </motion.div>
+        </div>
       ))}
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spinRotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        ${PARTICLES.map(p => `
+          @keyframes floatY-${p.id} {
+            from { top: ${p.y}%; }
+            to { top: -10%; }
+          }
+          @keyframes floatX-${p.id} {
+            from { margin-left: 0vw; }
+            to { margin-left: ${p.xOffset}vw; }
+          }
+        `).join('')}
+      `}} />
 
       {/* Delikatne maski zanikające */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-transparent to-white/50" />

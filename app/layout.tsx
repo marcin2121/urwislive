@@ -160,9 +160,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" className={`${inter.variable} ${fredoka.variable}`} suppressHydrationWarning>
       <head>
-        {/* ✅ preload obrazka LCP */}
-        <link rel="preload" href="/urwis-fallback.webp" as="image" fetchPriority="high" />
-
         {/* ✅ Geo meta tags — lokalne SEO */}
         <meta name="geo.region" content="PL-14" />
         <meta name="geo.placename" content="Białobrzegi" />
