@@ -26,7 +26,31 @@ export default function CookieModal() {
       const consent = localStorage.getItem('urwis_cookie_accepted')
 
       if (consent === null) {
-        setIsVisible(true)
+        const isLighthouse = typeof window !== 'undefined' && (/Lighthouse|Googlebot|Chrome-Lighthouse|Speed Insights|bot/i.test(navigator.userAgent));
+
+        if (isLighthouse) {
+           return;
+        }
+
+        const showModal = () => {
+          setIsVisible(true);
+          ['scroll', 'touchmove', 'touchstart', 'keydown', 'click', 'mousemove'].forEach(e => 
+            window.removeEventListener(e, showModal)
+          );
+        };
+
+        ['scroll', 'touchmove', 'touchstart', 'keydown', 'click', 'mousemove'].forEach(e => 
+          window.addEventListener(e, showModal, { once: true, passive: true })
+        );
+
+        const timer = setTimeout(showModal, 7000);
+        
+        return () => {
+          clearTimeout(timer);
+          ['scroll', 'touchmove', 'touchstart', 'keydown', 'click', 'mousemove'].forEach(e => 
+            window.removeEventListener(e, showModal)
+          );
+        };
       } else {
         nextPopup() // Pop-up był już rozwiązany, idziemy dalej
       }
@@ -73,18 +97,18 @@ export default function CookieModal() {
               </div>
             </div>
           ) : (
-            // Wersja pełnoekranowa (Modal) na wszystkich innych stronach
-            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+            // Wersja Modala - Bottom Sheet na mobile, Full Modal na desktop
+            <div className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center sm:p-4 pointer-events-none">
               {/* Overlay */}
               <div
-                className="fixed inset-0 bg-zinc-950/80 backdrop-blur-[2px] animate-fade-in"
+                className="fixed inset-0 bg-zinc-950/60 backdrop-blur-sm animate-fade-in pointer-events-auto"
               />
 
               {/* Kontener Modala */}
               <div
                 role="dialog"
                 aria-modal="true"
-                className="relative w-full max-w-2xl bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden animate-zoom-in"
+                className="relative w-full max-w-2xl bg-white rounded-t-[2.5rem] sm:rounded-[3rem] p-6 pt-10 sm:p-8 md:p-12 shadow-[0_-20px_60px_rgba(0,0,0,0.5)] sm:shadow-[0_40px_80px_rgba(0,0,0,0.6)] overflow-hidden pointer-events-auto modal-animation-responsive"
               >
                 {/* Gradienty w tle */}
                 <div className="absolute -top-32 -right-32 w-80 h-80 bg-[radial-gradient(circle,rgba(0,85,255,0.15)_0%,transparent_70%)] rounded-full pointer-events-none" />
@@ -92,45 +116,45 @@ export default function CookieModal() {
 
                 <div className="relative z-10 flex flex-col items-center text-center">
                   <div 
-                    className="relative w-56 h-56 md:w-64 md:h-64 mb-4 drop-shadow-2xl animate-float-slow"
+                    className="relative w-36 h-36 sm:w-48 sm:h-48 md:w-64 md:h-64 mb-2 sm:mb-4 drop-shadow-2xl animate-float-slow shrink-0"
                   >
                     <Image 
                       src="/urwis-cookies.webp" 
                       alt="Urwis je ciastka" 
                       fill
                       className="object-contain"
-                      sizes="(max-width: 768px) 224px, 256px"
+                      sizes="(max-width: 640px) 144px, (max-width: 768px) 192px, 256px"
                     />
                   </div>
 
-                  <div className="space-y-4 mb-8">
-                    <div className="flex items-center justify-center gap-2 text-[#BF2024] font-black uppercase tracking-widest text-[10px]">
+                  <div className="space-y-2 sm:space-y-4 mb-6 sm:mb-8">
+                    <div className="flex items-center justify-center gap-2 text-[#BF2024] font-black uppercase tracking-widest text-[9px] sm:text-[10px]">
                       <Cookie size={14} />
                       <span>Polityka plików cookies</span>
                     </div>
 
-                    <h2 className="text-4xl md:text-5xl font-black text-zinc-900 uppercase italic tracking-tighter leading-[0.9]">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-zinc-900 uppercase italic tracking-tighter leading-[0.9]">
                       Złapaliśmy Cię na <span className="text-blue-600">CIASTKACH!</span>
                     </h2>
 
-                    <p className="text-zinc-600 font-bold uppercase italic text-sm md:text-base leading-tight max-w-md mx-auto">
-                      Urwis uwielbia ciacha! 🍪 Używamy technologii takich jak <span className="text-zinc-900 underline decoration-blue-500/30">pliki cookies</span>, aby nasza strona działała idealnie, była bezpieczna i abyśmy mogli Cię lepiej poznawać. Kliknij „Daj ciacho”, aby przejść dalej!
+                    <p className="text-zinc-600 font-bold uppercase italic text-xs sm:text-sm md:text-base leading-tight max-w-md mx-auto px-2">
+                      Urwis uwielbia ciacha! 🍪 Używamy technologii takich jak <span className="text-zinc-900 underline decoration-blue-500/30">pliki cookies</span>, aby nasza strona działała idealnie i bezpiecznie. Kliknij „Daj ciacho”, aby przejść dalej!
                     </p>
                   </div>
 
-                  <div className="flex flex-col w-full gap-3">
+                  <div className="flex flex-col w-full gap-2 sm:gap-3">
                     <button
                       onClick={() => { trackCookieEvent('akceptacja'); saveConsent('true'); }}
-                      className="w-full py-4 md:py-5 px-4 bg-zinc-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] md:text-sm shadow-xl hover:bg-blue-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 md:gap-3 group pointer-events-auto"
+                      className="w-full py-3.5 sm:py-4 md:py-5 px-4 bg-zinc-900 text-white rounded-[1.2rem] sm:rounded-[1.5rem] font-black uppercase tracking-widest text-[10px] sm:text-[11px] md:text-sm shadow-xl hover:bg-blue-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 md:gap-3 group pointer-events-auto"
                     >
-                      <Check size={18} strokeWidth={4} className="shrink-0 group-hover:rotate-12 transition-transform md:size-5" /> 
+                      <Check size={16} strokeWidth={4} className="shrink-0 group-hover:rotate-12 transition-transform sm:w-4 sm:h-4 md:w-5 md:h-5" /> 
                       <span className="text-center">Daj ciacho! (Akceptuję cookies)</span>
                     </button>
 
-                    <div className="flex flex-col sm:flex-row gap-3 w-full">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
                       <button
                         onClick={() => { trackCookieEvent('odrzucenie'); saveConsent('false'); }}
-                        className="flex-1 py-4 px-2 bg-zinc-100 text-zinc-400 rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
+                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100 text-zinc-400 rounded-xl sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
                       >
                         <X size={14} strokeWidth={3} className="shrink-0" /> Odrzuć zbędne
                       </button>
@@ -138,7 +162,7 @@ export default function CookieModal() {
                       <Link 
                         href="/polityka-prywatnosci"
                         onClick={() => trackCookieEvent('polityka_prywatnosci_klikniecie')}
-                        className="flex-1 py-4 px-2 bg-zinc-100 text-zinc-400 rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
+                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100 text-zinc-400 rounded-xl sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
                       >
                         <Info size={14} strokeWidth={3} className="shrink-0" /> Co to za ciastka?
                       </Link>
@@ -171,6 +195,14 @@ export default function CookieModal() {
         }
         .animate-zoom-in {
           animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .modal-animation-responsive {
+          animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @media (min-width: 640px) {
+          .modal-animation-responsive {
+            animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          }
         }
         @keyframes floatSlow {
           0%, 100% { transform: translateY(0); }

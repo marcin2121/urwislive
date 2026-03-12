@@ -53,7 +53,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Sprawdzamy, czy w metadanych (user_metadata) ma wpisaną rolę "admin"
+    // BEZPIECZEŃSTWO: Rola MUSI być brana z 'app_metadata'. 'user_metadata' może być modyfikowane
+    // przez samego użytkownika poprzez API supabase.auth.updateUser(), co jest niebezpieczne!
     const isAdmin = user.app_metadata?.role === 'admin';
     
     if (!isAdmin) {
