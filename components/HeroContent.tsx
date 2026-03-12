@@ -58,10 +58,8 @@ export default function HeroContent() {
       <div className="relative z-10 container mx-auto px-6 text-center -mt-8 md:-mt-0">
         
         <div className="mb-6 md:mb-8">
-          <div 
-            className="flex items-baseline justify-center flex-nowrap gap-x-3 sm:gap-x-4 md:gap-x-8 animate-hero-fade-up"
-            style={{ animationDelay: '0.1s' }}
-          >
+          {/* USUNIĘTO animate-hero-fade-up z głównego H1 dla natychmiastowego LCP */}
+          <div className="flex items-baseline justify-center flex-nowrap gap-x-3 sm:gap-x-4 md:gap-x-8">
             <h1 className="text-[11vw] sm:text-7xl md:text-8xl lg:text-[8vw] font-black tracking-tighter leading-[0.9] text-zinc-900 drop-shadow-sm pb-4 pr-1 sm:pr-4">
               SKLEP
             </h1>
@@ -71,7 +69,7 @@ export default function HeroContent() {
           
           <p 
             className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-500 mt-2 md:mt-6 tracking-tight italic animate-hero-fade-up"
-            style={{ animationDelay: '0.3s' }}
+            style={{ animationDelay: '0.1s' }}
           >
             Nie tylko dla grzecznych dzieci
           </p>
@@ -79,7 +77,7 @@ export default function HeroContent() {
 
         <p 
           className="text-base sm:text-lg md:text-xl font-medium text-zinc-600 max-w-3xl mx-auto balance leading-snug md:leading-relaxed mb-6 md:mb-10 px-1 animate-hero-fade-up"
-          style={{ animationDelay: '0.5s' }}
+          style={{ animationDelay: '0.3s' }}
         >
           Największy w regionie wybór klocków <span className="font-black text-[#BF2024]">LEGO</span>, zabawek 
           i pełnej <span className="font-black text-[#0055ff]">wyprawki szkolnej</span> przy ul. Reymonta 38A.  
@@ -89,7 +87,7 @@ export default function HeroContent() {
         {/* 3 CTA BUTTONS */}
         <div 
           className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full animate-hero-fade-up"
-          style={{ animationDelay: '0.7s' }}
+          style={{ animationDelay: '0.5s' }}
         >
           <Link href="/rabaty" className="w-full sm:w-auto">
             <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white font-bold rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-lg flex items-center justify-center gap-3">
