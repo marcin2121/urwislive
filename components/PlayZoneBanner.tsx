@@ -68,7 +68,7 @@ export default function PlayZoneBanner() {
             <Sparkles size={14} className="text-yellow-500" /> Wirtualny Plac Zabaw
           </div>
 
-          <h2 className="text-4xl md:text-6xl font-black text-black italic tracking-tighter uppercase leading-[1.1] mb-6 pr-4">
+          <h2 className="text-4xl md:text-6xl font-black text-black uppercase leading-[1.1] mb-6 pr-4">
             Odkryj potężną{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-600 pr-4">
               Strefę Zabawy
@@ -82,7 +82,7 @@ export default function PlayZoneBanner() {
           <Link
             href="/strefa-zabawy"
             onClick={() => trackBannerEvent('Strefa Zabawy Main')}
-            className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-transform shadow-[0_0_40px_rgba(250,204,21,0.3)] uppercase italic"
+            className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full font-black text-xl hover:scale-105 active:scale-95 transition-transform shadow-[0_0_40px_rgba(250,204,21,0.3)] uppercase"
           >
             Wejdź do gry <Smile size={24} />
           </Link>
@@ -126,7 +126,7 @@ export default function PlayZoneBanner() {
                   </div>
                   
                   <div className="flex flex-col flex-1 mt-2">
-                    <h3 className="text-zinc-900 font-black text-xl uppercase italic tracking-tight mb-2 group-hover:text-zinc-700 transition-colors">
+                    <h3 className="text-zinc-900 font-black text-xl uppercase mb-2 group-hover:text-zinc-700 transition-colors">
                       {game.title}
                     </h3>
                     <p className="text-zinc-500 text-sm font-medium leading-relaxed mb-4 flex-1">

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Pin, Calendar, ChevronRight, Newspaper, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Pin, Calendar, ChevronRight, Newspaper, Sparkles, MoveLeft } from 'lucide-react';
 import Link from 'next/link';
 import { NEWS_DATA, CATEGORY_STYLES, type NewsItem } from '@/lib/news-data';
 import MagicBento from '@/components/ui/MagicBento';
@@ -66,13 +66,9 @@ export default function AktualnosciPage() {
           animate={{ opacity: 1, x: 0 }}
           className="mb-8 md:mb-12"
         >
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors font-bold uppercase tracking-widest text-xs"
-          >
-            <ArrowLeft size={16} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" />
-            Wróć do sklepu
-          </Link>
+          <Link href="/oferta" className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 mb-8 group">
+              <MoveLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Powrót do oferty
+            </Link>
         </motion.div>
 
         {/* Header */}
@@ -86,7 +82,7 @@ export default function AktualnosciPage() {
               <Newspaper size={48} className="text-blue-500 group-hover:rotate-6 transition-transform" />
             </div>
             <div className="flex-1">
-              <h1 className="text-5xl md:text-7xl font-black text-zinc-900 tracking-tighter uppercase italic leading-tight mb-4">
+              <h1 className="text-5xl md:text-7xl font-black text-zinc-900 tracking-tighter uppercase leading-tight mb-4">
                 Twoje <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff]">Aktualności</span>
                 <Sparkles className="inline-block text-[#0055ff] ml-3 mb-2 w-10 h-10" />
               </h1>

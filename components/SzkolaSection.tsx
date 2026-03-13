@@ -86,10 +86,13 @@ export default function SzkolaSection() {
           <Link 
             href="/oferta" 
             aria-label="Wróć do głównej oferty Sklepu Urwis"
-            className="group inline-flex items-center gap-2 text-zinc-500 hover:text-[#0055ff] transition-all font-black text-xs uppercase tracking-[0.2em]"
+            className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-[2rem] font-black text-sm overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-tighter italic border-4 border-white/20"
           >
-            <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" /> 
-            Powrót do oferty
+            <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative z-10 flex items-center gap-2">
+              <ArrowLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" /> 
+              Powrót do oferty
+            </span>
           </Link>
         </motion.div>
 
@@ -101,10 +104,10 @@ export default function SzkolaSection() {
             className="max-w-5xl"
           >
             <span className="text-[12px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-4 block">GOTOWI DO STARTU</span>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black text-zinc-900 mb-8 leading-[0.85] tracking-tighter uppercase italic">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black text-zinc-900 mb-8 leading-[0.85] uppercase">
               SZKOŁA I <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0055ff] to-[#BF2024]">BIURO</span>
             </h1>
-            <p className="text-xl md:text-2xl text-zinc-600 font-bold leading-tight italic uppercase tracking-tight max-w-2xl">
+            <p className="text-xl md:text-2xl text-zinc-600 font-bold leading-tight uppercase tracking-tight max-w-2xl">
               Od pierwszej klasy po profesjonalne biuro. Mamy wszystko, czego potrzebujesz, by odnieść sukces w Białobrzegach!
             </p>
           </motion.div>
@@ -128,13 +131,13 @@ export default function SzkolaSection() {
                 {cat.icon}
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-black text-zinc-900 uppercase italic tracking-tighter mb-4">
+              <h2 className="text-3xl md:text-4xl font-black text-zinc-900 uppercase mb-4">
                 {cat.title}
               </h2>
               
               <div className="flex items-center gap-2 mb-6">
                  <CheckCircle2 size={14} className="text-[#0055ff]" aria-hidden="true" />
-                 <p className="text-zinc-700 font-black text-xs leading-relaxed italic uppercase tracking-widest">
+                 <p className="text-zinc-700 font-black text-xs leading-relaxed uppercase tracking-widest">
                   {cat.brands}
                  </p>
               </div>
@@ -166,8 +169,8 @@ export default function SzkolaSection() {
             <Briefcase className="text-[#0055ff]" size={40} strokeWidth={2.5} aria-hidden="true" />
           </div>
           <div className="text-center md:text-left">
-            <h3 className="text-2xl font-black text-zinc-900 uppercase italic tracking-tight leading-none">Zaopatrzenie dla firm i biur</h3>
-            <p className="text-zinc-600 font-bold italic uppercase text-[11px] tracking-widest mt-2">
+            <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight leading-none">Zaopatrzenie dla firm i biur</h3>
+            <p className="text-zinc-600 font-bold uppercase text-[11px] tracking-widest mt-2">
               Potrzebujesz papieru ksero, tonerów lub artykułów piśmienniczych na fakturę? Dostarczymy wszystko do Twojej firmy w Białobrzegach!
             </p>
           </div>
@@ -176,7 +179,7 @@ export default function SzkolaSection() {
               href="tel:+48604208183"
               onClick={() => trackSchoolInteraction('szkola_klikniecie', 'telefon_b2b')}
               aria-label="Zadzwoń w sprawie zaopatrzenia biura"
-              className="px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs text-center block"
+              className="px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all text-xs text-center block"
             >
               Zamów dla firmy
             </Link>

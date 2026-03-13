@@ -186,7 +186,7 @@ export default function Navbar() {
               <div className="relative w-9 h-9 md:w-11 md:h-11 shrink-0 transition-transform group-hover:scale-105">
                 <Image src="/logo.png" alt="Logo Sklepu Urwis" width={44} height={44} className="object-contain" priority />
               </div>
-              <div className="flex flex-col leading-[0.8] pt-0.5 font-black italic">
+              <div className="flex flex-col leading-[0.8] pt-0.5 font-black">
                 <span className="text-[11px] md:text-[14px] text-[#BF2024]">SKLEP</span>
                 <span className="text-[11px] md:text-[14px] text-[#0055ff]">URWIS</span>
               </div>
@@ -327,7 +327,7 @@ export default function Navbar() {
               <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-3">
                   <Image src="/logo.png" alt="Urwis" width={40} height={40} className="object-contain" priority />
-                  <div className="flex flex-col leading-none font-black italic">
+                  <div className="flex flex-col leading-none font-black">
                     <span className="text-sm text-[#BF2024]">SKLEP</span>
                     <span className="text-sm text-[#0055ff]">URWIS</span>
                   </div>
@@ -359,7 +359,7 @@ export default function Navbar() {
                         setMobileMenuOpen(false); 
                         trackEvent('nawigacja_mobilna_link_klikniecie', { nazwa: item.name }); 
                       }} 
-                      className="flex items-center gap-4 p-4 rounded-2xl text-lg font-black italic uppercase tracking-tighter hover:bg-zinc-50 text-zinc-800"
+                      className="flex items-center gap-4 p-4 rounded-2xl text-lg font-black uppercase hover:bg-zinc-50 text-zinc-800"
                     >
                       <item.icon size={20} className="text-zinc-400" />
                       {item.name}
@@ -379,7 +379,7 @@ export default function Navbar() {
                     <div className="relative flex items-center justify-between z-10 mb-2">
                        <div className="flex items-center gap-3">
                          <Smile size={24} className="text-yellow-400" />
-                         <div className="font-black italic uppercase tracking-tighter text-xl">Strefa Zabawy</div>
+                         <div className="font-black uppercase text-xl">Strefa Zabawy</div>
                        </div>
                     </div>
                     <p className="relative z-10 text-[10px] font-bold uppercase text-zinc-300 opacity-90 leading-tight">

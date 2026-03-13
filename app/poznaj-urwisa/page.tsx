@@ -2,7 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { MoveLeft, History } from "lucide-react";
+import { ArrowLeft, History } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Particles from "@/components/Particles";
@@ -47,8 +47,8 @@ export default function PoznajUrwisaPage() {
         />
       </div>
       <div className="container mx-auto px-6 relative z-20">
-        <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#0055ff] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 mb-4 group">
-          <MoveLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć na główną
+        <Link href="/oferta" className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 mb-8 group">
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Powrót do oferty
         </Link>
       </div>
 

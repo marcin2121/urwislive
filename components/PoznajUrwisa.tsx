@@ -53,7 +53,7 @@ export default function PoznajUrwisa() {
 
               <h2 className="text-6xl md:text-8xl lg:text-9xl font-black leading-[0.85] tracking-tighter text-zinc-900 uppercase">
                 POZNAJ <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] via-purple-500 to-[#0055ff] pr-4 drop-shadow-sm">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] pr-4 drop-shadow-sm">
                   URWISA
                 </span>
               </h2>

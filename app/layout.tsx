@@ -183,7 +183,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           
           <PopupProvider>
  
-            <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-white/80">
+            <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
               <Navbar />
  
               {/* Dedykowany obszar przewijania (Mobile Shell) */}

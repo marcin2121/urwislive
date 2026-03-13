@@ -106,11 +106,6 @@ export default function StoreFrontContent() {
         )}
 
         <div className="relative z-10">
-          {!hasGpu && (
-            <div className="w-full bg-zinc-900 text-zinc-400 text-[10px] uppercase font-black tracking-widest text-center py-2 border-b border-white/5">
-              Uruchomiono w trybie wysokiej wydajności
-            </div>
-          )}
 
           <header>
             <Hero />

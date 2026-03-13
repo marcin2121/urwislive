@@ -22,10 +22,10 @@ export default function DualBrandSection() {
             <span className="text-xs font-black uppercase tracking-[0.3em] text-[#BF2024] mb-4 block flex items-center gap-2">
               <Sparkles size={14} /> ul. Reymonta 38A
             </span>
-            <h2 className="text-5xl font-black text-zinc-900 mb-6 leading-none uppercase italic">
+            <h2 className="text-5xl font-black text-zinc-900 mb-6 leading-none uppercase">
               Sklep <br /> <span className="text-[#BF2024]">Urwis</span>
             </h2>
-            <p className="text-lg text-zinc-600 font-bold mb-10 leading-tight uppercase italic">
+            <p className="text-lg text-zinc-600 font-bold mb-10 leading-tight uppercase">
               Odkryj największy wybór <span className="text-zinc-900">klocków LEGO</span> w regionie, skompletuj idealną <span className="text-zinc-900">wyprawkę szkolną</span> i zamów balony z helem na każdą okazję!
             </p>
             <Link href="/oferta" className="inline-flex items-center gap-3 bg-zinc-900 text-white px-10 py-5 rounded-full font-black uppercase tracking-widest hover:bg-[#BF2024] transition-all text-sm shadow-xl">
@@ -48,10 +48,10 @@ export default function DualBrandSection() {
             <span className="text-xs font-black uppercase tracking-[0.3em] text-[#0055ff] mb-4 block flex items-center gap-2">
               <PartyPopper size={14} /> ul. Targowicka 4
             </span>
-            <h2 className="text-5xl font-black text-zinc-900 mb-6 leading-none uppercase italic">
+            <h2 className="text-5xl font-black text-zinc-900 mb-6 leading-none uppercase">
               Lecę <br /> <span className="text-[#0055ff]">w Kulki</span>
             </h2>
-            <p className="text-lg text-zinc-600 font-bold mb-10 leading-tight uppercase italic">
+            <p className="text-lg text-zinc-600 font-bold mb-10 leading-tight uppercase">
               Nowoczesna <span className="text-zinc-900">sala zabaw i kawiarnia</span> w Białobrzegach. Miejsce na Twoją kawę i <span className="text-zinc-900">wymarzone urodziny</span> Twojego dziecka!
             </p>
             <Link href="/salazabaw" className="inline-flex items-center gap-3 bg-[#0055ff] text-white px-10 py-5 rounded-full font-black uppercase tracking-widest hover:bg-zinc-900 transition-all text-sm shadow-xl">

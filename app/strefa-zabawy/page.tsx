@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare, Flame, Lightbulb, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare, Flame, Lightbulb, Gamepad2 } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 
 // Definicje gier podzielone na kategorie - WERSJA PREMIUM (jak reszta sklepu)
@@ -57,8 +57,15 @@ export default function StrefaZabawyPage() {
         
        {/* Nagłówek Huba */}
        <div className="container mx-auto px-4 md:px-6 mb-10 md:mb-16 relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors mb-6 md:mb-8 font-bold uppercase tracking-widest text-xs">
-          <MoveLeft size={16} /> Wróć do sklepu
+        <Link 
+          href="/" 
+          className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-2xl font-black text-xs overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-widest border-2 border-white/20 mb-8"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <span className="relative z-10 flex items-center gap-2">
+            <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
+            Wróć do sklepu
+          </span>
         </Link>
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12 text-center md:text-left">
           <img src="/urwis-icon.webp" alt="Superbohater Urwis" className="w-24 h-24 md:w-48 md:h-48 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] animate-bounce-slow object-contain shrink-0" />

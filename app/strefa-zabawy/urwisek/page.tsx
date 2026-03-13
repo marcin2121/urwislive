@@ -5,7 +5,7 @@ import DeviceCheckWrapper from '@/components/DeviceCheckWrapper'
 import UrwisekDashboard from '@/components/UrwisekDashboard'
 import { calculateDecay } from '@/lib/urwis/engine'
 import Link from 'next/link'
-import { MoveLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, MoveLeft, Sparkles } from 'lucide-react'
 import CloseWindowButton from '@/components/CloseWindowButton'
 
 export const metadata = {
@@ -45,8 +45,15 @@ export default async function UrwisekPage() {
     <DeviceCheckWrapper>
       <main className="w-full flex justify-center items-start pt-24 pb-12 relative z-10 px-4 min-h-full">
         <div className="w-full max-w-4xl max-md:hidden mb-8 flex items-center justify-between z-20 absolute top-6 left-1/2 -translate-x-1/2 px-4">
-          <Link href="/strefa-zabawy" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors font-bold uppercase tracking-widest text-xs">
-            <MoveLeft size={16} /> Wróć do Strefy Zabawy
+          <Link 
+            href="/strefa-zabawy" 
+            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-2xl font-black text-xs overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-widest border-2 border-white/20"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative z-10 flex items-center gap-2">
+              <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
+              Wróć do Strefy Zabawy
+            </span>
           </Link>
           <CloseWindowButton className="hidden standalone:inline-flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors font-bold uppercase tracking-widest text-xs">
             Wyjdź

@@ -141,9 +141,13 @@ export default function PromocjeSection() {
             <Link 
               href="/oferta" 
               aria-label="Wróć do głównej oferty sklepu"
-              className="inline-flex items-center gap-2 text-zinc-500 hover:text-[#BF2024] font-black text-[12px] uppercase tracking-[0.2em] transition-all mb-4"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#BF2024] to-red-600 text-white rounded-2xl font-black text-xs overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-widest border-2 border-white/20 mb-4"
             >
-              <ArrowLeft size={14} strokeWidth={3} aria-hidden="true" /> Powrót do oferty
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0055ff] to-[#BF2024] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative z-10 flex items-center gap-2">
+                <ArrowLeft size={16} strokeWidth={3} aria-hidden="true" />
+                Powrót do oferty
+              </span>
             </Link>
             
             <h1 className="text-7xl md:text-9xl font-black text-zinc-900 italic leading-[0.85] tracking-normal uppercase">

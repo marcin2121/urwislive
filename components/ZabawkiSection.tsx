@@ -86,10 +86,13 @@ export default function ZabawkiSection() {
           <Link 
             href="/oferta" 
             aria-label="Wróć do głównej oferty Sklepu Urwis"
-            className="group inline-flex items-center gap-2 text-zinc-500 hover:text-[#BF2024] transition-all font-black text-xs uppercase tracking-[0.2em]"
+            className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#BF2024] to-red-600 text-white rounded-[2rem] font-black text-sm overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-tighter italic border-4 border-white/20"
           >
-            <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" /> 
-            Powrót do oferty
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0055ff] to-[#BF2024] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative z-10 flex items-center gap-2">
+              <ArrowLeft size={18} strokeWidth={3} aria-hidden="true" /> 
+              Powrót do oferty
+            </span>
           </Link>
         </motion.div>
 
@@ -101,10 +104,10 @@ export default function ZabawkiSection() {
             className="max-w-5xl"
           >
             <span className="text-[12px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-4 block">ASORTYMENT: BIAŁOBRZEGI</span>
-            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black text-zinc-900 mb-8 leading-[0.85] tracking-tighter uppercase italic">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl pr-2 font-black text-zinc-900 mb-8 leading-[0.85] uppercase">
               ŚWIAT <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">ZABAWEK</span>
             </h1>
-            <p className="text-xl md:text-2xl text-zinc-600 font-bold leading-tight italic uppercase tracking-tight max-w-2xl">
+            <p className="text-xl md:text-2xl text-zinc-600 font-bold leading-tight uppercase tracking-tight max-w-2xl">
               Największy wybór LEGO i światowych marek w regionie. Znajdź prezent, który wywoła uśmiech na lata!
             </p>
           </motion.div>
@@ -128,11 +131,11 @@ export default function ZabawkiSection() {
                 {cat.icon}
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-black text-zinc-900 uppercase italic tracking-tighter mb-4">
+              <h2 className="text-3xl md:text-4xl font-black text-zinc-900 uppercase mb-4">
                 {cat.title}
               </h2>
               
-              <p className="text-zinc-700 font-bold text-sm mb-6 leading-relaxed italic uppercase opacity-80">
+              <p className="text-zinc-700 font-bold text-sm mb-6 leading-relaxed uppercase opacity-80">
                 {cat.brands}
               </p>
 
@@ -163,8 +166,8 @@ export default function ZabawkiSection() {
             <Info className="text-[#0055ff]" size={40} strokeWidth={2.5} aria-hidden="true" />
           </div>
           <div className="text-center md:text-left">
-            <h3 className="text-2xl font-black text-zinc-900 uppercase italic tracking-tight">Potrzebujesz czegoś innego?</h3>
-            <p className="text-zinc-600 font-bold italic uppercase text-[11px] tracking-widest mt-1">
+            <h3 className="text-2xl font-black text-zinc-900 uppercase tracking-tight">Potrzebujesz czegoś innego?</h3>
+            <p className="text-zinc-600 font-bold uppercase text-[11px] tracking-widest mt-1">
               Jesteśmy jedynym sklepem w Białobrzegach, który tak szybko sprowadza nowości. Zadzwoń i sprawdź, co mamy na półkach!
             </p>
           </div>
@@ -172,7 +175,7 @@ export default function ZabawkiSection() {
             href="tel:+48604208183"
             onClick={() => trackToyInteraction('zabawki_klikniecie', 'telefon')}
             aria-label="Zadzwoń do Sklepu Urwis"
-            className="md:ml-auto px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all italic text-xs text-center block"
+            className="md:ml-auto px-12 py-5 bg-zinc-900 text-white rounded-4xl font-black uppercase tracking-widest shadow-2xl hover:scale-105 transition-all text-xs text-center block"
           >
             Zadzwoń teraz
           </Link>

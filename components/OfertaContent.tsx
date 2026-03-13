@@ -86,7 +86,7 @@ export default function OfertaGrid() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-5xl lg:text-7xl font-black text-zinc-900 mb-6 tracking-tighter uppercase italic leading-[0.9]"
+            className="text-5xl lg:text-7xl font-black text-zinc-900 mb-6 tracking-tighter uppercase leading-[0.9]"
           >
             WIĘCEJ NIŻ <br /> <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">ZABAWKI</span>
           </motion.h2>
@@ -113,41 +113,42 @@ export default function OfertaGrid() {
                 ${cat.size === 'lg' ? 'md:col-span-2 md:row-span-2' : 'md:col-span-2 md:row-span-1'}
               `}
             >
-              <div 
-                className="absolute -right-10 -top-10 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition-opacity"
-                style={{ backgroundColor: cat.color }}
-              />
-
-              <cat.icon 
-                className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-700 pointer-events-none" 
-                size={cat.size === 'lg' ? 320 : 180} 
-                style={{ color: cat.color }}
-              />
-
-              <div className="relative z-10 h-full flex flex-col p-8 md:p-10">
+              <Link href={cat.href} className="block w-full h-full relative">
                 <div 
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20"
+                  className="absolute -right-10 -top-10 w-48 h-48 rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition-opacity"
                   style={{ backgroundColor: cat.color }}
-                >
-                  <cat.icon className="text-white" size={28} />
-                </div>
+                />
 
-                <h3 className="font-black uppercase tracking-tighter leading-none mb-3 text-3xl text-zinc-900 italic">
-                  {cat.title}
-                </h3>
-                
-                <div className="font-bold leading-tight max-w-[95%] flex-1 text-zinc-500 text-sm md:text-base uppercase">
-                  {cat.desc}
-                </div>
-
-                <Link 
-                  href={cat.href}
-                  className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.2em] transition-all group-hover:gap-4 mt-6"
+                <cat.icon 
+                  className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-700 pointer-events-none" 
+                  size={cat.size === 'lg' ? 320 : 180} 
                   style={{ color: cat.color }}
-                >
-                  Odkryj teraz <ChevronRight size={16} strokeWidth={4} />
-                </Link>
-              </div>
+                />
+
+                <div className="relative z-10 h-full flex flex-col p-8 md:p-10">
+                  <div 
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 border border-white/20"
+                    style={{ backgroundColor: cat.color }}
+                  >
+                    <cat.icon className="text-white" size={28} />
+                  </div>
+
+                  <h3 className="font-black uppercase tracking-tighter leading-none mb-3 text-3xl text-zinc-900 italic">
+                    {cat.title}
+                  </h3>
+                  
+                  <div className="font-bold leading-tight max-w-[95%] flex-1 text-zinc-500 text-sm md:text-base uppercase">
+                    {cat.desc}
+                  </div>
+
+                  <div 
+                    className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-[0.2em] transition-all group-hover:gap-4 mt-6"
+                    style={{ color: cat.color }}
+                  >
+                    Odkryj teraz <ChevronRight size={16} strokeWidth={4} />
+                  </div>
+                </div>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -171,7 +172,7 @@ export default function OfertaGrid() {
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 block mb-1">Unikalna Przygoda</span>
-                  <h3 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-none text-zinc-900">
+                  <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none text-zinc-900">
                     Złote <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">Urwisy</span>
                   </h3>
                 </div>
