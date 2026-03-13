@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fredoka } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
@@ -10,17 +10,15 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { PopupProvider } from "@/components/PopupProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClientLayoutComponents } from "@/components/ClientLayoutComponents";
-const inter = Inter({ 
-  subsets: ["latin"], 
+
+const inter = Inter({
+  subsets: ["latin"],
   variable: "--font-inter",
-  display: 'swap' 
+  display: 'swap',
+  preload: true,
+  adjustFontFallback: false,
 });
 
-const fredoka = Fredoka({ 
-  subsets: ["latin"], 
-  variable: "--font-fredoka",
-  display: 'swap'
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.sklep-urwis.pl'),
@@ -158,7 +156,7 @@ const schemas = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className={`${inter.variable} ${fredoka.variable}`} suppressHydrationWarning>
+    <html lang="pl" className={`${inter.variable}`} suppressHydrationWarning>
       <head>
         {/* ✅ Geo meta tags — lokalne SEO */}
         <meta name="geo.region" content="PL-14" />
@@ -180,15 +178,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
 
-      <body className="antialiased bg-transparent text-zinc-900 selection:bg-blue-500 selection:text-white h-dvh overflow-hidden" suppressHydrationWarning>
+      <body className="antialiased bg-white text-zinc-900 selection:bg-blue-500 selection:text-white h-dvh overflow-hidden" suppressHydrationWarning>
         <AuthProvider>
           
           <PopupProvider>
  
-            {/* Tło i baza shella */}
-            <div className="fixed inset-0 z-10 bg-white/80 pointer-events-none" aria-hidden="true" />
- 
-            <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
+            <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-white/80">
               <Navbar />
  
               {/* Dedykowany obszar przewijania (Mobile Shell) */}

@@ -53,23 +53,9 @@ export default function PromoSection() {
 
   return (
     <section className="relative py-16 lg:py-24 bg-transparent overflow-hidden">
-      {/* WSTRZYKNIĘCIE STYLU CSS DLA PŁYNNEGO MARQUEE */}
-      <style jsx>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .marquee-container {
-          display: flex;
-          width: max-content;
-          animation: marquee 30s linear infinite;
-        }
-        .marquee-paused {
-          animation-play-state: paused;
-        }
-      `}</style>
-
       <div className="container mx-auto px-6 relative z-10">
+
+
         
         {/* --- NAGŁÓWEK --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10 relative z-20">

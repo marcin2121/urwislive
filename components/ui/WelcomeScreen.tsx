@@ -167,7 +167,6 @@ export default function WelcomeScreen() {
                 src="/urwis-proszący.webp" 
                 alt="Maskotka Urwis zapraszająca do powiadomień"
                 fill
-                priority
                 className="object-contain"
               />
             </div>

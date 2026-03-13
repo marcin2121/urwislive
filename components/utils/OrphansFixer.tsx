@@ -29,9 +29,17 @@ export default function OrphansFixer() {
       }
     };
 
-    // Uruchom po załadowaniu
-    const mainContent = document.querySelector('main');
-    if (mainContent) fixNode(mainContent);
+    // Uruchom gdy przeglądarka jest wolna (idle) - nie blokujemy LCP/TBT
+    const handleFix = () => {
+      const mainContent = document.querySelector('main');
+      if (mainContent) fixNode(mainContent);
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(handleFix);
+    } else {
+      setTimeout(handleFix, 1500);
+    }
   }, []);
 
   return null; // Komponent nic nie renderuje, tylko działa

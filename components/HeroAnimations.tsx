@@ -2,29 +2,30 @@
 
 import { useEffect, useState } from 'react';
 
-// Na mobile redukujemy do 15 cząsteczek
-const ALL_PARTICLES = Array.from({ length: 40 }).map((_, i) => ({
+const ALL_PARTICLES = Array.from({ length: 30 }).map((_, i) => ({
   id: i,
-  x: (i * 13) % 100,
-  y: (i * 19) % 100,
-  size: 10 + (i % 12),
+  x: (i * 17) % 100,
+  y: (i * 23) % 100,
+  size: 8 + (i % 10),
   type: (['star', 'circle', 'cross'] as const)[i % 3],
   color: ['#BF2024', '#0055ff', '#fbbf24'][i % 3],
-  durationY: 20 + (i % 15),
-  durationR: (20 + (i % 15)) * 0.6,
-  delay: -(i % 30),
-  xOffset: (i % 10) - 5,
+  durationY: 15 + (i % 12),
+  delay: -(i * 0.7),
+  xOffset: (i % 6) - 3,
 }));
 
 export default function HeroAnimations() {
   const [mounted, setMounted] = useState(false);
-  const [particles, setParticles] = useState(ALL_PARTICLES);
+  const [particles, setParticles] = useState<typeof ALL_PARTICLES>([]);
 
   useEffect(() => {
     // Redukuj na mobile - mniej reflow, mniejszy TBT
-    if (window.innerWidth < 768) {
-      setParticles(ALL_PARTICLES.filter((_, i) => i % 3 === 0)); // 14 cząsteczek
-    }
+    const isMobile = window.innerWidth < 768;
+    const finalParticles = isMobile 
+      ? ALL_PARTICLES.filter((_, i) => i % 3 === 0).slice(0, 10) 
+      : ALL_PARTICLES;
+    
+    setParticles(finalParticles);
     setMounted(true);
   }, []);
 
@@ -32,17 +33,17 @@ export default function HeroAnimations() {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-transparent">
-      {particles.map((p) => (
+      {particles.map((p, i) => (
         <div
           key={p.id}
-          className="absolute opacity-40"
+          className={`absolute opacity-40 will-change-transform ${
+            ['animate-float-1', 'animate-float-2', 'animate-float-3'][p.id % 3]
+          }`}
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
             color: p.color,
-            // spinRotate i floatY działają na tym samym transform – łączymy w JEDNĄ animację
-            animation: `floatParticle-${p.id} ${p.durationY}s linear ${p.delay}s infinite`,
-            willChange: 'transform',
+            animationDelay: `${p.delay}s`,
           }}
         >
           {p.type === 'star' && (
@@ -62,20 +63,6 @@ export default function HeroAnimations() {
           )}
         </div>
       ))}
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes spinRotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        ${particles.map(p => `
-          @keyframes floatParticle-${p.id} {
-            0%   { transform: translateY(0px)    translateX(0px)              rotate(0deg); }
-            50%  { transform: translateY(-40px)  translateX(${p.xOffset * 8}px) rotate(180deg); }
-            100% { transform: translateY(-120px) translateX(${p.xOffset * 4}px) rotate(360deg); }
-          }
-        `).join('')}
-      `}} />
 
       {/* Delikatne maski zanikające */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-transparent to-white/50" />

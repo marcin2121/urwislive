@@ -3,15 +3,72 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
+  --font-heading: var(--font-inter);
+  --font-body: var(--font-inter);
 
   --color-urwis-red: #bf2024;
   --color-urwis-red-light: #fee2e2;
   --color-urwis-blue: #0055ff;
   --color-urwis-blue-light: #dbeafe;
   --color-urwis-yellow: #fbbf24;
+
+  --animate-float: float 3s linear infinite;
+  --animate-shine-text: textShineBg 4s ease-in-out infinite;
+  --animate-hero-fade-up: hero-fade-up 0.8s ease-out both;
+  --animate-marquee: marquee 30s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+  }
+  @keyframes textShineBg {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes hero-fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  --animate-float-1: floatParticle1 20s linear infinite;
+  --animate-float-2: floatParticle2 25s linear infinite;
+  --animate-float-3: floatParticle3 18s linear infinite;
+
+  @keyframes floatParticle1 {
+    0%   { transform: translateY(0) rotate(0deg); }
+    50%  { transform: translateY(-60px) rotate(180deg); }
+    100% { transform: translateY(-120px) rotate(360deg); }
+  }
+  @keyframes floatParticle2 {
+    0%   { transform: translateY(0) rotate(0deg) scale(1); }
+    50%  { transform: translateY(-40px) rotate(-90deg) scale(1.1); }
+    100% { transform: translateY(-100px) rotate(-180deg) scale(1); }
+  }
+  @keyframes floatParticle3 {
+    0%   { transform: translateY(0) translateX(0); }
+    50%  { transform: translateY(-80px) translateX(20px); }
+    100% { transform: translateY(-150px) translateX(0); }
+  }
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 }
+
+.balance {
+  text-wrap: balance;
+}
+
+.marquee-container {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+.marquee-paused {
+  animation-play-state: paused;
+}
+
+
 
 /* Domyślne style */
 h1, h2, h3, h4, h5, h6 {
@@ -22,9 +79,7 @@ html, body {
   max-width: 100dvw;
   overflow-x: hidden;
   width: 100%;
-  overscroll-behavior: none; /* Zapobiega efektowi sprężynowania iOS, który zacina scroll */
-  user-select: none; /* Blokuje zaznaczanie tekstu - ważne w PWA i grach */
-  -webkit-user-select: none;
+  overscroll-behavior: none; 
 }
 
 body {

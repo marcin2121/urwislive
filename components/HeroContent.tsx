@@ -4,28 +4,9 @@ import {
 } from 'lucide-react';
 
 /**
- * Statyczna treść Hero — renderowana server-side, zero JS.
- * Animacje wejścia (fade-up) realizowane czysto przez CSS @keyframes.
+ * Statyczna treść Hero — renderowana server-side (Server Component).
+ * ZERO JS na start = ZERO render delay dla LCP.
  */
-
-const ShineTextEffect = () => (
-  <h1 className="text-[10.5vw] sm:text-7xl md:text-8xl lg:text-[8vw] font-black tracking-tighter leading-[0.9] drop-shadow-sm relative pb-4">
-    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] inline-block pr-2 sm:pr-4 pb-2">
-      URWIS
-    </span>
-    <span 
-      aria-hidden="true"
-      className="absolute top-0 left-0 text-transparent bg-clip-text animate-shine-text pointer-events-none inline-block pr-4 pb-2"
-      style={{
-        backgroundImage: 'linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.4) 45%, rgba(255,255,255,0.9) 50%, rgba(255,255,255,0.4) 55%, transparent 80%)',
-        backgroundSize: '200% 100%',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      URWIS
-    </span>
-  </h1>
-);
 
 export default function HeroContent() {
   const floatingElements = [
@@ -58,37 +39,26 @@ export default function HeroContent() {
       <div className="relative z-10 container mx-auto px-6 text-center -mt-8 md:-mt-0">
         
         <div className="mb-6 md:mb-8">
-          {/* USUNIĘTO animate-hero-fade-up z głównego H1 dla natychmiastowego LCP */}
-          <div className="flex items-baseline justify-center flex-nowrap gap-x-3 sm:gap-x-4 md:gap-x-8">
-            <h1 className="text-[11vw] sm:text-7xl md:text-8xl lg:text-[8vw] font-black tracking-tighter leading-[0.9] text-zinc-900 drop-shadow-sm pb-4 pr-1 sm:pr-4">
-              SKLEP
-            </h1>
-            
-            <ShineTextEffect />
-          </div>
-          
-          <p 
-            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-500 mt-2 md:mt-6 tracking-tight italic animate-hero-fade-up"
-            style={{ animationDelay: '0.1s' }}
-          >
-            Nie tylko dla grzecznych dzieci
-          </p>
+          <h1 className="text-[10vw] sm:text-7xl md:text-8xl lg:text-[8vw] font-black tracking-tighter leading-[1.0] text-zinc-900 drop-shadow-sm pb-4 flex items-baseline justify-center gap-x-3 sm:gap-x-4 md:gap-x-8">
+            <span>SKLEP</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0055ff] to-[#BF2024] tracking-tight">
+              URWIS
+            </span>
+          </h1>
         </div>
 
-        <p 
-          className="text-base sm:text-lg md:text-xl font-medium text-zinc-600 max-w-3xl mx-auto balance leading-snug md:leading-relaxed mb-6 md:mb-10 px-1 animate-hero-fade-up"
-          style={{ animationDelay: '0.3s' }}
-        >
+        <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-500 mt-2 md:mt-6 tracking-tight">
+          Nie tylko dla grzecznych dzieci
+        </p>
+
+        <p className="text-base sm:text-lg md:text-xl font-medium text-zinc-600 max-w-3xl mx-auto balance leading-snug md:leading-relaxed mb-6 md:mb-10 px-1">
           Największy w regionie wybór klocków <span className="font-black text-[#BF2024]">LEGO</span>, zabawek 
           i pełnej <span className="font-black text-[#0055ff]">wyprawki szkolnej</span> przy ul. Reymonta 38A.  
           Prawdziwy sklep stacjonarny, w którym rządzisz Ty i Twoja wyobraźnia!
         </p>
 
         {/* 3 CTA BUTTONS */}
-        <div 
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full animate-hero-fade-up"
-          style={{ animationDelay: '0.5s' }}
-        >
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
           <Link href="/rabaty" className="w-full sm:w-auto">
             <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-[#BF2024] to-[#0055ff] text-white font-bold rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] hover:shadow-xl hover:scale-105 active:scale-95 transition-all text-lg flex items-center justify-center gap-3">
               <Gift size={22} className="opacity-90" />
