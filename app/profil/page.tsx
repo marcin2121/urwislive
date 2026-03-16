@@ -5,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import {
   LogOut, User, Phone, Settings, Bell, Gift, Sparkles, Tag, Heart, 
-  Smartphone, ShieldAlert, CheckCircle2, Loader2, Pencil, X, Trash2
+  Smartphone, ShieldAlert, CheckCircle2, Loader2, Pencil, X, Trash2, ArrowLeft
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -56,6 +56,14 @@ function GuestView() {
     <>
       <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md space-y-6">
+          <div className="flex justify-start mb-4 -mt-12">
+            <Link 
+              href="/" 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-zinc-50 text-zinc-600 hover:text-[#BF2024] shadow-sm rounded-full transition-all font-black uppercase tracking-widest text-xs border border-zinc-200 group"
+            >
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do bazy
+            </Link>
+          </div>
           <div className="bg-white border border-zinc-200 shadow-sm rounded-4xl p-8 text-center relative overflow-hidden">
             <div className="absolute top-4 right-4 text-blue-100 rotate-12 pointer-events-none"><Sparkles size={60} /></div>
             <div className="relative w-40 h-40 mx-auto mb-4 drop-shadow-lg">
@@ -249,12 +257,32 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-2xl space-y-6">
-        
+        <div className="flex justify-start mb-4 -mt-12">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-zinc-50 text-zinc-600 hover:text-[#BF2024] shadow-sm rounded-full transition-all font-black uppercase tracking-widest text-xs border border-zinc-200 group"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do bazy
+          </Link>
+        </div>
         {/* NAGŁÓWEK PROFILU */}
         <div className="bg-white border border-zinc-200 shadow-sm rounded-3xl p-6 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0055ff] to-blue-500 flex items-center justify-center text-white font-black text-xl italic shadow-lg shrink-0">
-            {initials}
-          </div>
+          {user.user_metadata?.avatar_url ? (
+            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg shrink-0 border-2 border-zinc-100">
+              <Image 
+                src={user.user_metadata.avatar_url} 
+                alt={displayName} 
+                width={64} 
+                height={64} 
+                className="object-cover w-full h-full"
+                unoptimized // Supabase/Google/FB avatar URLs can sometimes fail loading optimization or require domains setup
+              />
+            </div>
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0055ff] to-blue-500 flex items-center justify-center text-white font-black text-xl italic shadow-lg shrink-0">
+              {initials}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-black italic uppercase tracking-tighter text-zinc-900 truncate">{displayName}</h1>
             {user.created_at && <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block mt-1">Urwis od {new Date(user.created_at).toLocaleDateString("pl-PL")}</span>}
@@ -329,9 +357,15 @@ export default function ProfilePage() {
 
                 {/* SEKCJA KRYTYCZNA - RODO */}
                 <div className="pt-8 flex flex-col items-center gap-6 border-t border-zinc-100 mt-8">
-                  <Link href="/zmien-haslo" className="text-xs font-bold text-zinc-500 hover:text-[#0055ff] transition-colors underline underline-offset-4">
-                    Zmień hasło logowania
-                  </Link>
+                  {!(user?.app_metadata?.providers || []).includes('email') ? (
+                    <p className="text-[11px] text-zinc-400 font-medium text-center italic max-w-xs leading-relaxed">
+                      Zalogowano przez {(user?.app_metadata?.providers || []).filter((p: string) => p !== 'email').map((p: string) => p === 'google' ? 'Google' : 'Facebook').join(' i ')}. Twoje konto nie używa tradycyjnego hasła.
+                    </p>
+                  ) : (
+                    <Link href="/zmien-haslo" className="text-xs font-bold text-zinc-500 hover:text-[#0055ff] transition-colors underline underline-offset-4">
+                      Zmień hasło logowania
+                    </Link>
+                  )}
                   
                   <button 
                     onClick={handleDeleteAccount} 

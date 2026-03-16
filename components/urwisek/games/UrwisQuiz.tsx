@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Play, MoveLeft, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
+import { RefreshCw, Play, ArrowLeft, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
@@ -147,13 +148,12 @@ export default function UrwisQuiz() {
 
       {/* Górny Pasek Powrotu */}
       <div className="absolute top-0 left-0 w-full p-4 z-20 flex justify-between items-center pointer-events-none">
-        <div 
-          onClick={() => window.location.href = '/strefa-zabawy'}
-          className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 flex items-center gap-2 cursor-pointer pointer-events-auto transition-all"
+        <Link 
+          href="/strefa-zabawy"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-800 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group pointer-events-auto"
         >
-          <MoveLeft className="w-5 h-5 text-white" />
-          <span className="text-white font-bold text-sm tracking-widest uppercase">Wróć</span>
-        </div>
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do Strefy Zabawy
+        </Link>
       </div>
 
       <AnimatePresence mode="wait">

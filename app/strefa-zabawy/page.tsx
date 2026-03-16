@@ -35,6 +35,7 @@ const CATEGORIES = [
     games: [
       { id: 'memory', icon: <Brain className="text-purple-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Pamięć Urwisa', desc: 'Rozruszaj szare komórki! Szukaj moich ulubionych rzeczy w parach.', glowColor: '168, 85, 247', href: '/strefa-zabawy/memory' },
       { id: 'tictactoe', icon: <XSquare className="text-pink-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kółko i Krzyżyk', desc: 'Zagrajmy w Kółko i Krzyżyk! Zobaczymy, czy uda Ci się mnie pokonać.', glowColor: '236, 72, 153', href: '/strefa-zabawy/kolko-i-krzyzyk' },
+      { id: 'klocki', icon: <Blocks className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Klocki Urwisa', desc: 'Układaj klocki na planszy 9×9! Czyść linie i kwadraty, by zdobywać punkty.', glowColor: '245, 158, 11', href: '/strefa-zabawy/klocki', highlight: true, highlightTag: 'Nowość!' },
     ]
   }
 ];
@@ -59,19 +60,16 @@ export default function StrefaZabawyPage() {
        <div className="container mx-auto px-4 md:px-6 mb-10 md:mb-16 relative z-10">
         <Link 
           href="/" 
-          className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-2xl font-black text-xs overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-widest border-2 border-white/20 mb-8"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group mb-8"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <span className="relative z-10 flex items-center gap-2">
-            <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
-            Wróć do sklepu
-          </span>
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
+          Wróć do sklepu
         </Link>
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12 text-center md:text-left">
           <img src="/urwis-icon.webp" alt="Superbohater Urwis" className="w-24 h-24 md:w-48 md:h-48 drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] animate-bounce-slow object-contain shrink-0" />
           <div className="flex-1">
-            <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter text-zinc-900 mb-4 md:mb-6">
-              Strefa <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Zabawy</span>
+            <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-zinc-900 mb-4 md:mb-6">
+              Strefa <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 pr-2">Zabawy</span>
               <Sparkles className="inline-block text-orange-500 ml-2 md:ml-3 mb-1 md:mb-2 w-8 h-8 md:w-10 md:h-10" />
             </h1>
             

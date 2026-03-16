@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { MoveLeft, RotateCcw, Trophy, Activity, Timer, Brain } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trophy, Activity, Timer, Brain } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // --- KONFIGURACJA ---
@@ -180,8 +180,11 @@ export default function MemoryGamePage() {
   return (
     <div className="min-h-screen bg-transparent pt-24 pb-32 relative z-10">
       <div className="container mx-auto px-4 max-w-6xl">
-        <Link href="/strefa-zabawy" className="inline-flex items-center gap-2 text-zinc-500 hover:text-zinc-900 transition-colors mb-6 font-bold uppercase tracking-widest text-xs">
-          <MoveLeft size={16} /> Wróć do Strefy Zabawy
+        <Link 
+          href="/strefa-zabawy" 
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group mb-6"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do Strefy Zabawy
         </Link>
 
         {/* --- WSPOLNY NAGLOWEK --- */}

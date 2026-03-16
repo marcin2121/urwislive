@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { MoveLeft, RotateCcw, Trophy, Play, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trophy, Play, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -60,10 +60,10 @@ export default function BubbleShooter() {
       {/* HUD */}
       <div className="absolute top-0 w-full max-w-[500px] flex justify-between items-center px-4 py-3 bg-gradient-to-b from-black/60 to-transparent z-10 pointer-events-none">
         <div
-          className="flex bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10 items-center gap-2 pointer-events-auto cursor-pointer"
+          className="flex bg-white/80 hover:bg-white backdrop-blur-md rounded-full px-4 py-1.5 border border-white/20 items-center gap-2 pointer-events-auto cursor-pointer text-zinc-700 hover:text-[#BF2024] transition-all group shadow-md"
           onClick={() => (window.location.href = '/strefa-zabawy')}
         >
-          <MoveLeft className="w-5 h-5 text-white/70 hover:text-white transition-colors" />
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
         </div>
         <div className="flex bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 border border-white/10 items-center gap-2">
           <Trophy className="w-4 h-4 text-[#ffd700]" />

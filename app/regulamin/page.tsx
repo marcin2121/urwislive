@@ -21,9 +21,9 @@ export default function RegulaminPage() {
         >
           <Link 
             href="/" 
-            className="group inline-flex items-center gap-2 text-zinc-500 hover:text-blue-600 transition-all font-black text-xs uppercase tracking-[0.2em]"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group"
           >
-            <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" /> 
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
             Wróć do bazy (Strona Główna)
           </Link>
         </motion.div>
@@ -33,7 +33,7 @@ export default function RegulaminPage() {
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-black text-zinc-900 mb-6 tracking-tighter uppercase italic leading-[0.9]"
+            className="text-5xl md:text-7xl font-black text-zinc-900 mb-6 tracking-tighter uppercase leading-[0.9]"
           >
             Informacje Prawne <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff]">& Regulaminy</span>
@@ -155,7 +155,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode, title: stri
         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg shrink-0">
           {icon}
         </div>
-        <h2 className="text-2xl font-black text-zinc-900 uppercase italic tracking-tighter leading-none">{title}</h2>
+        <h2 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter leading-none">{title}</h2>
       </div>
       <div className="text-zinc-700 font-medium leading-relaxed text-lg">
         {children}

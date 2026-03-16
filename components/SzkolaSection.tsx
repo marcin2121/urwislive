@@ -86,13 +86,10 @@ export default function SzkolaSection() {
           <Link 
             href="/oferta" 
             aria-label="Wróć do głównej oferty Sklepu Urwis"
-            className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-[2rem] font-black text-sm overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-tighter italic border-4 border-white/20"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="relative z-10 flex items-center gap-2">
-              <ArrowLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" /> 
-              Powrót do oferty
-            </span>
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" aria-hidden="true" /> 
+            Powrót do oferty
           </Link>
         </motion.div>
 

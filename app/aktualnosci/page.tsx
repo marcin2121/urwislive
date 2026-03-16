@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Pin, Calendar, ChevronRight, Newspaper, Sparkles, MoveLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Pin, Calendar, ChevronRight, Newspaper, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { NEWS_DATA, CATEGORY_STYLES, type NewsItem } from '@/lib/news-data';
 import MagicBento from '@/components/ui/MagicBento';
@@ -27,6 +27,7 @@ function formatDate(dateStr: string) {
 
 export default function AktualnosciPage() {
   const [filter, setFilter] = useState<CategoryFilter>('wszystkie');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const trackNewsEvent = (action: string, label: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -67,7 +68,7 @@ export default function AktualnosciPage() {
           className="mb-8 md:mb-12"
         >
           <Link href="/oferta" className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 mb-8 group">
-              <MoveLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Powrót do oferty
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Powrót do oferty
             </Link>
         </motion.div>
 
@@ -174,20 +175,29 @@ export default function AktualnosciPage() {
 // ----------------------------------------------------
 
 function FeaturedNewsCard({ item, onClick }: { item: NewsItem; onClick?: () => void }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const style = CATEGORY_STYLES[item.category];
   const Icon = item.icon;
 
   const content = (
-    <MagicBento
-      className="bg-white/70 backdrop-blur-xl border border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden flex flex-col cursor-pointer"
-      glowColor={style.glowColor}
-      enableSpotlight
-      spotlightRadius={600}
-      enableTilt={false}
+    <div
+      onClick={() => {
+        if (!item.link && item.content) {
+          setIsExpanded(!isExpanded);
+        }
+      }}
+      className="cursor-pointer h-full"
     >
-      <div className="absolute top-0 right-0 p-32 md:p-48 bg-white/40 blur-[100px] rounded-full pointer-events-none group-hover:bg-white/60 transition-colors z-0"></div>
-      
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative z-10 w-full h-full">
+      <MagicBento
+        className="bg-white/70 backdrop-blur-xl border border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden flex flex-col h-full"
+        glowColor={style.glowColor}
+        enableSpotlight
+        spotlightRadius={600}
+        enableTilt={false}
+      >
+        <div className="absolute top-0 right-0 p-32 md:p-48 bg-white/40 blur-[100px] rounded-full pointer-events-none group-hover:bg-white/60 transition-colors z-0"></div>
+        
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative z-10 w-full h-full">
         {/* Lewa strona - Ikona */}
         <div className="shrink-0 flex justify-center lg:justify-start">
           <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[2rem] ${style.bg} flex items-center justify-center shadow-lg border-2 border-white group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500`}>
@@ -216,18 +226,33 @@ function FeaturedNewsCard({ item, onClick }: { item: NewsItem; onClick?: () => v
             {item.title}
           </h2>
           
-          <p className="text-zinc-600 font-medium text-base md:text-lg leading-relaxed flex-1 mb-8">
+          <p className="text-zinc-600 font-medium text-base md:text-lg leading-relaxed mb-6">
             {item.description}
           </p>
 
-          {(item.link || item.category === 'nowość') && (
-            <div className={`inline-flex items-center justify-center lg:justify-start gap-3 px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-md transition-all self-center lg:self-start w-full sm:w-auto ${style.bg} ${style.color} group-hover:brightness-95`}>
-              {item.link ? 'Zobacz szczegóły' : 'Czytaj więcej'} <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
+          <AnimatePresence>
+            {isExpanded && item.content && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden mt-4 pt-4 border-t border-zinc-100 text-zinc-700 font-medium text-base text-left leading-relaxed space-y-4"
+              >
+                <div className="whitespace-pre-wrap">{item.content}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {(item.link || item.content) && (
+            <div className={`inline-flex items-center justify-center lg:justify-start gap-3 px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest shadow-md transition-all self-center lg:self-start w-full sm:w-auto mt-6 ${style.color} ${style.bg} group-hover:brightness-95`}>
+              {item.link ? (item.ctaText || 'Zobacz szczegóły') : isExpanded ? 'Zwiń artykuł' : (item.ctaText || 'Czytaj więcej')} 
+              <ArrowRight size={18} className={`transition-transform ${isExpanded && !item.link ? '-rotate-90' : 'group-hover:translate-x-1.5'}`} />
             </div>
           )}
         </div>
       </div>
     </MagicBento>
+    </div>
   );
 
   if (item.link) {
@@ -238,60 +263,84 @@ function FeaturedNewsCard({ item, onClick }: { item: NewsItem; onClick?: () => v
 
 
 function NewsCard({ item, onClick }: { item: NewsItem; onClick?: () => void }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const style = CATEGORY_STYLES[item.category];
   const Icon = item.icon;
 
   const content = (
-    <MagicBento
-      className="bg-white/60 backdrop-blur-md border border-white rounded-[1.5rem] md:rounded-[2rem] p-6 lg:p-8 shadow-md hover:shadow-xl transition-all relative overflow-hidden flex flex-col h-full cursor-pointer hover:-translate-y-1"
-      glowColor={style.glowColor}
-      enableSpotlight
-      spotlightRadius={300}
-      enableTilt={false}
+    <div
+      onClick={() => {
+        if (!item.link && item.content) {
+          setIsExpanded(!isExpanded);
+        }
+      }}
+      className="cursor-pointer h-full"
     >
-      <div className="flex flex-col h-full relative z-10">
-        
-        {/* Nagłówek Karty */}
-        <div className="flex justify-between items-start mb-6">
-          <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl ${style.bg} flex items-center justify-center shadow-inner border border-white/50 group-hover:scale-110 transition-transform shrink-0`}>
-            <Icon size={28} className={style.color} />
-          </div>
+      <MagicBento
+        className="bg-white/60 backdrop-blur-md border border-white rounded-[1.5rem] md:rounded-[2rem] p-6 lg:p-8 shadow-md hover:shadow-xl transition-all relative overflow-hidden flex flex-col h-full hover:-translate-y-1"
+        glowColor={style.glowColor}
+        enableSpotlight
+        spotlightRadius={300}
+        enableTilt={false}
+      >
+        <div className="flex flex-col h-full relative z-10">
           
-          <div className="flex flex-col items-end gap-2">
-             {item.pinned && (
-               <span className="text-amber-500 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest bg-amber-50 px-2 py-0.5 rounded-full">
-                 <Pin size={10} className="fill-current" /> Hot
-               </span>
-             )}
-             <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${style.bg} ${style.color}`}>
-              {item.category}
-            </span>
-          </div>
-        </div>
-
-        {/* Treść */}
-        <div className="flex-1 flex flex-col">
-          <h3 className="text-xl md:text-2xl font-black text-zinc-900 uppercase italic tracking-tight leading-snug mb-3 group-hover:text-zinc-600 transition-colors">
-            {item.title}
-          </h3>
-          <p className="text-zinc-500 text-sm font-medium leading-relaxed flex-1 mb-6">
-            {item.description}
-          </p>
-          
-          {/* Stopka Karty */}
-          <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-100/50">
-             <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1 uppercase tracking-wider">
-              <Calendar size={12} /> {formatDate(item.date)}
-            </span>
-            {(item.link || item.category === 'nowość') && (
-              <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors ${style.color}`}>
-                Czytaj <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
+          {/* Nagłówek Karty */}
+          <div className="flex justify-between items-start mb-6">
+            <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl ${style.bg} flex items-center justify-center shadow-inner border border-white/50 group-hover:scale-110 transition-transform shrink-0`}>
+              <Icon size={28} className={style.color} />
+            </div>
+            
+            <div className="flex flex-col items-end gap-2">
+               {item.pinned && (
+                 <span className="text-amber-500 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest bg-amber-50 px-2 py-0.5 rounded-full">
+                   <Pin size={10} className="fill-current" /> Hot
+                 </span>
+               )}
+               <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${style.bg} ${style.color}`}>
+                {item.category}
               </span>
-            )}
+            </div>
+          </div>
+
+          {/* Treść */}
+          <div className="flex-1 flex flex-col">
+            <h3 className="text-xl md:text-2xl font-black text-zinc-900 uppercase italic tracking-tight leading-snug mb-3 group-hover:text-zinc-600 transition-colors">
+              {item.title}
+            </h3>
+            <p className="text-zinc-500 text-sm font-medium leading-relaxed mb-4">
+              {item.description}
+            </p>
+
+            <AnimatePresence>
+              {isExpanded && item.content && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden mb-4 pt-4 border-t border-zinc-100 text-zinc-600 font-medium text-sm text-left leading-relaxed"
+                >
+                  <div className="whitespace-pre-wrap">{item.content}</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {/* Stopka Karty */}
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-100/50">
+               <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1 uppercase tracking-wider">
+                <Calendar size={12} /> {formatDate(item.date)}
+              </span>
+              {(item.link || item.content) && (
+                <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors ${style.color}`}>
+                  {item.link ? (item.ctaText || 'Czytaj') : isExpanded ? 'Zwiń' : (item.ctaText || 'Czytaj więcej')} 
+                  <ArrowRight size={14} className={`transition-transform ${isExpanded && !item.link ? '-rotate-90' : 'group-hover:translate-x-1.5'}`} />
+                </span>
+              )}
+            </div>
           </div>
         </div>
+      </MagicBento>
       </div>
-    </MagicBento>
   );
 
   if (item.link) {

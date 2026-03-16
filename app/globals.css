@@ -141,6 +141,25 @@ html {
   scroll-behavior: smooth;
 }
 
+/* --- OPTYMALIZACJA PWA / NATIVE FEELING --- */
+@layer base {
+  html, body {
+    /* Usuwa błyski/podświetlenia po tapnięciu na telefonie */
+    -webkit-tap-highlight-color: transparent;
+    /* Blokuje wyskakiwanie lupy po przytrzymaniu palcem */
+    -webkit-touch-callout: none;
+    /* Całkowite zablokowanie zaznaczania tekstu na stronie */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Wyjątki: pozwól użytkownikowi pisać w polach tekstowych i kopiować tekst */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
 /* Zapobiega "miganiu" przy hover transitions */
 * {
   -webkit-font-smoothing: antialiased;

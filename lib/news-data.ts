@@ -11,6 +11,8 @@ export interface NewsItem {
   image?: string;
   link?: string;
   pinned?: boolean;
+  content?: string;
+  ctaText?: string;
 }
 
 const CATEGORY_STYLES: Record<string, { color: string; bg: string; glowColor: string }> = {
@@ -28,6 +30,18 @@ export { CATEGORY_STYLES };
 
 export const NEWS_DATA: NewsItem[] = [
   {
+    id: 'klocki-urwisa-nowa-gra',
+    title: 'Nowa gra logiczna: Klocki Urwisa! 🧩',
+    description: 'Rzuć wyzwanie swojej wyobraźni! Układaj kształty na planszy 9x9, czyść całe linie oraz kwadraty, by zdobywać punkty dla swojego Urwiska.',
+    date: '2026-03-16',
+    category: 'nowość',
+    icon: Gamepad2,
+    pinned: true,
+    link: '/strefa-zabawy/klocki',
+    ctaText: 'Zagraj teraz',
+    content: 'Klocki Urwisa to wciągająca łamigłówka z klockami! Dopasowuj różne kształty na planszy 9x9 tak, by zapełnić całe wiersze, kolumny lub kwadraty 3x3. Uważaj na brak wolnego miejsca, planuj ruchy z wyprzedzeniem i wykręć jak najwyższy wynik, by zgarnąć bonusy!',
+  },
+  {
     id: 'wirtualny-urwis',
     title: 'Wirtualny Urwis — Twój asystent zakupowy!',
     description: 'Poznaj naszego nowego, inteligentnego bota! Wirtualny Urwis pomoże Ci w znalezieniu asortymentu, opowie o grach i rozwieje wszelkie wątpliwości. Znajdziesz go w prawym dolnym rogu ekranu!',
@@ -35,6 +49,7 @@ export const NEWS_DATA: NewsItem[] = [
     category: 'nowość',
     icon: MessageCircle,
     pinned: true,
+    content: 'Wirtualny Urwis to nie tylko prosty czat. Potrafi on analizować preferencje dzieci, doradzać w wyborze klocków LEGO pod konkretny wiek, a także opowiadać o nadchodzących promocjach. Współpracuje bezpośrednio z naszym systemem magazynowym, dzięki czemu jego porady są zawsze aktualne i dostępne 24/7. Wypróbuj go już dziś, klikając ikonę dymka!',
   },
   {
     id: 'quiz-urwisa',
@@ -45,6 +60,7 @@ export const NEWS_DATA: NewsItem[] = [
     icon: Sparkles,
     pinned: false,
     link: '/strefa-zabawy/quiz-urwisa',
+    ctaText: 'Rozwiąż quiz',
   },
   {
     id: 'strefa-zabawy-v2',
@@ -54,6 +70,7 @@ export const NEWS_DATA: NewsItem[] = [
     category: 'wydarzenie',
     icon: Gamepad2,
     link: '/strefa-zabawy',
+    ctaText: 'Wejdź do gry',
   },
   {
     id: 'marzec-nowosci-lego',
@@ -72,6 +89,7 @@ export const NEWS_DATA: NewsItem[] = [
     category: 'informacja',
     icon: Sparkles,
     link: '/strefa-zabawy/kolorowanki',
+    ctaText: 'Pokoloruj online',
   },
   {
     id: 'kolo-fortuny',
@@ -81,6 +99,7 @@ export const NEWS_DATA: NewsItem[] = [
     category: 'promocja',
     icon: Gift,
     link: '/rabaty',
+    ctaText: 'Zakręć kołem',
   },
   {
     id: 'urwisek-gra',
@@ -90,6 +109,7 @@ export const NEWS_DATA: NewsItem[] = [
     category: 'wydarzenie',
     icon: Gamepad2,
     link: '/strefa-zabawy',
+    ctaText: 'Zagraj teraz',
   },
   {
     id: 'zlote-urwisy',
@@ -99,5 +119,6 @@ export const NEWS_DATA: NewsItem[] = [
     category: 'informacja',
     icon: Star,
     link: '/poznaj-urwisa',
+    ctaText: 'Sprawdź program',
   },
 ];

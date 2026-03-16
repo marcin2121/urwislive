@@ -5,8 +5,10 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import JellyButton from '@/components/ui/JellyButton'
 import { Mail, Lock, AlertCircle } from 'lucide-react'
+import { IconBrandGoogle, IconBrandFacebook } from '@tabler/icons-react'
 
 export default function UrwisekAuth() {
   const [email, setEmail] = useState('')
@@ -46,6 +48,23 @@ export default function UrwisekAuth() {
       else if (err.message.includes('already registered')) setError('Ten email jest już zarejestrowany!')
       else setError('Wystąpił błąd. Spróbuj ponownie.')
     } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSocialAuth = async (provider: 'google' | 'facebook') => {
+    setError('')
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        }
+      })
+      if (error) throw error
+    } catch (err: any) {
+      setError(`Błąd logowania przez ${provider === 'google' ? 'Google' : 'Facebook'}.`)
       setLoading(false)
     }
   }
@@ -140,6 +159,41 @@ export default function UrwisekAuth() {
           </div>
         </form>
 
+        {/* Separator Social Login */}
+        <div className="relative my-6 flex items-center z-10">
+          <div className="flex-grow border-t border-gray-200" />
+          <span className="flex-shrink mx-4 text-xs font-bold text-gray-400 uppercase tracking-wider">lub kontynuuj przez</span>
+          <div className="flex-grow border-t border-gray-200" />
+        </div>
+
+        {/* Przyciski Social Login */}
+        <div className="grid grid-cols-1 gap-3 relative z-10">
+          <motion.button
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleSocialAuth('google')}
+            disabled={loading}
+            type="button"
+            className="flex items-center justify-center gap-2 h-12 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-gray-700 text-sm"
+          >
+            <IconBrandGoogle size={20} className="text-[#EA4335]" />
+            Google
+          </motion.button>
+          {/*
+          <motion.button
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleSocialAuth('facebook')}
+            disabled={loading}
+            type="button"
+            className="flex items-center justify-center gap-2 h-12 bg-[#1877F2] hover:bg-[#166fe5] rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-white text-sm"
+          >
+            <IconBrandFacebook size={20} fill="white" />
+            Facebook
+          </motion.button>
+          */}
+        </div>
+
         {/* Przełącznik Logowanie / Rejestracja */}
         <div className="mt-6 text-center relative z-10">
           <button 
@@ -149,6 +203,18 @@ export default function UrwisekAuth() {
           >
             {isLogin ? 'Nie masz konta? Zarejestruj się.' : 'Masz już konto? Zaloguj się.'}
           </button>
+        </div>
+
+        {/* Informacja RODO / Cel aplikacji (dla weryfikacji Meta/Google) */}
+        <div className="mt-6 pt-4 border-t border-gray-100 text-center relative z-10">
+          <p className="text-[10px] text-gray-400 font-medium leading-relaxed px-4">
+            Logowanie pozwala na zapis stanu gry, zbieranie punktów oraz korzystanie z kuponów rabatowych.
+          </p>
+          <div className="flex justify-center gap-3 mt-2 text-[10px] font-bold text-gray-400">
+            <Link href="/regulamin" className="hover:text-gray-600 underline">Regulamin</Link>
+            <span>•</span>
+            <Link href="/polityka-prywatnosci" className="hover:text-gray-600 underline">Polityka prywatności</Link>
+          </div>
         </div>
 
       </div>

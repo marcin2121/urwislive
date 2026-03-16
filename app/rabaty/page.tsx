@@ -9,7 +9,7 @@ import {
   BadgePercent, LockKeyhole, ArrowRight, Timer, Ticket, History, 
   AlertCircle, CheckCircle2, Repeat, Calendar, Flame, ImageIcon, 
   Share, PlusSquare, Smartphone, ArrowDownCircle, TicketPercent,
-  CircleDashed, PartyPopper, Clock, Bell, X
+  CircleDashed, PartyPopper, Clock, Bell, X, ArrowLeft
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { spinWheel } from "@/app/actions/spin-wheel";
@@ -291,6 +291,14 @@ export default function RabatyPage() {
   return (
     <div className="min-h-screen pt-28 pb-12 px-4 flex justify-center bg-zinc-50 relative z-30">
       <div className="w-full max-w-2xl space-y-12">
+        <div className="flex justify-start mb-4 -mt-12">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-zinc-50 text-zinc-600 hover:text-[#BF2024] shadow-sm rounded-full transition-all font-black uppercase tracking-widest text-xs border border-zinc-200 group"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do bazy
+          </Link>
+        </div>
 
         {isMobile && !isPWA && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-6 md:p-8 rounded-4xl shadow-xl border border-blue-100 text-center relative overflow-hidden">

@@ -36,7 +36,7 @@ const mainPageItems = [
 
 export default function PoznajUrwisaPage() {
   return (
-    <div className="min-h-screen bg-transparent pt-12 pb-32 relative z-10 text-zinc-900">
+    <div className="min-h-screen bg-transparent pt-32 pb-32 relative z-10 text-zinc-900">
       <div className="fixed inset-0 pointer-events-none z-0">
         <Particles
           particleCount={40}

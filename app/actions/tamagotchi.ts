@@ -477,6 +477,9 @@ export async function finishArcadeGame(gameId: string) {
   } else if (gameId === 'arkanoid') {
     coinsEarned = 10
     expEarned = 20
+  } else if (gameId === 'klocki') {
+    coinsEarned = 15
+    expEarned = 25
   } else {
     return { error: 'Nieznana minigra!' }
   }
@@ -562,4 +565,76 @@ export async function claimQuestReward(questId: string, rewardCoins: number) {
 
   revalidatePath('/strefa-zabawy/urwisek')
   return { success: true, rewardCoins, newAchievements: newUnlocks }
+}
+
+// ==========================================
+// SYSTEM RANKINGOWY KLOCKÓW
+// ==========================================
+
+export async function submitKlockiScore(playerName: string, score: number) {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase
+      .from('klocki_scores')
+      .insert({
+        player_name: playerName,
+        score: score
+      })
+      
+    if (error) {
+       console.error('Failed to submit klocki score', error)
+       return { success: false }
+    }
+    
+    // Inwaliduj cache gdy uaktualniono wynik
+    revalidatePath('/strefa-zabawy/klocki');
+    return { success: true }
+  } catch(e) {
+    console.error(e)
+    return { success: false }
+  }
+}
+
+export async function getKlockiRanking(currentScore?: number) {
+  try {
+    const supabase = await createClient()
+    
+    const { data: topPlayers, error } = await supabase
+      .from('klocki_scores')
+      .select('id, player_name, score, created_at')
+      .order('score', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (error || !topPlayers) {
+       return { success: true, topScores: [] }
+    }
+    
+    let statsMessage = null;
+    
+    if (currentScore !== undefined && topPlayers.length > 0) {
+        let position = topPlayers.findIndex((p: { score: number }) => p.score <= currentScore!) + 1;
+        if (position === 0) position = 11; 
+        
+        const top3ScoreThreshold = topPlayers.length >= 3 ? topPlayers[2].score : (topPlayers[topPlayers.length-1]?.score || 0);
+
+        if (position <= 3) {
+            statsMessage = `Brawo! Wbiłeś na podium Klocków - ${position} Miejsce!`;
+        } else {
+            const diff = top3ScoreThreshold - currentScore;
+            statsMessage = diff > 0 
+               ? `Do Top 3 Klocków zabrakło Ci ${diff} punktów!`
+               : `Jesteś poza dziesiątką, potrenuj jeszcze!`;
+        }
+    }
+
+    return { 
+       success: true, 
+       topScores: topPlayers,
+       statsMessage 
+    }
+
+  } catch (error) {
+    return { success: false, topScores: [] }
+  }
 }

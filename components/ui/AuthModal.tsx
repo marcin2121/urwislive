@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { X, Mail, Lock, User, Phone, ArrowRight, Loader2, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { IconBrandGoogle, IconBrandFacebook } from "@tabler/icons-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -81,6 +84,23 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     } catch (err: any) {
       setError(err.message);
     } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleSocialAuth = async (provider: 'google' | 'facebook') => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setError(`Błąd logowania przez ${provider === 'google' ? 'Google' : 'Facebook'}.`);
       setIsLoading(false);
     }
   };
@@ -187,6 +207,44 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
               </button>
             </form>
 
+            {/* Separator Social Login (tylko dla logowania/rejestracji) */}
+            {view !== 'forgot' && (
+              <>
+                <div className="relative my-5 flex items-center">
+                  <div className="flex-grow border-t border-zinc-200" />
+                  <span className="flex-shrink mx-4 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">lub kontynuuj przez</span>
+                  <div className="flex-grow border-t border-zinc-200" />
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleSocialAuth('google')}
+                    disabled={isLoading}
+                    type="button"
+                    className="flex items-center justify-center gap-2 h-12 bg-white border border-zinc-200 rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-zinc-700 text-sm cursor-pointer"
+                  >
+                    <IconBrandGoogle size={20} className="text-[#EA4335]" />
+                    Google
+                  </motion.button>
+                  {/* 
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleSocialAuth('facebook')}
+                    disabled={isLoading}
+                    type="button"
+                    className="flex items-center justify-center gap-2 h-12 bg-[#1877F2] hover:bg-[#166fe5] rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-white text-sm cursor-pointer"
+                  >
+                    <IconBrandFacebook size={20} fill="white" />
+                    Facebook
+                  </motion.button>
+                  */}
+                </div>
+              </>
+            )}
+
             <div className="mt-6 text-center">
               <p className="text-xs text-zinc-500 font-bold">
                 {view === 'login' ? "Nie masz konta?" : "Wróć do logowania"}
@@ -199,6 +257,20 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                 </button>
               </p>
             </div>
+
+            {/* Informacja RODO / Cel aplikacji dla weryfikacji */}
+            {view !== 'forgot' && (
+              <div className="mt-5 pt-4 border-t border-zinc-100 text-center">
+                <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
+                  Logowanie pozwala na zapis stanu gry, zbieranie punktów oraz korzystanie z kuponów rabatowych.
+                </p>
+                <div className="flex justify-center gap-3 mt-2 text-[10px] font-bold text-zinc-400">
+                  <Link href="/regulamin" className="hover:text-zinc-600 underline">Regulamin</Link>
+                  <span>•</span>
+                  <Link href="/polityka-prywatnosci" className="hover:text-zinc-600 underline">Polityka prywatności</Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

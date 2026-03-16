@@ -47,13 +47,10 @@ export default async function UrwisekPage() {
         <div className="w-full max-w-4xl max-md:hidden mb-8 flex items-center justify-between z-20 absolute top-6 left-1/2 -translate-x-1/2 px-4">
           <Link 
             href="/strefa-zabawy" 
-            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-2xl font-black text-xs overflow-hidden transition-all hover:scale-105 shadow-xl uppercase tracking-widest border-2 border-white/20"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#BF2024] to-[#0055ff] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="relative z-10 flex items-center gap-2">
-              <ArrowLeft size={16} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
-              Wróć do Strefy Zabawy
-            </span>
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
+            Wróć do Strefy Zabawy
           </Link>
           <CloseWindowButton className="hidden standalone:inline-flex items-center gap-2 text-red-500 hover:text-red-600 transition-colors font-bold uppercase tracking-widest text-xs">
             Wyjdź

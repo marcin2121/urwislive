@@ -8,7 +8,7 @@ export const metadata = {
 export default function BubbleShooterPage() {
   return (
     // Zmiana na absolute inset-0 rozwiązuje problem skakania 100dvh
-    <div className="absolute inset-0 bg-slate-900 overflow-hidden flex flex-col items-center justify-center p-0 m-0">
+    <div className="fixed inset-0 z-[1000] bg-slate-900 overflow-hidden flex flex-col items-center justify-center p-0 m-0">
       {/* Kolorowe tło ambientowe */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
          <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px]" />

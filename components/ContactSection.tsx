@@ -10,10 +10,12 @@ import {
   CreditCard, 
   Car, 
   Send,
-  MessageSquare
+  MessageSquare,
+  ArrowLeft
 } from 'lucide-react';
 import MagicBento from '@/components/ui/MagicBento';
 import Particles from "@/components/Particles";
+import Link from 'next/link';
 
 export default function ContactSection() {
   const [state, handleSubmit] = useForm("mdalgzln");
@@ -100,7 +102,15 @@ export default function ContactSection() {
 
       <div className="relative z-0">
         <section className="pt-32 pb-16 px-6">
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-7xl mx-auto text-center flex flex-col items-center">
+            <div className="w-full flex justify-start mb-8 -mt-12">
+              <Link 
+                href="/" 
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#BF2024] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group"
+              >
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Wróć do strony głównej
+              </Link>
+            </div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
