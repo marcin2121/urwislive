@@ -99,6 +99,7 @@ export function useKlocki(playerName: string) {
   const [streak, setStreak] = useState(0);
   const streakRef = useRef(0);
   const [rerollsLeft, setRerollsLeft] = useState(1);
+  const [comboMessage, setComboMessage] = useState<string | null>(null);
 
   const [rewardMsg, setRewardMsg] = useState<string | null>(null);
   // opcjonalnie: ranking jak w bubble_shooter
@@ -198,6 +199,10 @@ export function useKlocki(playerName: string) {
   const checkAndClearLines = () => {
     const toClear = new Set<string>();
 
+    const rowsToClear = new Set<number>();
+    const colsToClear = new Set<number>();
+    const squaresToClear = new Set<string>();
+
     // pełne wiersze
     for (let r = 0; r < GRID_SIZE; r++) {
       let full = true;
@@ -208,6 +213,7 @@ export function useKlocki(playerName: string) {
         }
       }
       if (full) {
+        rowsToClear.add(r);
         for (let c = 0; c < GRID_SIZE; c++) {
           toClear.add(`${r},${c}`);
         }
@@ -224,6 +230,7 @@ export function useKlocki(playerName: string) {
         }
       }
       if (full) {
+        colsToClear.add(c);
         for (let r = 0; r < GRID_SIZE; r++) {
           toClear.add(`${r},${c}`);
         }
@@ -244,6 +251,7 @@ export function useKlocki(playerName: string) {
           if (!full) break;
         }
         if (full) {
+          squaresToClear.add(`${br},${bc}`);
           for (let r = br; r < br + 3; r++) {
             for (let c = bc; c < bc + 3; c++) {
               toClear.add(`${r},${c}`);
@@ -253,7 +261,15 @@ export function useKlocki(playerName: string) {
       }
     }
 
-    if (toClear.size === 0) return 0;
+    if (toClear.size === 0) {
+      return {
+        clearedCells: 0,
+        rowsCleared: 0,
+        colsCleared: 0,
+        squaresCleared: 0,
+        groupsCleared: 0,
+      };
+    }
 
     // cząsteczki + czyszczenie
     toClear.forEach((key) => {
@@ -282,7 +298,14 @@ export function useKlocki(playerName: string) {
       grid.current[r][c] = null;
     });
 
-    return toClear.size;
+    return {
+      clearedCells: toClear.size,
+      rowsCleared: rowsToClear.size,
+      colsCleared: colsToClear.size,
+      squaresCleared: squaresToClear.size,
+      groupsCleared:
+        rowsToClear.size + colsToClear.size + squaresToClear.size,
+    };
   };
 
   const hasAnyMove = (deckShapes: DeckShape[]): boolean =>
@@ -731,7 +754,7 @@ export function useKlocki(playerName: string) {
     updateSnapForDrag();
   };
 
-  const onPointerUp = async () => {
+  const onPointerUp = () => {
     const ds = dragState.current;
     if (ds.shapeIndex === null) return;
     const shape = deck[ds.shapeIndex];
@@ -742,24 +765,58 @@ export function useKlocki(playerName: string) {
 
     if (ds.snappingRow !== null && ds.snappingCol !== null) {
       placeShape(shape.matrix, shape.color, ds.snappingRow, ds.snappingCol);
-      const cleared = checkAndClearLines();
+
+      const {
+        clearedCells,
+        colsCleared,
+        squaresCleared,
+        groupsCleared,
+      } = checkAndClearLines();
+
       const placedBlocks =
         shape.matrix.reduce(
           (sum, row) => sum + row.reduce((s, v) => s + (v ? 1 : 0), 0),
           0,
         ) ?? 0;
-      
-      let base = placedBlocks * 10 + cleared * 15;
 
-      if (cleared > 0) {
+      let base = placedBlocks * 10 + clearedCells * 15;
+
+      if (clearedCells > 0) {
         streakRef.current += 1;
       } else {
         streakRef.current = 0;
       }
       setStreak(streakRef.current);
 
-      const comboMult = 1 + Math.min(streakRef.current, 5) * 0.15;
-      const gained = Math.round(base * comboMult);
+      const streakMult = 1 + Math.min(streakRef.current, 5) * 0.15;
+
+      // COMBO
+      let comboBonus = 0;
+      let msg: string | null = null;
+
+      if (colsCleared >= 2) {
+        comboBonus += 80;
+        msg = 'PODWÓJNE KOLUMNY!';
+      }
+      if (squaresCleared >= 2) {
+        comboBonus += 120;
+        msg = 'PODWÓJNE KWADRATY!';
+      }
+      if (colsCleared >= 1 && squaresCleared >= 1 && colsCleared + squaresCleared >= 2) {
+        comboBonus += 50;
+        msg = 'KOLUMNA + KWADRAT!';
+      }
+      if (groupsCleared >= 3) {
+        comboBonus += 50;
+        msg = 'MEGA KOMBO!';
+      }
+
+      if (msg) {
+        setComboMessage(msg);
+        setTimeout(() => setComboMessage(null), 900);
+      }
+
+      const gained = Math.round(base * streakMult + comboBonus);
 
       setScore((s) => {
         const ns = s + gained;
@@ -772,7 +829,6 @@ export function useKlocki(playerName: string) {
       );
       setDeck(newDeck);
 
-      // jeśli wszystkie zużyte – nowa talia
       if (newDeck.every((d) => d.used)) {
         const freshDeck = generateDeck();
         setDeck(freshDeck);
@@ -786,7 +842,6 @@ export function useKlocki(playerName: string) {
       ds.shapeIndex = null;
       ds.snappingRow = null;
       ds.snappingCol = null;
-
     } else {
       const startX = ds.x;
       const startY = ds.y;
@@ -842,6 +897,7 @@ export function useKlocki(playerName: string) {
     setStreak(0);
     setRerollsLeft(1);
     streakRef.current = 0;
+    setComboMessage(null);
 
     setIsStarted(true);
   }, []);
@@ -880,6 +936,7 @@ export function useKlocki(playerName: string) {
     deck,
     streak,
     rerollsLeft,
+    comboMessage,
     rewardMsg,
     rankingData,
     rankingStatusMessage,

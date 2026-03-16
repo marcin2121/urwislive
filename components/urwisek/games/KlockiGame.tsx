@@ -30,6 +30,7 @@ export default function KlockiGame() {
     onPointerMove,
     onPointerUp,
     rerollDeck,
+    comboMessage,
   } = useKlocki(playerName);
 
   useEffect(() => {
@@ -51,6 +52,11 @@ export default function KlockiGame() {
     <div
       className="relative flex flex-col items-center justify-center bg-[#050712] text-white w-full h-[100dvh] overflow-hidden overscroll-none touch-none select-none"
     >
+      {comboMessage && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/60 text-emerald-200 text-xs font-black tracking-[0.2em] uppercase shadow-lg animate-bounce">
+          {comboMessage}
+        </div>
+      )}
       {/* HUD */}
       <div className="absolute top-0 w-full max-w-[520px] flex justify-between items-center px-4 py-3 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none">
         <div
