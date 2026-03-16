@@ -96,6 +96,10 @@ export function useKlocki(playerName: string) {
   const animationRef = useRef<number>(0);
   const gameOverRef = useRef(false);
 
+  const [streak, setStreak] = useState(0);
+  const streakRef = useRef(0);
+  const [rerollsLeft, setRerollsLeft] = useState(1);
+
   const [rewardMsg, setRewardMsg] = useState<string | null>(null);
   // opcjonalnie: ranking jak w bubble_shooter
   const [rankingData, setRankingData] = useState<any[]>([]);
@@ -258,6 +262,10 @@ export function useKlocki(playerName: string) {
       if (!col) return;
       const x = BOARD_PADDING + c * CELL_SIZE + CELL_SIZE / 2;
       const y = BOARD_PADDING + r * CELL_SIZE + CELL_SIZE / 2;
+
+      if (particles.current.length > 150) {
+        particles.current.splice(0, particles.current.length - 150);
+      }
 
       for (let i = 0; i < 8; i++) {
         particles.current.push({
@@ -576,6 +584,8 @@ export function useKlocki(playerName: string) {
     }
 
     // cząsteczki
+    if (gameOverRef.current) return;
+
     particles.current.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
@@ -721,7 +731,7 @@ export function useKlocki(playerName: string) {
     updateSnapForDrag();
   };
 
-  const onPointerUp = () => {
+  const onPointerUp = async () => {
     const ds = dragState.current;
     if (ds.shapeIndex === null) return;
     const shape = deck[ds.shapeIndex];
@@ -738,7 +748,18 @@ export function useKlocki(playerName: string) {
           (sum, row) => sum + row.reduce((s, v) => s + (v ? 1 : 0), 0),
           0,
         ) ?? 0;
-      const gained = placedBlocks * 10 + cleared * 5;
+      
+      let base = placedBlocks * 10 + cleared * 15;
+
+      if (cleared > 0) {
+        streakRef.current += 1;
+      } else {
+        streakRef.current = 0;
+      }
+      setStreak(streakRef.current);
+
+      const comboMult = 1 + Math.min(streakRef.current, 5) * 0.15;
+      const gained = Math.round(base * comboMult);
 
       setScore((s) => {
         const ns = s + gained;
@@ -761,11 +782,36 @@ export function useKlocki(playerName: string) {
       } else if (!hasAnyMove(newDeck)) {
         endGame();
       }
-    }
 
-    ds.shapeIndex = null;
-    ds.snappingRow = null;
-    ds.snappingCol = null;
+      ds.shapeIndex = null;
+      ds.snappingRow = null;
+      ds.snappingCol = null;
+
+    } else {
+      const startX = ds.x;
+      const startY = ds.y;
+      let t = 0;
+      const steps = 6;
+      const amplitude = 8;
+
+      const shake = () => {
+        t++;
+        const offset = Math.sin((t / steps) * Math.PI * 4) * amplitude;
+        dragState.current.x = startX + offset;
+        dragState.current.y = startY;
+
+        if (t < steps) {
+          requestAnimationFrame(shake);
+        } else {
+          dragState.current.x = startX;
+          dragState.current.y = startY;
+          dragState.current.shapeIndex = null;
+          dragState.current.snappingRow = null;
+          dragState.current.snappingCol = null;
+        }
+      };
+      requestAnimationFrame(shake);
+    }
   };
 
   // ---------- INIT / RESET ----------
@@ -793,9 +839,21 @@ export function useKlocki(playerName: string) {
     setRankingData([]);
     setRankingStatusMessage(null);
     gameOverRef.current = false;
+    setStreak(0);
+    setRerollsLeft(1);
+    streakRef.current = 0;
 
     setIsStarted(true);
   }, []);
+
+  const rerollDeck = () => {
+    if (!isStarted || gameOverRef.current) return;
+    if (rerollsLeft <= 0) return;
+
+    const newDeck = generateDeck();
+    setDeck(newDeck);
+    setRerollsLeft((x) => x - 1);
+  };
 
   // ---------- BEST SCORE z localStorage ----------
 
@@ -815,16 +873,21 @@ export function useKlocki(playerName: string) {
   return {
     canvasRef,
     isStarted,
+    setIsStarted,
     gameOver,
     score,
     bestScore,
+    deck,
+    streak,
+    rerollsLeft,
     rewardMsg,
     rankingData,
     rankingStatusMessage,
     isSubmittingScore: isSubmittingScore.current,
-    initGame,
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    initGame,
+    rerollDeck,
   };
 }

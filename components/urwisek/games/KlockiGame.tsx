@@ -19,6 +19,8 @@ export default function KlockiGame() {
     gameOver,
     score,
     bestScore,
+    streak,
+    rerollsLeft,
     rewardMsg,
     rankingData,
     rankingStatusMessage,
@@ -27,6 +29,7 @@ export default function KlockiGame() {
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    rerollDeck,
   } = useKlocki(playerName);
 
   useEffect(() => {
@@ -58,6 +61,11 @@ export default function KlockiGame() {
         </div>
 
         <div className="flex items-center gap-2 pointer-events-auto">
+          {streak >= 2 && (
+            <div className="flex bg-gradient-to-r from-amber-500 to-orange-500 rounded-full px-3 py-1 border border-amber-400 items-center gap-1 animate-bounce text-[10px] font-black text-white shadow-md">
+              🔥 COMBO x{streak}
+            </div>
+          )}
           <div className="flex bg-black/60 rounded-full px-3 py-1.5 border border-white/10 items-center gap-1">
             <Trophy className="w-4 h-4 text-[#ffd700]" />
             <span className="text-white font-bold tracking-widest text-sm tabular-nums">
@@ -85,6 +93,20 @@ export default function KlockiGame() {
         onPointerCancel={onPointerUp}
         onPointerLeave={onPointerUp}
       />
+
+      {isStarted && !gameOver && (
+        <div className="mt-4 flex gap-2 w-full max-w-[520px] px-4 pointer-events-auto z-10">
+          <Button
+            variant="outline"
+            disabled={rerollsLeft <= 0}
+            onClick={rerollDeck}
+            className="flex-1 border-white/10 text-white hover:bg-white/5 rounded-2xl text-xs sm:text-sm h-12 backdrop-blur-md bg-black/30 flex items-center gap-2 justify-center"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Przetasuj talię ({rerollsLeft})
+          </Button>
+        </div>
+      )}
 
       {/* Ekran startowy */}
       {!isStarted && (
@@ -200,7 +222,7 @@ export default function KlockiGame() {
                               {idx + 1}.
                             </span>
                             <span className="truncate max-w-[120px]">
-                              {row.playername ?? row.nickname ?? 'Anonim'}
+                              {row.player_name ?? row.playername ?? row.nickname ?? 'Anonim'}
                             </span>
                           </div>
                           <span className="tabular-nums">{row.score}</span>
