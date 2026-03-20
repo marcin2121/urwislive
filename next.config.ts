@@ -32,7 +32,8 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          // { key: 'X-Frame-Options', value: 'SAMEORIGIN' }, // Usunięte na rzecz CSP frame-ancestors
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self' http://localhost:3000 https://molendadevelopment.pl" },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },

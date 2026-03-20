@@ -159,40 +159,6 @@ export default function UrwisekAuth() {
           </div>
         </form>
 
-        {/* Separator Social Login */}
-        <div className="relative my-6 flex items-center z-10">
-          <div className="flex-grow border-t border-gray-200" />
-          <span className="flex-shrink mx-4 text-xs font-bold text-gray-400 uppercase tracking-wider">lub kontynuuj przez</span>
-          <div className="flex-grow border-t border-gray-200" />
-        </div>
-
-        {/* Przyciski Social Login */}
-        <div className="grid grid-cols-1 gap-3 relative z-10">
-          <motion.button
-            whileHover={{ scale: 1.03, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleSocialAuth('google')}
-            disabled={loading}
-            type="button"
-            className="flex items-center justify-center gap-2 h-12 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-gray-700 text-sm"
-          >
-            <IconBrandGoogle size={20} className="text-[#EA4335]" />
-            Google
-          </motion.button>
-          {/*
-          <motion.button
-            whileHover={{ scale: 1.03, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleSocialAuth('facebook')}
-            disabled={loading}
-            type="button"
-            className="flex items-center justify-center gap-2 h-12 bg-[#1877F2] hover:bg-[#166fe5] rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-white text-sm"
-          >
-            <IconBrandFacebook size={20} fill="white" />
-            Facebook
-          </motion.button>
-          */}
-        </div>
 
         {/* Przełącznik Logowanie / Rejestracja */}
         <div className="mt-6 text-center relative z-10">

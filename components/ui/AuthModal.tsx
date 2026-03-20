@@ -207,43 +207,6 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
               </button>
             </form>
 
-            {/* Separator Social Login (tylko dla logowania/rejestracji) */}
-            {view !== 'forgot' && (
-              <>
-                <div className="relative my-5 flex items-center">
-                  <div className="flex-grow border-t border-zinc-200" />
-                  <span className="flex-shrink mx-4 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">lub kontynuuj przez</span>
-                  <div className="flex-grow border-t border-zinc-200" />
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleSocialAuth('google')}
-                    disabled={isLoading}
-                    type="button"
-                    className="flex items-center justify-center gap-2 h-12 bg-white border border-zinc-200 rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-zinc-700 text-sm cursor-pointer"
-                  >
-                    <IconBrandGoogle size={20} className="text-[#EA4335]" />
-                    Google
-                  </motion.button>
-                  {/* 
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleSocialAuth('facebook')}
-                    disabled={isLoading}
-                    type="button"
-                    className="flex items-center justify-center gap-2 h-12 bg-[#1877F2] hover:bg-[#166fe5] rounded-xl shadow-sm hover:shadow-md transition-all font-bold text-white text-sm cursor-pointer"
-                  >
-                    <IconBrandFacebook size={20} fill="white" />
-                    Facebook
-                  </motion.button>
-                  */}
-                </div>
-              </>
-            )}
 
             <div className="mt-6 text-center">
               <p className="text-xs text-zinc-500 font-bold">

@@ -197,7 +197,7 @@ export default function KlockiGame() {
 
               {isSubmittingScore ? (
                 <div className="flex items-center justify-center h-32 text-sm text-zinc-400">
-                  Zapisywanie wyniku...
+                  Wczytywanie rankingu...
                 </div>
               ) : (
                 <>
@@ -236,8 +236,8 @@ export default function KlockiGame() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-6 text-white/40 text-sm">
-                      Podłącz Supabase i pokaż ranking tak jak w grze z kulkami.
+                    <div className="text-center py-6 text-white/40 text-sm font-medium">
+                      Urwis wczytuje ranking...
                     </div>
                   )}
                 </>
