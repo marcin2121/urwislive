@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 
 const ShineTextEffect = () => (
-  <h1 className="text-[8.5vw] sm:text-5xl md:text-6xl lg:text-[5.8vw] font-black leading-[0.9] drop-shadow-sm relative pb-4">
+  <h1 className="text-[8.5vw] sm:text-5xl md:text-6xl lg:text-[5.8vw] xl:text-[7.5rem] font-black leading-[0.9] drop-shadow-sm relative pb-4">
     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#BF2024] to-[#0055ff] inline-block pr-2 sm:pr-4 pb-2">
       URWIS
     </span>
@@ -52,19 +52,21 @@ export default function HeroContent() {
       <div className="relative z-10 container mx-auto px-6 text-center -mt-8 md:-mt-0">
         
         <div className="mb-6 md:mb-8">
-          <div className="flex items-baseline justify-center flex-nowrap gap-x-20 sm:gap-x-40 md:gap-x-70 relative">
+          <div className="flex items-baseline justify-center flex-nowrap gap-x-20 sm:gap-x-40 md:gap-x-[15vw] xl:gap-x-64 relative">
             {/* 🎨 TŁO: Urwis-Hero */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-53/100 -translate-y-[67%] md:-translate-y-[63%] -z-10 w-[70%] md:w-[140%] max-w-[600px] aspect-square flex items-center justify-center pointer-events-none">
+            <div className="absolute left-1/2 top-1/2 -translate-x-[53%] -translate-y-[67%] md:-translate-y-[63%] -z-10 w-[70%] md:w-[32vw] max-w-[530px] aspect-square flex items-center justify-center pointer-events-none">
               <Image 
                 src="/Urwis-Hero.webp" 
                 alt="Tło Urwis" 
                 fill
+                sizes="(max-width: 768px) 70vw, 600px"
                 priority
+                fetchPriority="high"
                 className="object-contain opacity-100 select-none" 
               />
             </div>
             
-            <h1 className="text-[8.5vw] sm:text-5xl md:text-6xl lg:text-[5.8vw] font-black leading-[0.9] text-zinc-900 drop-shadow-sm pb-4 pr-1 sm:pr-4">
+            <h1 className="text-[8.5vw] sm:text-5xl md:text-6xl lg:text-[5.8vw] xl:text-[7.5rem] font-black leading-[0.9] text-zinc-800 drop-shadow-sm pb-4 pr-1 sm:pr-4">
               SKLEP
             </h1>
             
@@ -72,7 +74,7 @@ export default function HeroContent() {
           </div>
           
           {/* USUNIĘTO animację - ten tekst jest widoczny natychmiast */}
-          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-zinc-500 mt-12 md:mt-36 tracking-tight">
+          <p className="text-lg sm:text-2xl md:text-3xl lg:text-[2.2vw] xl:text-4xl font-bold text-zinc-600 mt-12 md:mt-[10vw] xl:mt-32 tracking-tight">
             Nie tylko dla grzecznych dzieci
           </p>
         </div>

@@ -5,7 +5,7 @@ const HeroAnimations = dynamic(() => import('./HeroAnimations'), { ssr: false })
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[85dvh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-transparent text-zinc-900 pt-24 md:pt-[10vh] pb-16 md:pb-20">
+    <section className="relative min-h-[85dvh] md:min-h-[90vh] flex items-center justify-center bg-transparent text-zinc-900 pt-24 md:pt-[10vh] pb-16 md:pb-20">
       {/* Animowane tło — lazy-loaded, nie blokuje LCP */}
       <HeroAnimations />
 

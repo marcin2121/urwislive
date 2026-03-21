@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 
@@ -48,14 +49,14 @@ export function UrwisChatWidget() {
         <Button
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? "Zamknij czat" : "Otwórz czat z Urwisem"}
-          className={`relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full shadow-lg md:shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-2 md:border-4 bg-white ${
+          className={`relative z-10 w-14 h-14 md:w-20 md:h-20 rounded-full shadow-lg md:shadow-[0_10px_30px_rgba(0,85,255,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center p-0 overflow-hidden border-2 md:border-4 bg-white ${
             isOpen ? 'border-[#BF2024]' : 'border-[#0055ff]'
           }`}
         >
           {isOpen ? (
-            <X className="w-6 h-6 md:w-8 md:h-8 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
+            <X className="w-6 h-6 md:w-10 md:h-10 text-[#BF2024] animate-in fade-in zoom-in duration-200" strokeWidth={3} />
           ) : (
-            <img src="/urwischat.webp" alt="Urwis" className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
+            <Image src="/urwischat.webp" alt="Urwis" width={100} height={100} className="w-[110%] h-[110%] object-cover animate-in fade-in zoom-in duration-200 pt-0.5" />
           )}
         </Button>
       </div>

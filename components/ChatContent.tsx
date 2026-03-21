@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Send, User, Minus } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import Image from 'next/image';
 
 interface ChatContentProps {
   onClose: () => void;
@@ -45,7 +46,7 @@ export default function ChatContent({ onClose }: ChatContentProps) {
           <div className="relative shrink-0">
             <div className="bg-zinc-800 p-[3px] rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] overflow-hidden w-12 h-12 flex items-center justify-center border border-zinc-700">
               <div className="bg-white rounded-full w-full h-full flex items-center justify-center overflow-hidden">
-                <img src="/urwischat.webp" alt="Urwis" className="w-[115%] h-[115%] object-cover pt-1" />
+                <Image src="/urwischat.webp" alt="Urwis" width={64} height={64} className="w-[115%] h-[115%] object-cover pt-1" />
               </div>
             </div>
             <span className={`absolute bottom-0 -right-0.5 w-[14px] h-[14px] rounded-full border-[2.5px] border-zinc-950 shadow-sm ${isLoading ? 'bg-yellow-400 animate-pulse' : 'bg-emerald-500'}`} />
@@ -96,7 +97,7 @@ export default function ChatContent({ onClose }: ChatContentProps) {
           <div className="flex flex-col items-center justify-center h-full text-center gap-5 animate-in fade-in zoom-in-95 duration-500 pt-4 pb-2">
             <div className="relative">
               <div className="absolute inset-0 bg-[#0055ff]/10 blur-2xl rounded-full scale-150" />
-              <img src="/urwischat.webp" alt="Urwis" className="relative w-24 h-24 md:w-28 md:h-28 drop-shadow-2xl animate-bounce-slow object-contain" />
+              <Image src="/urwischat.webp" alt="Urwis" width={140} height={140} className="relative w-24 h-24 md:w-28 md:h-28 drop-shadow-2xl animate-bounce-slow object-contain" />
             </div>
             <div className="space-y-1.5 px-2 text-balance">
               <h3 className="text-sm md:text-base font-black text-zinc-800 uppercase tracking-tight italic">
@@ -133,7 +134,7 @@ export default function ChatContent({ onClose }: ChatContentProps) {
                       </div>
                     ) : (
                       <div className="bg-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-[#0055ff] overflow-hidden shadow-sm shrink-0">
-                        <img src="/urwischat.webp" alt="Urwis" className="w-full h-full object-cover scale-110" />
+                        <Image src="/urwischat.webp" alt="Urwis" width={48} height={48} className="w-full h-full object-cover scale-110" />
                       </div>
                     )}
                   </div>
@@ -178,7 +179,7 @@ export default function ChatContent({ onClose }: ChatContentProps) {
               <div className="flex justify-start">
                 <div className="flex gap-2 items-end">
                   <div className="bg-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-[#0055ff] overflow-hidden shadow-sm">
-                    <img src="/urwischat.webp" alt="Urwis" className="w-full h-full object-cover scale-110" />
+                    <Image src="/urwischat.webp" alt="Urwis" width={48} height={48} className="w-full h-full object-cover scale-110" />
                   </div>
                   <div className="bg-white border border-zinc-200 rounded-[1.25rem] rounded-bl-sm px-4 py-3 shadow-sm">
                     <div className="flex gap-1 items-center h-4">

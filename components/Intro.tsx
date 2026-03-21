@@ -15,7 +15,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
     setMounted(true);
 
     const isMobile = window.innerWidth < 768;
-    const isBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
+    const isBot = /Lighthouse|Google|PageSpeed|ChatGPT|ClaudeBot|Bytespider|HeadlessChrome/i.test(navigator.userAgent) || !!navigator.webdriver;
     const introShown = sessionStorage.getItem('urwis_intro_shown');
 
     if (isMobile || isBot || introShown) {
@@ -35,6 +35,9 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
       document.body.style.height = 'unset';
     };
   }, []);
+
+  // 🔴 TYMCZASOWO WYŁĄCZONE INTRO (Usuń tę linijkę, aby przywrócić)
+  return <>{children}</>;
 
   const finishIntro = () => {
     setStep('done');
