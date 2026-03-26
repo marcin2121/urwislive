@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧸 Sklep Urwis - Modern PWA & AI Ecosystem
 
-## Getting Started
+[![Next.js](https://img.shields.io/badge/Next.js-15+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![PWA](https://img.shields.io/badge/PWA-Ready-orange?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database-green?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
-First, run the development server:
+**Sklep Urwis** to zaawansowana platforma typu **Progressive Web App (PWA)** stworzona dla stacjonarnego centrum zabawek i artykułów biurowych w Białobrzegach. Projekt łączy tradycyjny handel lokalny z najnowocześniejszymi technologiami webowymi, oferując unikalne doświadczenie zakupowe (Phygital).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Kluczowe Funkcje
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📱 Full PWA Experience
+*   **Offline Mode:** Dzięki integracji z `Serwist`, kluczowe funkcjonalności i gry są dostępne bez połączenia z siecią.
+*   **Background Sync:** Automatyczna synchronizacja punktów i osiągnięć po odzyskaniu łączności.
+*   **Instalacja natywna:** W pełni responsywny interfejs z dedykowanymi instrukcjami instalacji na iOS/Android.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🤖 Intelligent AI Assistant
+*   **Gemini AI Integration:** Autorski chatbot ("Wirtualny Urwis") oparty na modelach Google, pomagający w doborze prezentów i wróżący dostępność produktów.
+*   **Security First:** Wdrożone zaawansowane mechanizmy ochrony przed *Prompt Injection* oraz filtrowanie wyników w czasie rzeczywistym.
 
-## Learn More
+### 🎮 Strefa Zabawy & Gamification
+*   **Zbiór Gier HTML5:** Autorskie implementacje popularnych mechanik (zbijanie kulek, gry logiczne, wirtualny podopieczny) budujące lojalność klienta.
+*   **Program Lojalnościowy:** Cyfrowy system zbierania "Złotych Urwisów" zintegrowany z bazą danych Supabase.
 
-To learn more about Next.js, take a look at the following resources:
+### 👓 Augmented Reality (AR)
+*   **Urwis AR:** Wykorzystanie technologii webowych do projekcji 3D maskotki sklepu bezpośrednio w przestrzeni użytkownika (Web-based AR).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠 Tech Stack
 
-## Deploy on Vercel
+### Frontend & UI
+*   **Framework:** `Next.js 16` (App Router, React 19)
+*   **Stylizacja:** `TailwindCSS` + `Radix UI` / `Shadcn`
+*   **Animacje:** `Framer Motion` + `GSAP` (zaawansowane micro-interactions)
+*   **Grafika 3D:** `Three.js` + `@react-three/fiber`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Backend & AI
+*   **Baza Danych & Auth:** `Supabase` (PostgreSQL) + Realtime
+*   **AI Engine:** `Vercel AI SDK` + `Google Gemini 3.1 Flash Lite Preview`
+*   **PWA Logic:** `Serwist` (Service Workers)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🛡 Security & Engineering
+*   **Environment Safety:** Wszystkie klucze API i sekrety (Supabase, Google AI, VAPID) są całkowicie odizolowane i zarządzane przez zmienne środowiskowe.
+*   **Rate Limiting:** Ochrona endpointów API przed nadużyciami (IP-based).
+*   **Type Safety:** Projekt w pełni oparty na `TypeScript` z naciskiem na integralność danych.
+
+---
+
+## 🗺 Roadmapa Rozwoju
+- [ ] Implementacja WebXR dla głębszej immersji AR.
+- [ ] Globalne tablice wyników w czasie rzeczywistym (Realtime Leaderboards).
+- [ ] Automatyzacja bazy wiedzy AI poprzez Headless CMS.
+
+---
+
+---
+
+*Oficjalna platforma Sklepu Urwis w Białobrzegach. Wszelkie prawa zastrzeżone.*
