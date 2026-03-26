@@ -18,11 +18,10 @@
 
 ### 🤖 Intelligent AI Assistant
 *   **Gemini AI Integration:** Autorski chatbot ("Wirtualny Urwis") oparty na modelach Google, pomagający w doborze prezentów i wróżący dostępność produktów.
-*   **Security First:** Wdrożone zaawansowane mechanizmy ochrony przed *Prompt Injection* oraz filtrowanie wyników w czasie rzeczywistym.
+*   **Security First:** Wdrożone zaawansowane mechanizmy ochrony przed *Prompt Injection* (filtrowanie odpowiedzi w czasie rzeczywistym pod kątem bezpieczeństwa danych).
 
 ### 🎮 Strefa Zabawy & Gamification
 *   **Zbiór Gier HTML5:** Autorskie implementacje popularnych mechanik (zbijanie kulek, gry logiczne, wirtualny podopieczny) budujące lojalność klienta.
-*   **Program Lojalnościowy:** Cyfrowy system zbierania "Złotych Urwisów" zintegrowany z bazą danych Supabase.
 
 ### 👓 Augmented Reality (AR)
 *   **Urwis AR:** Wykorzystanie technologii webowych do projekcji 3D maskotki sklepu bezpośrednio w przestrzeni użytkownika (Web-based AR).
@@ -52,6 +51,7 @@
 ---
 
 ## 🗺 Roadmapa Rozwoju
+- [ ] Implementacja cyfrowego **Programu Lojalnościowego** (Złote Urwisy) zintegrowanego z bazą danych Supabase.
 - [ ] Implementacja WebXR dla głębszej immersji AR.
 - [ ] Globalne tablice wyników w czasie rzeczywistym (Realtime Leaderboards).
 - [ ] Automatyzacja bazy wiedzy AI poprzez Headless CMS.
