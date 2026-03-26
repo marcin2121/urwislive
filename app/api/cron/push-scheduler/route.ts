@@ -45,7 +45,7 @@ export async function GET(req: Request) {
             });
 
             // Wyślij do wszystkich
-            await Promise.all(subs.map(s => 
+            await Promise.all(subs.map((s: any) => 
               webpush.sendNotification(s.subscription_data, payload).catch(() => null)
             ));
           }
