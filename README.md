@@ -1,7 +1,7 @@
 # 🧸 Sklep Urwis - Modern PWA & AI Ecosystem
 
-[![Next.js](https://img.shields.io/badge/Next.js-15+-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-orange?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
@@ -32,6 +32,7 @@
 
 ### Frontend & UI
 *   **Framework:** `Next.js 16` (App Router, React 19)
+*   **Język:** `TypeScript 6.0` (Standard ES2025)
 *   **Stylizacja:** `TailwindCSS` + `Radix UI` / `Shadcn`
 *   **Animacje:** `Framer Motion` + `GSAP` (zaawansowane micro-interactions)
 *   **Grafika 3D:** `Three.js` + `@react-three/fiber`

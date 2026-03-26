@@ -16,6 +16,6 @@ export const config = {
      * - favicon.ico, sw.js, manifest itp.
      * - pliki statyczne (svg, png, jpg, ico, webp, woff2)
      */
-    '/((?!_next/static|_next/image|favicon.ico|sw\\.js|workbox-.*|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|mp4|webm)).*)',
+    '/((?!_next/static|_next/image|serwist|api/chat|favicon.ico|sw\\.js|workbox-.*|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2|mp4|webm)).*)',
   ],
 }

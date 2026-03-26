@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2020", // ✅ Nowsze + perf
+    "target": "ES2025", // ✅ Najnowszy standard TS 6.0
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "es2025"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -24,6 +24,7 @@
         "name": "next"
       }
     ],
+    "ignoreDeprecations": "6.0", // ✅ TS 6.0 Bridge
     "baseUrl": ".", // ✅ + paths
     "paths": {
       "@/*": [
@@ -35,6 +36,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "types/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
