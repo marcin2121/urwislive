@@ -5,7 +5,7 @@
 [![PWA](https://img.shields.io/badge/PWA-Ready-orange?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-green?style=for-the-badge&logo=supabase)](https://supabase.com/)
 
-**Sklep Urwis** to zaawansowana platforma typu **Progressive Web App (PWA)** stworzona dla stacjonarnego centrum zabawek i artykułów biurowych w Białobrzegach. Projekt łączy tradycyjny handel lokalny z najnowocześniejszymi technologiami webowymi, oferując unikalne doświadczenie zakupowe (Phygital).
+**Sklep Urwis** to zaawansowana platforma typu **Progressive Web App (PWA)** stworzona dla stacjonarnego centrum zabawek i artykułów biurowych. Projekt łączy tradycyjny handel lokalny z najnowocześniejszymi technologiami webowymi, oferując unikalne doświadczenie zakupowe (Phygital).
 
 ---
 
