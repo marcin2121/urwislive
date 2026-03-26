@@ -104,7 +104,7 @@ export default function RabatyPage() {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         
-        const hasSpunToday = kuponyRes.data.some(k => 
+        const hasSpunToday = kuponyRes.data.some((k: any) => 
           k.user_id === user.id && new Date(k.created_at) >= todayStart
         );
         setCanSpin(!hasSpunToday);

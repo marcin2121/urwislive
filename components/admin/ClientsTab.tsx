@@ -32,7 +32,7 @@ export function ClientsTab() {
        });
     });
 
-    loyaltyClients.forEach(c => {
+    loyaltyClients.forEach((c: any) => {
        const existing = combinedClientsMap.get(c.phone_number) || { auth_user_id: null, email: null, last_sign_in_at: null, has_pwa: false, full_name: null };
        combinedClientsMap.set(c.phone_number, { ...existing, ...c, auth_user_id: existing.auth_user_id, email: existing.email, last_sign_in_at: existing.last_sign_in_at, has_pwa: existing.has_pwa, full_name: c.full_name || existing.full_name });
     });
@@ -62,7 +62,7 @@ export function ClientsTab() {
     } finally { setLoadingUserCoupons(false); }
   };
 
-  const filteredClients = allUsers.filter(u => !clientSearchQuery || (u.email || '').toLowerCase().includes(clientSearchQuery.toLowerCase()) || (u.phone_number || '').includes(clientSearchQuery) || (u.full_name || '').toLowerCase().includes(clientSearchQuery.toLowerCase()));
+  const filteredClients = allUsers.filter((u: any) => !clientSearchQuery || (u.email || '').toLowerCase().includes(clientSearchQuery.toLowerCase()) || (u.phone_number || '').includes(clientSearchQuery) || (u.full_name || '').toLowerCase().includes(clientSearchQuery.toLowerCase()));
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
@@ -94,7 +94,7 @@ export function ClientsTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-50">
-              {filteredClients.map((u) => (
+              {filteredClients.map((u: any) => (
                 <tr key={u.id} className="hover:bg-green-50/30 transition-colors">
                   <td className="p-4 md:p-6"><span className="font-black text-zinc-900 uppercase italic text-sm md:text-base block">{u.full_name || 'Brak Imienia'}</span><span className="text-[10px] font-bold text-zinc-400">{u.email || 'brak emaila'}</span></td>
                   <td className="p-4 md:p-6"><span className="text-sm font-bold text-zinc-600 block">{u.phone_number || 'Brak telefonu'}</span>{u.has_pwa ? <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase text-[#0055ff] bg-blue-50 px-2 py-0.5 rounded-md mt-1"><Smartphone size={10}/> PWA / PUSH</span> : <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-md mt-1">Brak App PWA</span>}</td>
@@ -117,7 +117,7 @@ export function ClientsTab() {
               <h3 className="text-sm font-black uppercase text-zinc-400 tracking-widest mb-4">Kupony Użytkownika</h3>
               {loadingUserCoupons ? <div className="flex justify-center p-8"><Loader2 className="animate-spin text-green-500" /></div> : userCoupons.length === 0 ? <div className="p-8 bg-zinc-50 rounded-2xl text-center text-zinc-400 font-bold">Użytkownik nie posiada kuponów.</div> : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userCoupons.map(coupon => (
+                  {userCoupons.map((coupon: any) => (
                     <div key={coupon.id} className={`p-4 rounded-2xl border-2 flex flex-col gap-2 ${coupon.current_usage > 0 ? 'bg-zinc-50 border-zinc-200 opacity-70' : 'bg-white border-green-200 shadow-sm'}`}>
                       <div className="flex justify-between items-start"><span className="font-black uppercase text-sm leading-none mt-1">{coupon.title}</span>{coupon.current_usage > 0 ? <span className="text-[9px] bg-zinc-200 text-zinc-600 px-2 py-1 rounded-md font-bold uppercase">Wykorzystano</span> : <span className="text-[9px] bg-green-100 text-green-700 px-2 py-1 rounded-md font-bold uppercase">Dostępny</span>}</div>
                       <div className="text-xl font-black tracking-widest bg-zinc-100 py-2 px-3 rounded-lg text-center mt-2">{coupon.code}</div>

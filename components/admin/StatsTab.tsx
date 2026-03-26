@@ -21,14 +21,14 @@ export function StatsTab() {
     ]);
 
     const allCoupons = allCouponsRes?.data || [];
-    const totalUsed = allCoupons.reduce((acc, curr) => acc + (curr.current_usage || 0), 0);
-    const activeGlobal = allCoupons.filter(k => k.is_active && !k.user_id).length;
+    const totalUsed = allCoupons.reduce((acc: any, curr: any) => acc + (curr.current_usage || 0), 0);
+    const activeGlobal = allCoupons.filter((k: any) => k.is_active && !k.user_id).length;
 
     const today = new Date(); today.setHours(0,0,0,0);
-    const spinsToday = allCoupons.filter(k => k.user_id && new Date(k.created_at) >= today).length;
+    const spinsToday = allCoupons.filter((k: any) => k.user_id && new Date(k.created_at) >= today).length;
 
     const distributionMap: any = {};
-    allCoupons.filter(k => k.user_id).forEach(p => { distributionMap[p.title] = (distributionMap[p.title] || 0) + 1 });
+    allCoupons.filter((k: any) => k.user_id).forEach((p: any) => { distributionMap[p.title] = (distributionMap[p.title] || 0) + 1 });
     const wheelStats = Object.entries(distributionMap).map(([name, value]) => ({ name, value }));
 
     const chartMap = new Map();
@@ -36,7 +36,7 @@ export function StatsTab() {
       const d = new Date(); d.setDate(d.getDate() - i);
       chartMap.set(d.toLocaleDateString('pl-PL', { weekday: 'short' }), 0);
     }
-    allCoupons.forEach(c => {
+    allCoupons.forEach((c: any) => {
       const day = new Date(c.created_at).toLocaleDateString('pl-PL', { weekday: 'short' });
       if (chartMap.has(day)) chartMap.set(day, chartMap.get(day) + 1);
     });
@@ -46,7 +46,7 @@ export function StatsTab() {
       const d = new Date(); d.setDate(d.getDate() - i);
       wheelSpinsByDay.set(d.toLocaleDateString('pl-PL', { weekday: 'short' }), 0);
     }
-    allCoupons.filter(k => k.user_id).forEach(c => {
+    allCoupons.filter((k: any) => k.user_id).forEach((c: any) => {
       const day = new Date(c.created_at).toLocaleDateString('pl-PL', { weekday: 'short' });
       if (wheelSpinsByDay.has(day)) wheelSpinsByDay.set(day, wheelSpinsByDay.get(day) + 1);
     });

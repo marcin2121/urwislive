@@ -40,7 +40,7 @@ export function WheelTab() {
       });
 
       // Nadpisujemy/Dodajemy imiona z kart lojalnościowych
-      (loyaltyRes.data || []).forEach(u => {
+      (loyaltyRes.data || []).forEach((u: any) => {
           const existing = userMap.get(u.auth_user_id) || {};
           const merged = { ...existing, name: u.full_name || existing.name };
           if (u.auth_user_id) userMap.set(u.auth_user_id, merged);
@@ -48,7 +48,7 @@ export function WheelTab() {
       });
 
       // Tworzymy historię losowań do tabeli
-      const history = (couponsRes.data || []).map(k => {
+      const history = (couponsRes.data || []).map((k: any) => {
           const user = userMap.get(k.user_id) || { name: 'Nieznany', email: 'Brak e-maila' };
           return {
               id: k.id,
@@ -103,7 +103,7 @@ export function WheelTab() {
          </div>
          
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-           {prizes.map(p => (
+           {prizes.map((p: any) => (
              <div key={p.id} className={`bg-gradient-to-br ${p.gradient} p-6 rounded-3xl text-white shadow-xl flex flex-col justify-between relative min-h-[200px]`}>
                <div className="absolute top-4 right-4 flex gap-2 z-10">
                  <button onClick={() => { setForm({...p}); setIsAdding(true); }} className="p-2 bg-white/20 hover:bg-white/40 rounded-full cursor-pointer"><Pencil size={16} /></button>
@@ -143,7 +143,7 @@ export function WheelTab() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-50">
-                  {spinHistory.map((spin) => (
+                  {spinHistory.map((spin: any) => (
                     <tr key={spin.id} className="hover:bg-amber-50/30 transition-colors">
                       <td className="p-4 md:p-6 text-xs md:text-sm font-black text-zinc-500">
                         {formatDate(spin.created_at)}
