@@ -80,8 +80,7 @@ export default function StrefaZabawyPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
-        
+      <div className="container mx-auto px-4 md:px-6 max-w-7xl">        
         {/* Kategorie gier */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12">
           {CATEGORIES.map((category, catIdx) => (
