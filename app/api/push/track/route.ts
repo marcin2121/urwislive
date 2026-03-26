@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
@@ -15,6 +16,9 @@ export async function POST(req: Request) {
 
     const { action, url } = await req.json();
     const supabase = await createClient();
+    if (!supabase) {
+      return NextResponse.json({ success: true, message: 'Tracking skipped - Supabase configuration missing' });
+    }
     
     // Zapis do naszej nowej tabeli!
     await supabase.from('push_analytics').insert([{ action, url }]);

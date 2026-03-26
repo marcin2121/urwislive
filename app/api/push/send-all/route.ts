@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server'; 
@@ -6,6 +7,9 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 });
+    }
     
     // --- ZABEZPIECZENIE: Weryfikacja tożsamości ---
     const { data: { user } } = await supabase.auth.getUser();
@@ -30,7 +34,8 @@ export async function POST(req: Request) {
 
     if (topic && topic !== 'wszystkie') {
       // Szukamy tych z konkretnym tematem LUB tych, którzy chcą wszystko
-      query = query.or(`topics.cs.{"${topic}"},topics.cs.{"wszystkie"}`);
+      const filterStr = 'topics.cs.{"' + topic + '"},topics.cs.{"wszystkie"}';
+      query = query.or(filterStr);
     }
 
     const { data: subs, error: dbError } = await query;

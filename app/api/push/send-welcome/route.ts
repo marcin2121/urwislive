@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { rateLimit } from '@/lib/rate-limit';

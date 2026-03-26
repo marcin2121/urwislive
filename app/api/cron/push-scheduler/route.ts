@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server';
@@ -13,6 +14,9 @@ export async function GET(req: Request) {
 
   try {
     const supabase = await createClient();
+    if (!supabase) {
+      return NextResponse.json({ success: true, message: 'Supabase configuration missing, skipping CRON' });
+    }
     const now = new Date().toISOString();
 
     // 1. 🕒 WYSYŁKA ZAPLANOWANYCH POWIADOMIEŃ
@@ -31,7 +35,8 @@ export async function GET(req: Request) {
           // Pobierz odbiorców dla danego tematu
           let query = supabase.from('push_subscriptions').select('subscription_data');
           if (push.topic !== 'wszystkie') {
-            query = query.or(`topics.cs.{"${push.topic}"},topics.cs.{"wszystkie"}`);
+            const filterStr = 'topics.cs.{"' + push.topic + '"},topics.cs.{"wszystkie"}';
+            query = query.or(filterStr);
           }
           const { data: subs } = await query;
 
