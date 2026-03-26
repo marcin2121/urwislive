@@ -1,23 +1,18 @@
 import { NextResponse } from 'next/server';
+import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
 
-// Bezpieczna inicjalizacja VAPID
-const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-const privateKey = process.env.VAPID_PRIVATE_KEY;
-
-if (publicKey && privateKey) {
-  webpush.setVapidDetails(
-    'mailto:kontakt@sklep-urwis.pl',
-    publicKey,
-    privateKey
-  );
-}
-
 export async function POST(req: Request) {
   try {
-    // Rate-limiting
+    // 1. Bezpieczna inicjalizacja Web Push
+    const isPushReady = initWebPush();
+    if (!isPushReady) {
+      return NextResponse.json({ error: 'Push service not configured' }, { status: 503 });
+    }
+
+    // 2. Rate-limiting
     const headersList = await headers();
     const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const { allowed } = rateLimit(ip);
@@ -26,10 +21,6 @@ export async function POST(req: Request) {
     }
 
     const { subscription, title, message, topic } = await req.json();
-
-    if (!publicKey || !privateKey) {
-      throw new Error('Brak kluczy VAPID');
-    }
 
     await webpush.sendNotification(
       subscription,

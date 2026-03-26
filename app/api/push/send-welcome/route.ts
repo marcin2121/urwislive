@@ -1,17 +1,19 @@
 import { NextResponse } from 'next/server';
+import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
 
-webpush.setVapidDetails(
-  'mailto:kontakt@sklep-urwis.pl',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
 export async function POST(req: Request) {
   try {
-    // Rate-limiting
+    // 1. Inicjalizacja Web Push
+    const isPushReady = initWebPush();
+    if (!isPushReady) {
+      console.warn('[PUSH] Pominięto wysyłkę powitalną - brak konfiguracji VAPID.');
+      return NextResponse.json({ error: 'Push service not configured' }, { status: 503 });
+    }
+
+    // 2. Rate-limiting
     const headersList = await headers();
     const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const { allowed } = rateLimit(ip);

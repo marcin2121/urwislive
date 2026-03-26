@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server';
 
@@ -22,46 +23,45 @@ export async function GET(req: Request) {
       .lte('scheduled_for', now); // Pobierz tylko te, których czas już nadszedł
 
     if (scheduledPushes && scheduledPushes.length > 0) {
-      // Inicjalizacja kluczy VAPID
-      webpush.setVapidDetails(
-        'mailto:kontakt@sklep-urwis.pl',
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-        process.env.VAPID_PRIVATE_KEY!
-      );
+      // Bezpieczna inicjalizacja VAPID
+      const isPushReady = initWebPush();
 
-      for (const push of scheduledPushes) {
-        // Pobierz odbiorców dla danego tematu
-        let query = supabase.from('push_subscriptions').select('subscription_data');
-        if (push.topic !== 'wszystkie') {
-          query = query.or(`topics.cs.{"${push.topic}"},topics.cs.{"wszystkie"}`);
+      if (isPushReady) {
+        for (const push of scheduledPushes) {
+          // Pobierz odbiorców dla danego tematu
+          let query = supabase.from('push_subscriptions').select('subscription_data');
+          if (push.topic !== 'wszystkie') {
+            query = query.or(`topics.cs.{"${push.topic}"},topics.cs.{"wszystkie"}`);
+          }
+          const { data: subs } = await query;
+
+          if (subs) {
+            const payload = JSON.stringify({
+              title: push.title,
+              body: push.message,
+              image: push.image_url,
+              icon: '/android-chrome-192x192.png',
+              data: { url: `/?utm_campaign=scheduled_push_${push.topic}` }
+            });
+
+            // Wyślij do wszystkich
+            await Promise.all(subs.map(s => 
+              webpush.sendNotification(s.subscription_data, payload).catch(() => null)
+            ));
+          }
+
+          // Zmień status na wysłane
+          await supabase
+            .from('push_history')
+            .update({ status: 'sent', created_at: now })
+            .eq('id', push.id);
         }
-        const { data: subs } = await query;
-
-        if (subs) {
-          const payload = JSON.stringify({
-            title: push.title,
-            body: push.message,
-            image: push.image_url,
-            icon: '/android-chrome-192x192.png',
-            data: { url: `/?utm_campaign=scheduled_push_${push.topic}` }
-          });
-
-          // Wyślij do wszystkich
-          await Promise.all(subs.map(s => 
-            webpush.sendNotification(s.subscription_data, payload).catch(() => null)
-          ));
-        }
-
-        // Zmień status na wysłane
-        await supabase
-          .from('push_history')
-          .update({ status: 'sent', created_at: now })
-          .eq('id', push.id);
+      } else {
+        console.warn('[CRON] Pominięto wysyłkę zaplanowanych powiadomień - brak konfiguracji VAPID.');
       }
     }
 
     // 2. 🧹 SPRZĄTANIE WYGASŁYCH PROMOCJI
-    // Automatycznie wyłącz promocje, których czas minął
     const { error: cleanupError } = await supabase
       .from('promocje')
       .update({ is_active: false })

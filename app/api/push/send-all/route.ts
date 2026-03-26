@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server'; 
 
@@ -14,23 +15,15 @@ export async function POST(req: Request) {
     }
     // ----------------------------------------------
 
-    const { title, message, topic, image } = await req.json();
-
-    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    const privateKey = process.env.VAPID_PRIVATE_KEY;
-
-    if (!publicKey || !privateKey) {
-      console.error('❌ Błąd: Brak kluczy VAPID.');
-      return NextResponse.json({ error: 'Klucze VAPID nie są skonfigurowane.' }, { status: 500 });
+    // 1. Bezpieczna inicjalizacja Web Push
+    const isPushReady = initWebPush();
+    if (!isPushReady) {
+      return NextResponse.json({ error: 'Push service not configured' }, { status: 503 });
     }
 
-    webpush.setVapidDetails(
-      'mailto:kontakt@sklep-urwis.pl',
-      publicKey,
-      privateKey
-    );
+    const { title, message, topic, image } = await req.json();
 
-    // 1. Budowanie zapytania z uwzględnieniem "wszystkie"
+    // 2. Budowanie zapytania z uwzględnieniem "wszystkie"
     let query = supabase
       .from('push_subscriptions')
       .select('subscription_data, endpoint');
@@ -50,10 +43,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, count: 0, message: 'Brak odbiorców' });
     }
 
-    // 2. Przygotowanie linku URL z wyzwalaczem ustawień i UTM
+    // 3. Przygotowanie linku URL z wyzwalaczem ustawień i UTM
     const targetUrl = `/?settings=open&utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}`;
 
-    // 3. Masowa wysyłka
+    // 4. Masowa wysyłka
     const notifications = subs.map((sub: any) => 
       webpush.sendNotification(
         sub.subscription_data,
@@ -61,7 +54,7 @@ export async function POST(req: Request) {
           title: title,
           body: message,
           icon: '/android-chrome-192x192.png',
-          image: image || null, // 🚀 Dodajemy obsługę zdjęcia
+          image: image || null,
           badge: '/badge-icon.png',
           data: { url: targetUrl }
         })
@@ -79,13 +72,14 @@ export async function POST(req: Request) {
 
     await Promise.all(notifications);
 
-    // 4. 🚀 ZAPIS DO HISTORII (abyś widział kampanie w panelu)
+    // 5. Zapis do historii
     await supabase.from('push_history').insert([{
       title: title,
       message: message,
       image_url: image || null,
       topic: topic || 'wszystkie',
-      sent_to_count: subs.length
+      sent_to_count: subs.length,
+      status: 'sent'
     }]);
 
     return NextResponse.json({ 
