@@ -31,22 +31,22 @@
 ## 🛠 Tech Stack
 
 ### Frontend & UI
-*   **Framework:** `Next.js 16` (App Router, React 19)
-*   **Język:** `TypeScript 6.0` (Standard ES2025)
-*   **Stylizacja:** `TailwindCSS` + `Radix UI` / `Shadcn`
-*   **Animacje:** `Framer Motion` + `GSAP` (zaawansowane micro-interactions)
+*   **Framework:** `Next.js 16` (App Router, React 19, Turbopack)
+*   **Język:** `TypeScript 6.0` (Standard ESNext / ES2025)
+*   **Stylizacja:** `TailwindCSS` + `Radix UI`
+*   **Animacje:** `Framer Motion` (zaawansowane micro-interactions)
 *   **Grafika 3D:** `Three.js` + `@react-three/fiber`
 
 ### Backend & AI
 *   **Baza Danych & Auth:** `Supabase` (PostgreSQL) + Realtime
-*   **AI Engine:** `Vercel AI SDK` + `Google Gemini 3.1 Flash Lite Preview`
-*   **PWA Logic:** `Serwist` (Service Workers)
+*   **AI Engine:** `Vercel AI SDK` + `Google Gemini 3.1 Flash Lite`
+*   **PWA Logic:** `Serwist` (Service Worker z obsługą Turbopack)
 
 ---
 
 ## 🛡 Security & Engineering
-*   **Environment Safety:** Wszystkie klucze API i sekrety (Supabase, Google AI, VAPID) są całkowicie odizolowane i zarządzane przez zmienne środowiskowe.
-*   **Rate Limiting:** Ochrona endpointów API przed nadużyciami (IP-based).
+*   **Edge Runtime:** Plik `proxy.ts` (Next.js 16) działający na klastrach Edge Vercel dla minimalizacji opóźnień weryfikacji sesji.
+*   **Environment Safety:** Wszystkie klucze API i sekrety (Supabase, Google AI, VAPID) są całkowicie odizolowane.
 *   **Type Safety:** Projekt w pełni oparty na `TypeScript` z naciskiem na integralność danych.
 
 ---

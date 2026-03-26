@@ -62,7 +62,6 @@ export async function POST(req: Request) {
       await generateText({
         model: google(modelInfo.id),
         prompt: 'ping',
-        maxTokens: 1,
         maxRetries: 0,
       });
 

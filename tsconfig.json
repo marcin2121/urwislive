@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2025", // ✅ Najnowszy standard TS 6.0
+    "target": "ESNext", // ✅ Najnowszy wspierany standard
     "lib": [
       "dom",
       "dom.iterable",
-      "es2025"
+      "esnext"
     ],
     "allowJs": true,
     "skipLibCheck": true,
