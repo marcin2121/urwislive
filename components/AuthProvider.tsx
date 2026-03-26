@@ -23,6 +23,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
   useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     // 1. Pobierz aktualną sesję przy starcie
     const initAuth = async () => {
       try {
@@ -48,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth()
 
     // 2. Nasłuchuj zmian (logowanie, wylogowanie)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
@@ -60,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // --- REJESTRACJA INSTALACJI PWA / APP ---
   useEffect(() => {
     const updatePwaStatus = async () => {
-      if (!session || !user) return;
+      if (!session || !user || !supabase) return;
       
       const isPWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
       

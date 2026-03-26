@@ -8,10 +8,19 @@ import { cookies } from 'next/headers'
  */
 export async function createClient() {
   const cookieStore = await cookies()
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    if (process.env.NODE_ENV !== 'production' || !process.env.CI) {
+      console.warn('⚠️ Supabase Server: Brak kluczy URL/ANON. Klient nie zostanie zainicjalizowany.');
+    }
+    return null as any; // Bezpieczny fallback dla SSR/Build
+  }
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
@@ -24,8 +33,6 @@ export async function createClient() {
             )
           } catch {
             // The "setAll" method was called from a Server Component.
-            // This can be ignored if you have proxy refreshing
-            // user sessions.
           }
         },
       },

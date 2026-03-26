@@ -46,8 +46,8 @@ export async function spinWheel() {
       .eq('user_id', user.id)
       .eq('is_active', true)
 
-    const unspentCoupons = userCurrentCoupons?.filter(c => (c.current_usage || 0) < (c.usage_limit || 1)) || [];
-    const usedTitles = unspentCoupons.map(c => c.title);
+    const unspentCoupons = userCurrentCoupons?.filter((c: any) => (c.current_usage || 0) < (c.usage_limit || 1)) || [];
+    const usedTitles = unspentCoupons.map((c: any) => c.title);
     
     // Filtrujemy nagrody
     const availablePrizes = prizes.filter((p: any) => !usedTitles.includes(p.title));
