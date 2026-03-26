@@ -181,6 +181,7 @@ export default function Navbar() {
             <Link 
               href="/" 
               onClick={() => trackEvent('nawigacja_logo_klikniecie')} 
+              data-testid="nav-logo"
               className="flex items-center gap-0.5 md:gap-1 group shrink-0"
             >
               <div className="relative w-9 h-9 md:w-11 md:h-11 shrink-0 transition-transform group-hover:scale-105">
@@ -281,6 +282,7 @@ export default function Navbar() {
                 <Link 
                   href="/profil" 
                   onClick={() => trackEvent('nawigacja_profil_klikniecie')}
+                  data-testid="nav-profile"
                   className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-50 hover:bg-zinc-100 text-[#0055ff] border-zinc-200"
                 >
                   <span className="text-[11px] font-black uppercase mr-2 text-zinc-700">Profil</span>
@@ -289,6 +291,7 @@ export default function Navbar() {
               ) : (
                 <button 
                   onClick={() => setIsAuthModalOpen(true)}
+                  data-testid="nav-login"
                   className="relative flex items-center justify-center px-4 h-9 rounded-full transition-all group shrink-0 border bg-zinc-900 text-white hover:bg-zinc-800 border-zinc-800 shadow-lg"
                 >
                   <span className="text-[11px] font-black uppercase">Zaloguj</span>
@@ -414,7 +417,13 @@ export default function Navbar() {
               </Link>
   
               {user ? (
-                <Link href="/profil" aria-label="Przejdź do profilu" onClick={() => trackEvent('nawigacja_dolna_profil')} className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}>
+                <Link 
+                  href="/profil" 
+                  aria-label="Przejdź do profilu" 
+                  onClick={() => trackEvent('nawigacja_dolna_profil')} 
+                  data-testid="nav-profile"
+                  className={`flex flex-col items-center gap-1 p-2 w-16 transition-colors ${pathname === '/profil' ? 'text-[#0055ff]' : 'text-zinc-500'}`}
+                >
                   <User size={24} className={pathname === '/profil' ? 'fill-current' : ''} />
                   <span className="text-[9px] font-black uppercase tracking-tighter">Profil</span>
                 </Link>
@@ -422,6 +431,7 @@ export default function Navbar() {
                 <button 
                   onClick={() => { trackEvent('nawigacja_dolna_logowanie'); setIsAuthModalOpen(true); }} 
                   aria-label="Zaloguj się"
+                  data-testid="nav-login"
                   className="flex flex-col items-center gap-1 p-2 w-16 text-zinc-500"
                 >
                   <User size={24} />

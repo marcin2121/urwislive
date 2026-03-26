@@ -99,6 +99,7 @@ export default function UrwisIntro({ children }: { children: React.ReactNode }) 
               <button
                 onClick={skipIntro}
                 aria-label="Pomiń animację wstępną"
+                data-testid="skip-intro"
                 className="absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase tracking-widest text-[12px] hover:bg-white/20 transition-all z-[10000] cursor-pointer"
                 style={{
                   opacity: 0,

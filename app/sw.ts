@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { defaultCache } from "@serwist/next/worker";
+import { defaultCache } from "@serwist/turbopack/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist, CacheFirst, ExpirationPlugin, NetworkOnly } from "serwist";
 import { BackgroundSyncPlugin } from "@serwist/background-sync";
@@ -31,7 +31,7 @@ const serwist = new Serwist({
   fallbacks: {
     entries: [
       {
-        url: "/offline",
+        url: "/~offline",
         matcher({ request }) {
           return request.destination === "document";
         },
@@ -95,71 +95,73 @@ const serwist = new Serwist({
         ],
       }),
     },
-    // Domyślny cache Next.js
+    // Domyślny cache Serwist dla Turbopack
     ...defaultCache,
   ],
 });
 
 serwist.addEventListeners();
 
-// ---- PUSH NOTIFICATION ----
+// Obsługa Push Notifications
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
-  let data: any;
-  try {
-    data = event.data.json();
-  } catch (e) {
-    console.error('[SW] Błąd parsowania push payload:', e);
+  // W SW sprawdzamy dostępność Notification na obiekcie self lub używamy samego registration
+  const anySelf = self as any;
+  if (!(anySelf.Notification && anySelf.Notification.permission === 'granted')) {
     return;
   }
 
-  const options: NotificationOptions & Record<string, unknown> = {
-    body: data.body || '',
-    icon: data.icon || '/android-chrome-192x192.png',
-    badge: data.badge || '/android-chrome-192x192.png',
-    image: data.image || undefined,
-    data: data.data || {},
-    vibrate: [200, 100, 200],
-    tag: data.tag || 'urwis-notification',
-    renotify: true,
-    requireInteraction: false,
-  };
+  if (!event.data) return;
 
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Sklep Urwis', options)
-  );
+  try {
+    const data = event.data.json();
+    const title = data.title || 'Sklep Urwis';
+    const options: any = {
+      body: data.body || 'Masz nową wiadomość!',
+      icon: data.icon || '/android-chrome-192x192.png',
+      badge: data.badge || '/favicon-16x16.png',
+      image: data.image || undefined,
+      vibrate: [100, 50, 100],
+      tag: data.tag || 'urwis-notification',
+      renotify: true,
+      data: {
+        url: data.url || (data.data?.url) || '/'
+      }
+    };
+
+    event.waitUntil(self.registration.showNotification(title, options));
+  } catch (e) {
+    console.error('[SW] Błąd parsowania push payload:', e);
+  }
 });
 
-// ---- KLIKNIĘCIE W POWIADOMIENIE ----
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   const targetUrl = (event.notification.data as any)?.url || '/';
   const fullUrl = new URL(targetUrl, self.location.origin).href;
 
-  // Tracking kliknięcia (fire & forget)
-  fetch('/api/push/track', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'click', url: targetUrl }),
-  }).catch(() => {});
+  // Tracking kliknięcia
+  event.waitUntil(
+    fetch('/api/push/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'click', url: targetUrl }),
+    }).catch(err => console.error('[SW] Błąd trackingu kliknięcia:', err))
+  );
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Jeśli jest już otwarta karta z naszą stroną — focus na nią
-      for (const client of windowClients) {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
         if (client.url === fullUrl && 'focus' in client) {
           return (client as WindowClient).focus();
         }
       }
-      // Jeśli jest jakakolwiek otwarta karta — nawiguj ją
-      for (const client of windowClients) {
-        if ('navigate' in client && 'focus' in client) {
-          return (client as WindowClient).navigate(fullUrl).then((c) => c?.focus());
+      if (clientList.length > 0) {
+        const anyClient = clientList[0] as any;
+        if (anyClient.navigate) {
+            return anyClient.navigate(fullUrl).then((c: any) => c?.focus());
         }
       }
-      // Jeśli nie ma otwartej karty — otwórz nową
       return self.clients.openWindow(fullUrl);
     })
   );

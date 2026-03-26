@@ -10,6 +10,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { PopupProvider } from "@/components/PopupProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClientLayoutComponents } from "@/components/ClientLayoutComponents";
+import { SerwistProvider } from "./lib/client";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,6 +23,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.sklep-urwis.pl'),
+  applicationName: "Sklep Urwis",
   title: {
     default: "Sklep Urwis Białobrzegi | LEGO, Zabawki i Artykuły Szkolne",
     template: "%s | Sklep Urwis Białobrzegi"
@@ -44,6 +46,14 @@ export const metadata: Metadata = {
     "sklep urwis", "lego białobrzegi", "zabawki dla dzieci", "sala zabaw białobrzegi",
     "lece w kulki", "balony z helem", "artykuly szkolne", "reymonta 38a", "zabawki radom"
   ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Sklep Urwis",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     title: "Sklep Urwis Białobrzegi | Królestwo LEGO i Zabawek",
     description: "Wszystko dla Twojego dziecka w jednym miejscu. Najlepsze marki, balony z helem i Sala Zabaw Lecę w Kulki!",
@@ -52,15 +62,15 @@ export const metadata: Metadata = {
     images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "Sklep Urwis Białobrzegi - LEGO i Zabawki" }],
     locale: "pl_PL",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Sklep Urwis Białobrzegi",
-    description: "Zabawki, LEGO, balony z helem i wyprawka szkolna. Najlepszy sklep stacjonarny w regionie!",
-    images: ["/og-image.jpg"],
-  },
-};
-
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Sklep Urwis Białobrzegi",
+      description: "Zabawki, LEGO, balony z helem i wyprawka szkolna. Najlepszy sklep stacjonarny w regionie!",
+      images: ["/og-image.jpg"],
+    },
+  };
+  
 export const viewport: Viewport = {
   themeColor: "#0055ff",
   width: "device-width",
@@ -123,7 +133,7 @@ const schemas = [
       {
         "@type": "Question",
         "name": "Czy w Sklepie Urwis kupię klocki LEGO?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Tak, Sklep Urwis posiada największy wybór klocków LEGO w regionie, w tym serie Technic, City, Ninjago, Star Wars i wiele innych." }
+        "acceptedAnswer": { "@type": "Answer", "text": "Tak, Sklep Urwis posiada największy wybór klocków LEGO in regionie, w tym serie Technic, City, Ninjago, Star Wars i wiele innych." }
       },
       {
         "@type": "Question",
@@ -179,36 +189,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className="antialiased bg-white text-zinc-900 selection:bg-blue-500 selection:text-white h-dvh overflow-hidden" suppressHydrationWarning>
-        <AuthProvider>
-          
-          <PopupProvider>
- 
-            <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
-              <Navbar />
- 
-              {/* Dedykowany obszar przewijania (Mobile Shell) */}
-              <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] overscroll-y-contain pt-[72px] md:pt-32">
-                <div className="relative min-h-full flex flex-col"> 
- 
-                  <main className="grow bg-transparent">
-                    {children}
-                  </main>
- 
-                  <Footer />
-                  
-                  {/* Padding na dole, aby treść nie chowała się pod dolnym menu w PWA */}
-                  <div className="h-20 md:hidden" />
+        <SerwistProvider swUrl="/serwist/sw.js">
+          <AuthProvider>
+            <PopupProvider>
+  
+              <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
+                <Navbar />
+  
+                {/* Dedykowany obszar przewijania (Mobile Shell) */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] overscroll-y-contain pt-[72px] md:pt-32">
+                  <div className="relative min-h-full flex flex-col"> 
+  
+                    <main className="grow bg-transparent">
+                      {children}
+                    </main>
+  
+                    <Footer />
+                    
+                    {/* Padding na dole, aby treść nie chowała się pod dolnym menu w PWA */}
+                    <div className="h-20 md:hidden" />
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <Toaster position="bottom-right" richColors />
-
-            <ClientLayoutComponents />
-            
-            <SpeedInsights />
-          </PopupProvider>
-        </AuthProvider>
+  
+              <Toaster position="bottom-right" richColors />
+  
+              <ClientLayoutComponents />
+              
+              <SpeedInsights />
+            </PopupProvider>
+          </AuthProvider>
+        </SerwistProvider>
 
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -240,24 +251,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 gtag('consent', 'update', {
                   'analytics_storage': e.newValue === 'true' ? 'granted' : 'denied'
                 });
-              }
-            });
-          `}
-        </Script>
-
-        <Script id="register-sw" strategy="lazyOnload">
-          {`
-            const isTestBot = /Lighthouse|Googlebot|PageSpeed/i.test(navigator.userAgent);
-
-            if ('serviceWorker' in navigator && !isTestBot) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js');
-              });
-            }
-
-            window.addEventListener('appinstalled', () => {
-              if (typeof gtag === 'function') {
-                gtag('event', 'pwa_installed', { platform: 'web' });
               }
             });
           `}

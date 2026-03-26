@@ -25,8 +25,8 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* 🚀 POPRAWKA 1: Odkomentowany baseURL */
-    baseURL: 'http://127.0.0.1:3000',
+    /* 🚀 POPRAWKA 1: Ujednolicony baseURL na localhost */
+    baseURL: 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -48,10 +48,11 @@ export default defineConfig({
     },
   ],
 
-  /* 🚀 POPRAWKA 2: Uruchamianie w trybie dev na 127.0.0.1 */
+  /* 🚀 POPRAWKA 2: Stabilniejszy webServer */
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run build && npm run start',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 120000,
   },
 });

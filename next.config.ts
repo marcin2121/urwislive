@@ -1,12 +1,6 @@
 import type { NextConfig } from "next";
-import withSerwistInit from "@serwist/next";
+import { withSerwist } from "@serwist/turbopack";
 import withBundleAnalyzer from "@next/bundle-analyzer";
-
-const withSerwist = withSerwistInit({
-  swSrc: "app/sw.ts",
-  swDest: "public/sw.js",
-  disable: process.env.NODE_ENV === "development",
-});
 
 const withAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -32,7 +26,6 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          // { key: 'X-Frame-Options', value: 'SAMEORIGIN' }, // Usunięte na rzecz CSP frame-ancestors
           { key: 'Content-Security-Policy', value: "frame-ancestors 'self' http://localhost:3000 https://molendadevelopment.pl" },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
