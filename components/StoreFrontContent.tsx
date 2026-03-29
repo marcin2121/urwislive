@@ -86,7 +86,7 @@ export default function StoreFrontContent() {
       setShowParticles(true);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [hasGpu]);
+  }, [hasGpu, setShowParticles]);
 
   return (
     <UrwisIntro>

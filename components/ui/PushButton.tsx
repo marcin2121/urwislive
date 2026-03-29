@@ -119,7 +119,7 @@ export default function PushButton() {
       finalTopics = ['wszystkie'];
     } else {
       const currentSpecific = selectedTopics.filter(t => t !== 'wszystkie');
-      let nextSpecific = currentSpecific.includes(id)
+      const nextSpecific = currentSpecific.includes(id)
         ? currentSpecific.filter(t => t !== id)
         : [...currentSpecific, id];
 

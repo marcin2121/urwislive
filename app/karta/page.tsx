@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/AuthProvider' // Zaciągamy nasz globalny stan!
@@ -10,12 +10,20 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 
 
+interface LoyaltyCard {
+  id: string;
+  phone_number: string;
+  full_name: string;
+  points: number;
+  stamps_count?: number;
+}
+
 export default function LoyaltyCardPage() {
   const supabase = createClient()
   const { session, user, isLoading: isAuthLoading } = useAuth() // Magia!
   
   // --- STATE ---
-  const [card, setCard] = useState<any>(null)
+  const [card, setCard] = useState<LoyaltyCard | null>(null)
   const [loadingCard, setLoadingCard] = useState(true)
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [formLoading, setFormLoading] = useState(false)
@@ -25,17 +33,7 @@ export default function LoyaltyCardPage() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
 
-  // Jeśli sesja się zmieni (zalogowano/wylogowano), pobieramy lub czyścimy kartę
-  useEffect(() => {
-    if (session && user) {
-      fetchCard(user.user_metadata.phone, user.user_metadata.full_name)
-    } else {
-      setCard(null)
-      setLoadingCard(false)
-    }
-  }, [session, user])
-
-  const fetchCard = async (userPhone: string, userName: string) => {
+  const fetchCard = useCallback(async (userPhone: string, userName: string) => {
     setLoadingCard(true)
     if (!supabase) return
     try {
@@ -50,11 +48,22 @@ export default function LoyaltyCardPage() {
         if (!error) setCard(newCard)
       }
     } catch (error) {
+      console.error("fetchCard error:", error)
       toast.error("Błąd połączenia z bazą danych.")
     } finally {
       setLoadingCard(false)
     }
-  }
+  }, [supabase])
+
+  // Jeśli sesja się zmieni (zalogowano/wylogowano), pobieramy lub czyścimy kartę
+  useEffect(() => {
+    if (session && user) {
+      fetchCard(user.user_metadata.phone, user.user_metadata.full_name)
+    } else {
+      setCard(null)
+      setLoadingCard(false)
+    }
+  }, [session, user, fetchCard])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,10 +94,11 @@ export default function LoyaltyCardPage() {
           if (error) throw error
           toast.success("Konto utworzone! 🎉")
         }
-      } catch (error: any) {
-        console.error("Szczegóły błędu:", error)
+      } catch (error) {
+        const err = error as any
+        console.error("Szczegóły błędu:", err)
         // Jeśli błąd to 500, to prawdopodobnie problem po stronie bazy (Trigger)
-        toast.error(error.message || "Błąd serwera. Spróbuj ponownie.")
+        toast.error(err.message || "Błąd serwera. Spróbuj ponownie.")
       } finally {
         setFormLoading(false)
       }

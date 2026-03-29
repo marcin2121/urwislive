@@ -17,7 +17,7 @@ export const URWIS_ACHIEVEMENTS: Achievement[] = [
 
 export function checkAchievements(petState: any, actionType?: string) {
   const currentAchievements: string[] = petState.achievements || [];
-  let newUnlocks: string[] = [];
+  const newUnlocks: string[] = [];
   let newPoints = 0;
 
   URWIS_ACHIEVEMENTS.forEach(ach => {

@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth()
 
     // 2. Nasłuchuj zmian (logowanie, wylogowanie)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: any) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updatePwaStatus = async () => {
       if (!session || !user || !supabase) return;
       
-      const isPWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as Navigator & { standalone?: boolean }).standalone;
       
       if (isPWA && !user.user_metadata?.has_pwa) {
          try {

@@ -779,7 +779,7 @@ export function useKlocki(playerName: string) {
           0,
         ) ?? 0;
 
-      let base = placedBlocks * 10 + clearedCells * 15;
+      const base = placedBlocks * 10 + clearedCells * 15;
 
       if (clearedCells > 0) {
         streakRef.current += 1;

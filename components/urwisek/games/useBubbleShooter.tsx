@@ -627,7 +627,7 @@ export function useBubbleShooter(playerName: string) {
     let px = startX;
     let py = startY;
     let dx = Math.cos(angle);
-    let dy = Math.sin(angle);
+    const dy = Math.sin(angle);
     const RayLengthMultiplier = 600;
 
     ctx.beginPath();
@@ -641,7 +641,7 @@ export function useBubbleShooter(playerName: string) {
 
     while (pathLen < RayLengthMultiplier && !hitGrid) {
       let nextX = px + dx * 10;
-      let nextY = py + dy * 10;
+      const nextY = py + dy * 10;
 
       if (nextX - BALL_RADIUS <= 0) {
         nextX = BALL_RADIUS;

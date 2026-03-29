@@ -82,8 +82,8 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
         setSuccessMessage("Link do zresetowania hasła został wysłany na Twój e-mail!");
         setView('login');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Wystąpił nieoczekiwany błąd logowania.");
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +101,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
         }
       });
       if (error) throw error;
-    } catch (err: any) {
+    } catch (err) {
       setError(`Błąd logowania przez ${provider === 'google' ? 'Google' : 'Facebook'}.`);
       setIsLoading(false);
     }

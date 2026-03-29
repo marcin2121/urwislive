@@ -129,11 +129,12 @@ export default function WelcomeScreen() {
       } else if (permission === 'denied') {
         alert("Powiadomienia są zablokowane 🔕\nAby otrzymywać kody rabatowe, włącz je w ustawieniach przeglądarki lub systemu.");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Błąd subskrypcji:', error);
+      const errorMsg = error instanceof Error ? error.message : '';
       // Nie pokazujemy alertu dla timeoutu SW — to nie wina usera
-      if (error?.message && !error.message.includes('timeout')) {
-        alert(error.message || "Nie udało się uruchomić powiadomień. Możesz je włączyć później.");
+      if (errorMsg && !errorMsg.includes('timeout')) {
+        alert(errorMsg || "Nie udało się uruchomić powiadomień. Możesz je włączyć później.");
       }
     } finally {
       // 🚀 ZMIANA KRYTYCZNA: always close

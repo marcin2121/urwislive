@@ -195,7 +195,7 @@ export default function ProfilePage() {
       newTopics = selectedTopics.includes('wszystkie') ? [] : ['wszystkie'];
     } else {
       const currentSpecific = selectedTopics.filter(t => t !== 'wszystkie');
-      let nextSpecific = currentSpecific.includes(topicId) ? currentSpecific.filter(t => t !== topicId) : [...currentSpecific, topicId];
+      const nextSpecific = currentSpecific.includes(topicId) ? currentSpecific.filter(t => t !== topicId) : [...currentSpecific, topicId];
       newTopics = (nextSpecific.length === specificTopicIds.length || nextSpecific.length === 0) ? ['wszystkie'] : nextSpecific;
     }
 

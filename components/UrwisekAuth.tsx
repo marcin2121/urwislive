@@ -44,9 +44,10 @@ export default function UrwisekAuth() {
       // Sukces! Odświeżamy stronę, co sprawi, że Next.js zorientuje się, 
       // że mamy sesję i płynnie przerzuci nas do UrwisekLobby
       router.refresh()
-    } catch (err: any) {
-      if (err.message.includes('Invalid login')) setError('Nieprawidłowy email lub hasło.')
-      else if (err.message.includes('already registered')) setError('Ten email jest już zarejestrowany!')
+    } catch (err) {
+      const error = err as any
+      if (error.message.includes('Invalid login')) setError('Nieprawidłowy email lub hasło.')
+      else if (error.message.includes('already registered')) setError('Ten email jest już zarejestrowany!')
       else setError('Wystąpił błąd. Spróbuj ponownie.')
     } finally {
       setLoading(false)
@@ -65,7 +66,7 @@ export default function UrwisekAuth() {
         }
       })
       if (error) throw error
-    } catch (err: any) {
+    } catch (err) {
       setError(`Błąd logowania przez ${provider === 'google' ? 'Google' : 'Facebook'}.`)
       setLoading(false)
     }

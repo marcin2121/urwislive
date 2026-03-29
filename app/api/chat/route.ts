@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     { id: 'gemini-3-flash', name: 'Gemini 3 Flash (RPD: 20)' }
   ];
 
-  let lastError = null;
+  let lastError: unknown = null;
 
   for (const modelInfo of modelsToTry) {
     try {
@@ -89,14 +89,15 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
 
       return result.toUIMessageStreamResponse();
       
-    } catch (error: any) {
+    } catch (error) {
       lastError = error;
-      const errorMsg = error.message?.toLowerCase() || '';
+      const errorMsg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+      const status = (error as any)?.status;
       const isOverloaded = errorMsg.includes('high demand') || 
                            errorMsg.includes('overloaded') || 
                            errorMsg.includes('unavailable') ||
-                           error.status === 429 || 
-                           error.status === 503;
+                           status === 429 || 
+                           status === 503;
 
       
       if (isOverloaded && modelInfo !== modelsToTry[modelsToTry.length - 1]) {
@@ -112,7 +113,7 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
   return new Response(
     JSON.stringify({ 
       error: 'Wszystkie modele AI są obecnie bardzo obciążone. Spróbuj ponownie za chwilę.',
-      details: lastError?.message 
+      details: lastError instanceof Error ? lastError.message : String(lastError) 
     }),
     { status: 503 }
   );

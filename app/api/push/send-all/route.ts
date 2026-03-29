@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     const targetUrl = `/?settings=open&utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}`;
 
     // 4. Masowa wysyłka
-    const notifications = subs.map((sub: any) => 
+    const notifications = (subs as { subscription_data: webpush.PushSubscription; endpoint: string }[]).map((sub) => 
       webpush.sendNotification(
         sub.subscription_data,
         JSON.stringify({
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
       category: topic || 'wszystkie'
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ Krytyczny błąd Push API:', error);
     return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
   }

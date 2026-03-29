@@ -72,7 +72,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
   }
 
   // 6. ZAPIS DO BAZY (DOKŁADNE POLA)
-  let updates: any = {
+  const updates: any = {
     urwis_coins: Math.floor(Math.max(0, (pet.urwis_coins || 0) + coinDelta)),
     golden_urwis: Math.floor((pet.golden_urwis || 0) + goldenUrwisAdd),
     points_earned: Math.floor(newTotalExp),
@@ -404,7 +404,7 @@ export async function buyUrwisItem(itemId: string) {
   const currentCoins = pet.urwis_coins || 0
   if (currentCoins < itemDef.price) return { error: 'Brak wystarczającej liczby monet.' }
 
-  let updates: any = {
+  const updates: any = {
     urwis_coins: currentCoins - itemDef.price
   }
 
@@ -508,7 +508,7 @@ export async function finishArcadeGame(gameId: string) {
     coinsEarned += 100 // Mały bonus za Level Up
   }
 
-  let updates: any = {
+  const updates: any = {
     urwis_coins: Math.floor((pet.urwis_coins || 0) + coinsEarned),
     points_earned: Math.floor(newTotalExp),
     level: Math.floor(newLvl)
@@ -555,7 +555,7 @@ export async function claimQuestReward(questId: string, rewardCoins: number) {
      return { error: 'Nagroda została już odebrana!' }
   }
 
-  let updates: any = {
+  const updates: any = {
     urwis_coins: Math.floor((pet.urwis_coins || 0) + rewardCoins),
     // Zapiszmy id zadania jako ukończone w nowej kolumnie tekstowej jsonb
     completed_quests: [...completedArray, questId] 

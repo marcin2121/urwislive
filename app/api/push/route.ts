@@ -21,7 +21,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Zbyt wiele zapytań' }, { status: 429 });
     }
 
-    const { subscription, title, message, topic } = await req.json();
+    const { subscription, title, message, topic } = await req.json() as {
+      subscription: webpush.PushSubscription;
+      title: string;
+      message: string;
+      topic?: string;
+    };
 
     await webpush.sendNotification(
       subscription,
