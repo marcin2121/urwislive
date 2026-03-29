@@ -702,6 +702,8 @@ export function useBubbleShooter(playerName: string) {
     ctx.stroke();
   }, []);
 
+  const renderRef = useRef<() => void>(() => {});
+
   const render = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -800,8 +802,10 @@ export function useBubbleShooter(playerName: string) {
       }
     }
 
-    animationRef.current = requestAnimationFrame(render);
+    animationRef.current = requestAnimationFrame(renderRef.current);
   }, [isStarted, updatePhysics, drawTrajectory]);
+
+  renderRef.current = render;
 
   useEffect(() => {
     if (isStarted && !gameOver) {

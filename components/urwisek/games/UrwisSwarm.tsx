@@ -312,6 +312,8 @@ export default function UrwisSwarm() {
     setHasLoaded(true);
   }, []);
 
+  const gameStepRef = useRef<() => void>(() => {});
+
   // --- GAME LOOP ---
   const gameStep = useCallback(() => {
     const now = Date.now();
@@ -350,8 +352,10 @@ export default function UrwisSwarm() {
       }
     }
 
-    reqRef.current = requestAnimationFrame(gameStep);
+    reqRef.current = requestAnimationFrame(gameStepRef.current);
   }, []);
+
+  gameStepRef.current = gameStep;
 
   useEffect(() => {
     if (hasLoaded) {

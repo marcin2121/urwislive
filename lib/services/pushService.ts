@@ -85,7 +85,7 @@ export class PushService {
 
     initWebPush();
 
-    const notifications = subs.map((sub: { endpoint: string, subscription_data: any }) => 
+    const notifications = subs.map((sub: { endpoint: string, subscription_data: unknown }) => 
       webpush.sendNotification(sub.subscription_data as webpush.PushSubscription, payload).catch(async (err) => {
         // If 410 (Gone) or 404 (Not Found), the subscription is no longer valid
         if (err.statusCode === 410 || err.statusCode === 404) {
@@ -131,7 +131,7 @@ export class PushService {
   /**
    * Send a welcome notification.
    */
-  static async sendWelcomeNotification(subscription: any): Promise<void> {
+  static async sendWelcomeNotification(subscription: webpush.PushSubscription): Promise<void> {
     const payload = JSON.stringify({
       title: 'Przybita piątka! Urwis melduje się 🐾',
       body: 'Kliknij i wybierz: Sklep czy Sala Zabaw! 🐾',
@@ -143,6 +143,6 @@ export class PushService {
     });
 
     initWebPush();
-    await webpush.sendNotification(subscription as webpush.PushSubscription, payload);
+    await webpush.sendNotification(subscription, payload);
   }
 }

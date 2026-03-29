@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /** 
  * Singleton cache for GPU status to avoid redundant checks
@@ -9,14 +9,12 @@ import { useState, useEffect } from 'react';
 let cachedGpuStatus: boolean | null = null;
 
 export function useGpuAcceleration() {
-  const [hasGpu, setHasGpu] = useState<boolean>(cachedGpuStatus ?? true);
-
-  useEffect(() => {
-    // If we already know the status, don't perform the check again
-    if (cachedGpuStatus !== null) return;
+  const [hasGpu] = useState<boolean>(() => {
+    // If SSR or already cached, return value immediately
+    if (typeof window === 'undefined') return true;
+    if (cachedGpuStatus !== null) return cachedGpuStatus;
 
     const checkGpu = (): boolean => {
-      if (typeof window === 'undefined') return true;
       try {
         const canvas = document.createElement('canvas');
         const gl = (canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true }) || 
@@ -45,10 +43,8 @@ export function useGpuAcceleration() {
 
     const status = checkGpu();
     cachedGpuStatus = status;
-    if (status !== true) {
-       setHasGpu(status);
-    }
-  }, []);
+    return status;
+  });
 
   return hasGpu;
 }
