@@ -8,11 +8,11 @@ declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   }
-  interface ServiceWorkerGlobalScope {
-    Notification: typeof Notification;
-  }
 }
 
+// NOTE: We don't need to re-declare self if we have the reference lib webworker,
+// but for standard TS in Next.js it helps to be explicit or use 'as any' ONLY at the boundary.
+// Given user request to use declare const self: ServiceWorkerGlobalScope;
 declare const self: ServiceWorkerGlobalScope;
 
 // 🚀 KONFIGURACJA KOLEJKI OFFLINE (PUNKTY)
@@ -107,7 +107,8 @@ serwist.addEventListeners();
 
 // Obsługa Push Notifications
 self.addEventListener('push', (event) => {
-  if (!(self.Notification && self.Notification.permission === 'granted')) {
+  // Sprawdź czy przeglądarka wspiera powiadomienia (Service Worker standard)
+  if (!('registration' in self) || !('showNotification' in self.registration)) {
     return;
   }
 
@@ -116,7 +117,10 @@ self.addEventListener('push', (event) => {
   try {
     const data = event.data.json();
     const title = data.title || 'Sklep Urwis';
-    const options: any = {
+    
+    // Używamy casting do any jedynie przy tworzeniu opcji, 
+    // aby uniknąć problemu z brakującymi polami typa w domyślnym TS (np. image we wcześniejszych wersjach)
+    const options: NotificationOptions & Record<string, any> = {
       body: data.body || 'Masz nową wiadomość!',
       icon: data.icon || '/android-chrome-192x192.png',
       badge: data.badge || '/favicon-16x16.png',
@@ -130,15 +134,15 @@ self.addEventListener('push', (event) => {
     };
 
     event.waitUntil(self.registration.showNotification(title, options));
-  } catch (e) {
-    console.error('[SW] Błąd parsowania push payload:', e);
+  } catch (error) {
+    console.error('[SW] Błąd parsowania push payload:', error);
   }
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const targetUrl = event.notification.data?.url || '/';
+  const targetUrl = (event.notification.data as { url?: string })?.url || '/';
   const fullUrl = new URL(targetUrl, self.location.origin).href;
 
   // Tracking kliknięcia
@@ -158,9 +162,9 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       if (clientList.length > 0) {
-        const anyClient = clientList[0];
+        const anyClient = clientList[0] as WindowClient;
         if ('navigate' in anyClient) {
-            return (anyClient as WindowClient).navigate(fullUrl).then((c) => c?.focus());
+            return anyClient.navigate(fullUrl).then((c) => c?.focus());
         }
       }
       return self.clients.openWindow(fullUrl);

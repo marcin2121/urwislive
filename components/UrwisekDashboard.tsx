@@ -15,11 +15,13 @@ import AchievementsPanel from './urwisek/AchievementsPanel'
 import PetDisplay from './urwisek/PetDisplay'
 import RankingModal from './urwisek/RankingModal'
 
+import { cn } from '@/lib/utils'
+import { RankingItem } from '@/types/urwis'
+
 // Importy logiki i akcji
 import { interactWithUrwis, claimDailyLogin, getUrwisRanking, buyUrwisItem, toggleUrwisItem, finishArcadeGame, claimQuestReward } from '@/app/actions/tamagotchi'
 import { calculateDecay } from '@/lib/urwis/engine'
 import { SHOP_ITEMS } from '@/lib/urwis/items'
-import { cn } from '@/lib/utils'
 
 export interface PetState {
   playerName: string
@@ -57,7 +59,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   const [showSmile, setShowSmile] = useState(false)
   const [levelUpData, setLevelUpData] = useState<{show: boolean, lvl: number} | null>(null)
   const [showLoginBonus, setShowLoginBonus] = useState(false)
-  const [rankingData, setRankingData] = useState<any[]>([])
+  const [rankingData, setRankingData] = useState<RankingItem[]>([])
   const [isRankingOpen, setIsRankingOpen] = useState(false)
   
   const lastTickRef = useRef(Date.now());
@@ -130,21 +132,28 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
   const handleAction = async (type: 'feed' | 'wash' | 'play') => {
     startTransition(async () => {
       const res = await interactWithUrwis(type)
+
+      if ('error' in res) {
+        alert(res.error)
+        setActiveMode('none')
+        return
+      }
+
       if (res.success && res.reward) {
         if (res.newState) {
           lastTickRef.current = Date.now();
           setState(prev => ({
             ...prev,
-            hunger: res.newState!.hunger ?? prev.hunger,
-            hygiene: res.newState!.hygiene ?? prev.hygiene,
-            happiness: res.newState!.happiness ?? prev.happiness,
-            urwisCoins: res.newState!.urwisCoins,
-            level: res.newState!.level,
-            points_earned: res.newState!.points_earned,
-            goldenUrwis: res.newState!.goldenUrwis,
-            lastInteraction: res.newState!.lastInteraction,
+            hunger: res.newState!.hunger_level ?? prev.hunger,
+            hygiene: res.newState!.hygiene_level ?? prev.hygiene,
+            happiness: res.newState!.happiness_level ?? prev.happiness,
+            urwisCoins: res.newState!.urwis_coins ?? prev.urwisCoins,
+            level: res.newState!.level ?? prev.level,
+            points_earned: res.newState!.points_earned ?? prev.points_earned,
+            goldenUrwis: res.newState!.golden_urwis ?? prev.goldenUrwis,
+            lastInteraction: res.newState!.last_interaction ?? prev.lastInteraction,
             inventory: res.newState!.inventory ?? prev.inventory,
-            equippedItems: res.newState!.equippedItems ?? prev.equippedItems,
+            equippedItems: res.newState!.equipped_items ?? prev.equippedItems,
           }))
         }
         setShowSmile(true)
@@ -153,7 +162,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
         setActiveMode('none')
         
         if (res.newAchievements && res.newAchievements.length > 0) {
-           setTimeout(() => alert(`🏆 Odblokowano nowe osiągnięcie! (${res.newAchievements.length})`), 500)
+           setTimeout(() => alert(`🏆 Odblokowano nowe osiągnięcie! (${res.newAchievements?.length})`), 500)
         }
 
         setTimeout(() => {
@@ -162,9 +171,6 @@ export default function UrwisekDashboard({ initialState }: { initialState: PetSt
         if (res.leveledUp) {
           setLevelUpData({ show: true, lvl: res.newState?.level || state.level + 1 })
         }
-      } else if (res.error) {
-        alert(res.error)
-        setActiveMode('none')
       }
     })
   }

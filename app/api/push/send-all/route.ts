@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
-export const dynamic = 'force-dynamic';
-import { initWebPush } from '@/lib/push-server';
-import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server'; 
+import { sendAllPushSchema } from '@/lib/validations/push';
+import { PushService } from '@/lib/services/pushService';
+import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
+/**
+ * Handle POST requests to broadcast push notifications.
+ * 
+ * Verifies admin identity, validates payload with Zod, and delegates to PushService.
+ */
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
@@ -11,90 +18,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 });
     }
     
-    // --- ZABEZPIECZENIE: Weryfikacja tożsamości ---
+    // 1. Authorization: Only admin can broadcast
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.email !== 'admin@sklep-urwis.pl') {
-      console.error('❌ Nieautoryzowana próba wysłania masowego Pusha!');
+      console.warn('[API/Push/SendAll] Unauthorized attempt by:', user?.email || 'unknown');
       return NextResponse.json({ error: 'Brak dostępu' }, { status: 403 });
     }
-    // ----------------------------------------------
 
-    // 1. Bezpieczna inicjalizacja Web Push
-    const isPushReady = initWebPush();
-    if (!isPushReady) {
-      return NextResponse.json({ error: 'Push service not configured' }, { status: 503 });
+    // 2. Body parsing and Zod validation
+    const json = await req.json();
+    const validation = sendAllPushSchema.safeParse(json);
+
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: 'Invalid request payload', 
+        details: validation.error.format() 
+      }, { status: 400 });
     }
 
-    const { title, message, topic, image } = await req.json();
-
-    // 2. Budowanie zapytania z uwzględnieniem "wszystkie"
-    let query = supabase
-      .from('push_subscriptions')
-      .select('subscription_data, endpoint');
-
-    if (topic && topic !== 'wszystkie') {
-      // Szukamy tych z konkretnym tematem LUB tych, którzy chcą wszystko
-      const filterStr = 'topics.cs.{"' + topic + '"},topics.cs.{"wszystkie"}';
-      query = query.or(filterStr);
-    }
-
-    const { data: subs, error: dbError } = await query;
-
-    if (dbError) {
-      return NextResponse.json({ error: `Błąd bazy: ${dbError.message}` }, { status: 500 });
-    }
-
-    if (!subs || subs.length === 0) {
-      return NextResponse.json({ success: true, count: 0, message: 'Brak odbiorców' });
-    }
-
-    // 3. Przygotowanie linku URL z wyzwalaczem ustawień i UTM
-    const targetUrl = `/?settings=open&utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}`;
-
-    // 4. Masowa wysyłka
-    const notifications = (subs as { subscription_data: webpush.PushSubscription; endpoint: string }[]).map((sub) => 
-      webpush.sendNotification(
-        sub.subscription_data,
-        JSON.stringify({
-          title: title,
-          body: message,
-          icon: '/android-chrome-192x192.png',
-          image: image || null,
-          badge: '/badge-icon.png',
-          data: { url: targetUrl }
-        })
-      ).catch(async (err) => {
-        // Usuwanie wygasłych tokenów (status 404/410)
-        if (err.statusCode === 404 || err.statusCode === 410) {
-          console.log(`[CLEANUP] Usuwanie urządzenia: ${sub.endpoint}`);
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('endpoint', sub.endpoint);
-        }
-      })
-    );
-
-    await Promise.all(notifications);
-
-    // 5. Zapis do historii
-    await supabase.from('push_history').insert([{
-      title: title,
-      message: message,
-      image_url: image || null,
-      topic: topic || 'wszystkie',
-      sent_to_count: subs.length,
-      status: 'sent'
-    }]);
+    // 3. Delegation to PushService
+    const result = await PushService.broadcast(validation.data);
 
     return NextResponse.json({ 
       success: true, 
-      count: subs.length,
-      category: topic || 'wszystkie'
+      count: result.count,
+      category: result.category
     });
 
   } catch (error) {
-    console.error('❌ Krytyczny błąd Push API:', error);
-    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
+    console.error('[API/Push/SendAll] Critical error:', error);
+    
+    const message = error instanceof Error ? error.message : 'Wewnętrzny błąd serwera';
+    const status = message.includes('not configured') ? 503 : 500;
+    
+    return NextResponse.json({ 
+      success: false, 
+      error: message 
+    }, { status });
   }
 }

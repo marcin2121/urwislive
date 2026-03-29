@@ -5,135 +5,35 @@ import { revalidatePath } from 'next/cache'
 import { calculateDecay, getXPForLevel } from '@/lib/urwis/engine'
 import { SHOP_ITEMS } from '@/lib/urwis/items'
 import { checkAchievements } from '@/lib/urwis/achievements'
+import { UrwisService } from '@/lib/services/urwisService';
+import { urwisInteractSchema, UrwisAction } from '@/lib/validations/urwis';
 
-export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
+export async function interactWithUrwis(actionType: UrwisAction) {
+  // 1. Validation
+  const validation = urwisInteractSchema.safeParse({ actionType });
+  if (!validation.success) {
+    return { error: 'Invalid action type.' }
+  }
+
   const supabase = await createClient()
   if (!supabase) return { error: 'Błąd konfiguracji bazy danych.' }
+  
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Zaloguj się!' }
 
-  const { data: pet, error: fetchError } = await supabase
-    .from('urwis_pet')
-    .select('*')
-    .eq('user_id', user.id)
-    .single()
+  try {
+    const pet = await UrwisService.getPet(supabase, user.id);
+    const result = await UrwisService.processInteraction(supabase, user.id, pet, actionType);
 
-  if (fetchError || !pet) return { error: 'Nie znaleziono Urwiska.' }
-
-  const now = new Date()
-  
-  // 1. BEZPIECZNE OBLICZANIE CZASU
-  const lastUpdate = pet.last_interaction ? new Date(pet.last_interaction).getTime() : now.getTime();
-  const secondsPassed = Math.floor((now.getTime() - lastUpdate) / 1000);
-
-  // 2. PRZELICZENIE STANU (CATCH-UP)
-  const currentHunger = calculateDecay(pet.hunger_level, secondsPassed);
-  const currentHygiene = calculateDecay(pet.hygiene_level, secondsPassed);
-  const currentHappiness = calculateDecay(pet.happiness_level, secondsPassed);
-
-  // 3. BLOKADA 80%
-  const statToUpgrade = actionType === 'feed' ? currentHunger : (actionType === 'wash' ? currentHygiene : currentHappiness);
-  if (statToUpgrade >= 80) return { error: 'Urwis nie potrzebuje tego teraz!' }
-
-  // 4. EKONOMIA I XP
-  const dateField = actionType === 'feed' ? 'last_fed_at' : (actionType === 'wash' ? 'last_washed_at' : 'last_played_at');
-  const lastActionDate = pet[dateField] ? new Date(pet[dateField]) : new Date(0);
-  const isFirstThisActionToday = lastActionDate.toDateString() !== now.toDateString();
-
-  let coinDelta = 0;
-  let expToAdd = 50;
-  const currentLvl = pet.level || 1;
-  const nextLvlThreshold = getXPForLevel(currentLvl);
-
-  if (isFirstThisActionToday) {
-    expToAdd = Math.floor(nextLvlThreshold * 0.0833);
-  }
-
-  if (actionType === 'feed') {
-    coinDelta = -40;
-    if ((pet.urwis_coins || 0) < 40) return { error: 'Masz za mało monet (potrzeba 40)!' }
-  } else {
-    coinDelta = 20;
-    if (isFirstThisActionToday) coinDelta += 20;
-  }
-
-  // 5. LEVEL UP
-  let newTotalExp = (pet.points_earned || 0) + expToAdd;
-  let newLvl = currentLvl;
-  let leveledUp = false;
-  let goldenUrwisAdd = 0;
-
-  if (newTotalExp >= nextLvlThreshold) {
-    leveledUp = true;
-    newLvl += 1;
-    newTotalExp -= nextLvlThreshold;
-    goldenUrwisAdd = 5;
-    coinDelta += 100;
-  }
-
-  // 6. ZAPIS DO BAZY (DOKŁADNE POLA)
-  const updates: any = {
-    urwis_coins: Math.floor(Math.max(0, (pet.urwis_coins || 0) + coinDelta)),
-    golden_urwis: Math.floor((pet.golden_urwis || 0) + goldenUrwisAdd),
-    points_earned: Math.floor(newTotalExp),
-    level: Math.floor(newLvl),
-    last_interaction: now.toISOString(),
-    [dateField]: now.toISOString(),
-    hunger_level: Math.round(actionType === 'feed' ? Math.min(100, currentHunger + 20) : currentHunger),
-    hygiene_level: Math.round(actionType === 'wash' ? Math.min(100, currentHygiene + 20) : currentHygiene),
-    happiness_level: Math.round(actionType === 'play' ? Math.min(100, currentHappiness + 20) : currentHappiness),
-  }
-
-  // --- ACHIEVEMENT CHECK ---
-  const currentPetStateForAchievements = {
-    ...pet,
-    level: Math.floor(newLvl),
-    urwis_coins: Math.floor(Math.max(0, (pet.urwis_coins || 0) + coinDelta))
-  };
-  const { newUnlocks, pointsGained } = checkAchievements(currentPetStateForAchievements, actionType);
-  if (newUnlocks.length > 0) {
-     updates.achievements = [...(pet.achievements || []), ...newUnlocks];
-     updates.achievement_points = (pet.achievement_points || 0) + pointsGained;
-  }
-
-  // --- QUEST PROGRESS ---
-  const qProgress = pet.quest_progress || {};
-  let questId = '';
-  if (actionType === 'feed') questId = 'q_feed_3';
-  if (actionType === 'play') questId = 'q_play';
-  if (actionType === 'wash') questId = 'q_wash_3';
-  
-  if (questId) {
-    updates.quest_progress = { ...qProgress, [questId]: (qProgress[questId] || 0) + 1 };
-  }
-
-  const { error: updateError } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id);
-
-  if (updateError) {
-    console.error('BŁĄD SUPABASE:', updateError);
-    return { error: `Błąd zapisu: ${updateError.message}` }
-  }
-
-  return {
-    success: true,
-    leveledUp,
-    reward: { coins: coinDelta, exp: expToAdd, isDailyBonus: isFirstThisActionToday },
-    newAchievements: newUnlocks,
-    newState: {
-      hunger: updates.hunger_level,
-      hygiene: updates.hygiene_level,
-      happiness: updates.happiness_level,
-      urwisCoins: updates.urwis_coins,
-      level: updates.level,
-      points_earned: updates.points_earned,
-      goldenUrwis: updates.golden_urwis,
-      lastInteraction: updates.last_interaction,
-      inventory: pet.inventory || [],
-      equippedItems: pet.equipped_items || {},
-      achievements: updates.achievements || pet.achievements || [],
-      achievementPoints: updates.achievement_points || pet.achievement_points || 0,
-      questProgress: updates.quest_progress || pet.quest_progress || {}
+    if (result.success) {
+      revalidatePath('/strefa-zabawy/urwisek');
     }
+
+    return result;
+  } catch (error) {
+    console.error('[Action/Interact] Error:', error);
+    const message = error instanceof Error ? error.message : 'Wystąpił nieoczekiwany błąd.';
+    return { error: message };
   }
 }
 

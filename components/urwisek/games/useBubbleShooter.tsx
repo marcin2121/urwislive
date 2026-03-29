@@ -11,6 +11,7 @@ import {
   submitBubbleShooterScore,
   getBubbleShooterRanking,
 } from '@/app/actions/tamagotchi';
+import { RankingItem } from '@/types/urwis';
 
 // Konfiguracja geometrii i gry
 export const COLORS = ['#bf2024', '#0055ff', '#22c54e', '#eab308', '#a855f7', '#f97316'];
@@ -93,7 +94,7 @@ export function useBubbleShooter(playerName: string) {
   const missesRef = useRef(0);
   const [rewardMsg, setRewardMsg] = useState<string | null>(null);
 
-  const [rankingData, setRankingData] = useState<any[]>([]);
+  const [rankingData, setRankingData] = useState<RankingItem[]>([]);
   const [rankingStatusMessage, setRankingStatusMessage] = useState<string | null>(null);
   const [isSubmittingScore, setIsSubmittingScore] = useState(false);
 
@@ -801,6 +802,14 @@ export function useBubbleShooter(playerName: string) {
     return () => cancelAnimationFrame(animationRef.current);
   }, [isStarted, gameOver, render]);
 
+  const swapBalls = useCallback(() => {
+    if (!isStarted || flyingBall.current || !currentBall.current || !nextBall.current) return;
+    const tc = currentBall.current.color;
+    currentBall.current.color = nextBall.current.color;
+    nextBall.current.color = tc;
+    setNextColorUI(nextBall.current.color);
+  }, [isStarted]);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.code === 'Space' || e.code === 'ShiftLeft') {
@@ -810,7 +819,7 @@ export function useBubbleShooter(playerName: string) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  });
+  }, [swapBalls]);
 
   const updateMousePos = (
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
@@ -918,13 +927,6 @@ export function useBubbleShooter(playerName: string) {
     handleInteractionStart(e);
   };
 
-  const swapBalls = () => {
-    if (!isStarted || flyingBall.current || !currentBall.current || !nextBall.current) return;
-    const tc = currentBall.current.color;
-    currentBall.current.color = nextBall.current.color;
-    nextBall.current.color = tc;
-    setNextColorUI(nextBall.current.color);
-  };
 
   const initGame = useCallback(() => {
     if (animationRef.current) {

@@ -1,47 +1,50 @@
 import { NextResponse } from 'next/server';
-import { initWebPush } from '@/lib/push-server';
-import { ROUTES } from '@/lib/routes';
-import webpush from 'web-push';
+import { PushService } from '@/lib/services/pushService';
+import { sendPushSchema } from '@/lib/validations/push';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
+import { z } from 'zod';
 
+/**
+ * Handle POST requests to send a push notification.
+ * 
+ * Validates the payload with Zod and processes using PushService.
+ */
 export async function POST(req: Request) {
   try {
-    // 1. Bezpieczna inicjalizacja Web Push
-    const isPushReady = initWebPush();
-    if (!isPushReady) {
-      return NextResponse.json({ error: 'Push service not configured' }, { status: 503 });
-    }
-
-    // 2. Rate-limiting
+    // 1. Rate-limiting
     const headersList = await headers();
     const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const { allowed } = rateLimit(ip);
+    
     if (!allowed) {
       return NextResponse.json({ error: 'Zbyt wiele zapytań' }, { status: 429 });
     }
 
-    const { subscription, title, message, topic } = await req.json() as {
-      subscription: webpush.PushSubscription;
-      title: string;
-      message: string;
-      topic?: string;
-    };
+    // 2. Runtime validation
+    const json = await req.json();
+    const validation = sendPushSchema.safeParse(json);
 
-    await webpush.sendNotification(
-      subscription,
-      JSON.stringify({ 
-        title, 
-        body: message, 
-        icon: '/android-chrome-192x192.png',
-        data: { 
-          url: `${ROUTES.HOME}?utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}` 
-        }
-      })
-    );
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: 'Invalid request payload', 
+        details: validation.error.format() 
+      }, { status: 400 });
+    }
+
+    // 3. Process with service
+    await PushService.sendNotification(validation.data);
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Błąd wysyłki:', error);
-    return NextResponse.json({ success: false }, { status: 500 });
+    console.error('[API/Push] Critical error:', error);
+    
+    const message = error instanceof Error ? error.message : 'Wewnętrzny błąd serwera';
+    const status = message.includes('not configured') ? 503 : 500;
+    
+    return NextResponse.json({ 
+      success: false, 
+      error: message 
+    }, { status });
   }
 }

@@ -1,9 +1,4 @@
-export interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  points: number;
-}
+import { Achievement, UrwisPet } from '@/types/urwis';
 
 export const URWIS_ACHIEVEMENTS: Achievement[] = [
   { id: 'first_feed', title: 'Pierwszy Posiłek', description: 'Nakarm Urwiska po raz pierwszy.', points: 10 },
@@ -15,7 +10,7 @@ export const URWIS_ACHIEVEMENTS: Achievement[] = [
   { id: 'first_buy', title: 'Zakupoholik', description: 'Kup swój pierwszy przedmiot w sklepie.', points: 20 },
 ]
 
-export function checkAchievements(petState: any, actionType?: string) {
+export function checkAchievements(petState: Partial<UrwisPet>, actionType?: string) {
   const currentAchievements: string[] = petState.achievements || [];
   const newUnlocks: string[] = [];
   let newPoints = 0;
@@ -26,13 +21,13 @@ export function checkAchievements(petState: any, actionType?: string) {
       
       switch(ach.id) {
         case 'lvl_5': 
-          conditionsMet = petState.level >= 5; 
+          conditionsMet = (petState.level ?? 0) >= 5; 
           break;
         case 'lvl_10': 
-          conditionsMet = petState.level >= 10; 
+          conditionsMet = (petState.level ?? 0) >= 10; 
           break;
         case 'rich': 
-          conditionsMet = petState.urwis_coins >= 1000; 
+          conditionsMet = (petState.urwis_coins ?? 0) >= 1000; 
           break;
         case 'first_buy': 
           conditionsMet = actionType === 'buy'; 
