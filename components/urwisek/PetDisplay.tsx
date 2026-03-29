@@ -9,8 +9,25 @@ import WashingGame from './games/WashingGame'
 import FeedingGame from './games/FeedingGame'
 import PlayingGame from './games/PlayingGame'
 import { SHOP_ITEMS } from '@/lib/urwis/items'
+import { UrwisPet } from '@/types/urwis'
 
-export default function PetDisplay({ activeMode, onActionComplete, setActiveMode, rewardMessage, showSmile, state }: any) {
+interface PetDisplayProps {
+  activeMode: 'none' | 'washing' | 'feeding' | 'playing' | 'ranking' | 'shopping' | 'arcade' | 'quests' | 'achievements';
+  onActionComplete: (type: 'feed' | 'wash' | 'play') => void;
+  setActiveMode: (mode: 'none' | 'washing' | 'feeding' | 'playing' | 'ranking' | 'shopping' | 'arcade' | 'quests' | 'achievements') => void;
+  rewardMessage: React.ReactNode | null;
+  showSmile: boolean;
+  state: UrwisPet;
+}
+
+export default function PetDisplay({
+  activeMode,
+  onActionComplete,
+  setActiveMode,
+  rewardMessage,
+  showSmile,
+  state
+}: PetDisplayProps) {
   
   const getPetImageSrc = () => {
     if (showSmile) return "/urwisek/usmiech.webp";
@@ -25,10 +42,10 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
     if (activeMode === 'feeding') return "Mniam, moje ulubione! 🍎";
     if (activeMode === 'playing') return "Bawmy się! 🚀";
     
-    if (state?.hunger < 30) return "Burczy mi w brzuchu... Daj coś zjeść! 🥺";
-    if (state?.hygiene < 30) return "Chyba czas na mycie ząbków! 🧽";
-    if (state?.happiness < 30) return "Pobaw się ze mną, nudzi mi się... 🧸";
-    if (state?.hunger > 80 && state?.happiness > 80) return "Jestem taki szczęśliwy! Grajmy dalej! 🦖";
+    if (state?.hunger_level < 30) return "Burczy mi w brzuchu... Daj coś zjeść! 🥺";
+    if (state?.hygiene_level < 30) return "Chyba czas na mycie ząbków! 🧽";
+    if (state?.happiness_level < 30) return "Pobaw się ze mną, nudzi mi się... 🧸";
+    if (state?.hunger_level > 80 && state?.happiness_level > 80) return "Jestem taki szczęśliwy! Grajmy dalej! 🦖";
     
     return "Co dzisiaj robimy?";
   };
@@ -62,8 +79,8 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
         />
 
         {/* ODZIEŻ WIERZCHNIA (CZAPKI) */}
-        {state.equippedItems?.hat && (() => {
-           const hatItem = SHOP_ITEMS.find(i => i.id === state.equippedItems.hat);
+        {state.equipped_items?.hat && (() => {
+           const hatItem = SHOP_ITEMS.find(i => i.id === state.equipped_items!.hat);
            if (!hatItem) return null;
            return (
              <Image 
@@ -78,8 +95,8 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
         })()}
 
         {/* TOWARZYSZ (ZWIERZAK) */}
-        {state.equippedItems?.toy && (() => {
-           const toyItem = SHOP_ITEMS.find(i => i.id === state.equippedItems.toy);
+        {state.equipped_items?.toy && (() => {
+           const toyItem = SHOP_ITEMS.find(i => i.id === state.equipped_items!.toy);
            if (!toyItem) return null;
            return (
              <motion.div 
@@ -113,7 +130,7 @@ export default function PetDisplay({ activeMode, onActionComplete, setActiveMode
               className="absolute -top-12 -right-8 md:-right-16 bg-white border-2 border-zinc-200 px-5 py-3 rounded-3xl rounded-bl-none shadow-xl z-40 max-w-[200px]"
             >
               <p className="text-sm font-black text-zinc-700 leading-tight italic">
-                "{getSpeechBubble()}"
+                &quot;{getSpeechBubble()}&quot;
               </p>
             </motion.div>
           )}

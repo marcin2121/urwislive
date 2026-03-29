@@ -12,7 +12,11 @@ export const dynamic = 'force-dynamic';
 const MAX_MESSAGES_PER_CONVERSATION = 20;
 
 const chatInputSchema = z.object({
-  messages: z.array(z.any())
+  messages: z.array(z.object({
+    id: z.string().optional(),
+    role: z.string(),
+    content: z.string().optional()
+  }).passthrough())
 });
 
 /**
@@ -90,7 +94,7 @@ export async function POST(req: Request) {
   3. Zwięzłość, humor, emoji.
   4. Linki w formacie: [Nazwa](/sciezka).`,
   
-          messages: await convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages as unknown as any[]),
         });
 
         return result.toUIMessageStreamResponse();

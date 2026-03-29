@@ -1,11 +1,20 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { Utensils, Droplets, Heart } from 'lucide-react';
+import { Utensils, Droplets, Heart, LucideIcon } from 'lucide-react';
 import { getXPForLevel } from '@/lib/urwis/engine';
 import { cn } from '@/lib/utils';
+import { UrwisPet } from '@/types/urwis';
 
-const StatBar = ({ icon: Icon, label, value, color, shadowColor }: any) => {
+interface StatBarProps {
+  icon: LucideIcon;
+  label: string;
+  value: number;
+  color: string;
+  shadowColor: string;
+}
+
+const StatBar = ({ icon: Icon, label, value, color, shadowColor }: StatBarProps) => {
   const safeValue = Math.min(100, Math.max(0, Number(value) || 0));
 
   return (
@@ -24,7 +33,7 @@ const StatBar = ({ icon: Icon, label, value, color, shadowColor }: any) => {
   );
 };
 
-export default function StatsSection({ state, activeMode }: { state: any, activeMode: string }) {
+export default function StatsSection({ state, activeMode }: { state: UrwisPet, activeMode: string }) {
   const currentXP = Math.floor(state.points_earned);
   const targetXP = getXPForLevel(state.level);
   const xpPercentage = Math.min(100, (currentXP / targetXP) * 100);
@@ -48,8 +57,8 @@ export default function StatsSection({ state, activeMode }: { state: any, active
           </div>
           
           <div className="flex flex-col">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{state.playerName}</p>
-            <h2 className="text-2xl font-black text-gray-800 leading-none">{state.petName}</h2>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{state.player_name}</p>
+            <h2 className="text-2xl font-black text-gray-800 leading-none">{state.name}</h2>
           </div>
         </div>
 
@@ -76,9 +85,9 @@ export default function StatsSection({ state, activeMode }: { state: any, active
 
       {/* 🌟 POTRZEBY */}
       <div className="bg-white/80 backdrop-blur-xl p-4 rounded-[2rem] border-4 border-white shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] flex gap-4">
-        <StatBar icon={Utensils} label="Głód" value={state.hunger} color="bg-urwis-red" shadowColor="shadow-red-500/50" />
-        <StatBar icon={Droplets} label="Higiena" value={state.hygiene} color="bg-urwis-blue" shadowColor="shadow-blue-500/50" />
-        <StatBar icon={Heart} label="Radość" value={state.happiness} color="bg-pink-500" shadowColor="shadow-pink-500/50" />
+        <StatBar icon={Utensils} label="Głód" value={state.hunger_level} color="bg-urwis-red" shadowColor="shadow-red-500/50" />
+        <StatBar icon={Droplets} label="Higiena" value={state.hygiene_level} color="bg-urwis-blue" shadowColor="shadow-blue-500/50" />
+        <StatBar icon={Heart} label="Radość" value={state.happiness_level} color="bg-pink-500" shadowColor="shadow-pink-500/50" />
       </div>
 
     </div>

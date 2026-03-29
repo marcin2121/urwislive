@@ -1,9 +1,18 @@
 'use client'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+interface BalloonProps {
+  id: number;
+  startX: number;
+  duration: number;
+  hue: number;
+  onPop: (id: number) => void;
+  onMiss: (id: number) => void;
+}
+
 // Wewnętrzny komponent pojedynczego balona - ułatwia zarządzanie fizyką każdego z nich
-const Balloon = ({ id, startX, duration, hue, onPop, onMiss }: any) => {
+const Balloon = ({ id, startX, duration, hue, onPop, onMiss }: BalloonProps) => {
   // Zabezpieczenie przed wyciekiem pamięci (balon sam się usuwa po wyleceniu za ekran)
   useEffect(() => {
     const timer = setTimeout(() => onMiss(id), duration * 1000 + 500)
@@ -83,16 +92,16 @@ export default function PlayingGame({ onComplete }: { onComplete: () => void }) 
   }, [score, onComplete])
 
   // Obsługa pęknięcia balona
-  const handlePop = (id: number) => {
+  const handlePop = useCallback((id: number) => {
     if (hasCompleted.current) return
     setBalloons(prev => prev.filter(b => b.id !== id))
     setScore(s => s + 1)
-  }
+  }, [])
 
   // Obsługa balona, który uciekł (nie kliknięto go)
-  const handleMiss = (id: number) => {
+  const handleMiss = useCallback((id: number) => {
     setBalloons(prev => prev.filter(b => b.id !== id))
-  }
+  }, [])
 
   return (
     // overflow-hidden upewnia się, że gra nie "rozepcha" strony, a balony grzecznie znikną na górze

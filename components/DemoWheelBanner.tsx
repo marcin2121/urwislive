@@ -12,12 +12,20 @@ import AuthModal from '@/components/ui/AuthModal';
 
 const WHEEL_COLORS = ['#0055ff', '#BF2024', '#FACC15', '#22C55E', '#A855F7', '#F97316', '#EC4899', '#06B6D4'];
 
+interface WheelPrize {
+  id: string;
+  title: string;
+  chance: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
 export default function DemoWheelBanner() {
   const supabase = createClient();
   const router = useRouter();
-  const [wheelPrizes, setWheelPrizes] = useState<any[]>([]);
+  const [wheelPrizes, setWheelPrizes] = useState<WheelPrize[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [spinResult, setSpinResult] = useState<any>(null);
+  const [spinResult, setSpinResult] = useState<WheelPrize | null>(null);
   
   // Stany logowania / weryfikacji
   const [isLoggedIn, setIsLoggedIn] = useState(false);

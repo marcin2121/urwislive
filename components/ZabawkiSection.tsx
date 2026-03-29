@@ -52,8 +52,8 @@ const TOY_CATEGORIES = [
 export default function ZabawkiSection() {
   // Funkcja śledzenia zdarzeń GTAG
   const trackToyInteraction = (action: string, label: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', action, {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', action, {
         'event_category': 'Offer_Toys_2026',
         'event_label': label,
         'location': 'Białobrzegi'

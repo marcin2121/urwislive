@@ -8,6 +8,12 @@ declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   }
+  interface NotificationOptions {
+    image?: string;
+    vibrate?: number[];
+    renotify?: boolean;
+    badge?: string;
+  }
 }
 
 // NOTE: We don't need to re-declare self if we have the reference lib webworker,
@@ -118,9 +124,7 @@ self.addEventListener('push', (event) => {
     const data = event.data.json();
     const title = data.title || 'Sklep Urwis';
     
-    // Używamy casting do any jedynie przy tworzeniu opcji, 
-    // aby uniknąć problemu z brakującymi polami typa w domyślnym TS (np. image we wcześniejszych wersjach)
-    const options: NotificationOptions & Record<string, any> = {
+    const options: NotificationOptions = {
       body: data.body || 'Masz nową wiadomość!',
       icon: data.icon || '/android-chrome-192x192.png',
       badge: data.badge || '/favicon-16x16.png',

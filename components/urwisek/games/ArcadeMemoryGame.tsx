@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 
@@ -17,25 +17,30 @@ export default function ArcadeMemoryGame({ onComplete }: MemoryGameProps) {
   const [disabled, setDisabled] = useState(false)
   
   useEffect(() => {
-    // Tasowanie kart
+    // Tasowanie kart - Fisher-Yates shuffle would be better, but keeping it simple for now
+    // Just move it inside useEffect to be safe
     const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5)
     setCards(shuffled)
   }, [])
   
-  const handleCardClick = (index: number) => {
+  const handleCardClick = useCallback((index: number) => {
     if (disabled || flipped.includes(index) || matched.includes(index)) return
     
-    setFlipped(prev => [...prev, index])
-    
-    if (flipped.length === 1) {
+    if (flipped.length === 0) {
+      setFlipped([index])
+    } else if (flipped.length === 1) {
       setDisabled(true)
       const firstIndex = flipped[0]
       const secondIndex = index
       
+      setFlipped([firstIndex, secondIndex])
+      
       if (cards[firstIndex] === cards[secondIndex]) {
         setMatched(prev => [...prev, firstIndex, secondIndex])
-        setFlipped([])
-        setDisabled(false)
+        setTimeout(() => {
+          setFlipped([])
+          setDisabled(false)
+        }, 500)
       } else {
         setTimeout(() => {
           setFlipped([])
@@ -43,11 +48,12 @@ export default function ArcadeMemoryGame({ onComplete }: MemoryGameProps) {
         }, 800)
       }
     }
-  }
+  }, [disabled, flipped, matched, cards])
 
   useEffect(() => {
     if (cards.length > 0 && matched.length === cards.length) {
-      setTimeout(() => onComplete(true), 1500)
+      const timer = setTimeout(() => onComplete(true), 1500)
+      return () => clearTimeout(timer)
     }
   }, [matched, cards, onComplete])
 

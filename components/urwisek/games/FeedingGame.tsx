@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useRef } from 'react'
-import { motion, useAnimation, AnimatePresence } from 'framer-motion'
+import { motion, useAnimation, AnimatePresence, PanInfo } from 'framer-motion'
 
 export default function FeedingGame({ onComplete }: { onComplete: () => void }) {
   const [foodCount, setFoodCount] = useState(0)
@@ -28,7 +28,7 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
     }
   };
 
-  const handleDragEnd = async (event: any, info: any) => {
+  const handleDragEnd = async (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (hasCompleted.current || isFlying) return;
 
     const vy = info.velocity.y;

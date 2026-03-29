@@ -45,7 +45,9 @@ export function useGpuAcceleration() {
 
     const status = checkGpu();
     cachedGpuStatus = status;
-    setHasGpu(status);
+    if (status !== true) {
+       setHasGpu(status);
+    }
   }, []);
 
   return hasGpu;

@@ -22,8 +22,8 @@ export default function ContactSection() {
 
   // Funkcja do śledzenia zdarzeń GTAG
   const trackContactClick = (type: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'kontakt_klikniecie', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'kontakt_klikniecie', {
         'event_category': 'Contact',
         'event_label': type
       });
@@ -267,7 +267,15 @@ src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2475.7798969279215!2d
   );
 }
 
-function InputField({ label, name, type, placeholder, required }: any) {
+interface InputFieldProps {
+  label: string;
+  name: string;
+  type: string;
+  placeholder: string;
+  required?: boolean;
+}
+
+function InputField({ label, name, type, placeholder, required }: InputFieldProps) {
   const id = `field-${name}`;
   return (
     <div>

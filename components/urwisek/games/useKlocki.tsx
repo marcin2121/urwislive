@@ -11,6 +11,7 @@ import {
   submitKlockiScore,
   getKlockiRanking,
 } from '@/app/actions/tamagotchi';
+import { RankingItem } from '@/types/urwis';
 
 export const GRID_SIZE = 9;
 export const CELL_SIZE = 42;
@@ -65,6 +66,48 @@ interface DragState {
   snappingCol: number | null;
 }
 
+// ---------- SHAPES ----------
+
+const BASE_SHAPES: ShapeMatrix[] = [
+  // klocek 1x1
+  [[1]],
+  // klocek 1x2
+  [[1, 1]],
+  // klocek 1x3
+  [[1, 1, 1]],
+  // klocek 2x2
+  [
+    [1, 1],
+    [1, 1],
+  ],
+  // L 2x2
+  [
+    [1, 0],
+    [1, 1],
+  ],
+  [
+    [0, 1],
+    [1, 1],
+  ],
+  // kwadrat 3x3
+  [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+  ],
+  // mały T
+  [
+    [1, 1, 1],
+    [0, 1, 0],
+  ],
+  // krzyżyk
+  [
+    [0, 1, 0],
+    [1, 1, 1],
+    [0, 1, 0],
+  ],
+];
+
 export function useKlocki(playerName: string) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -103,58 +146,16 @@ export function useKlocki(playerName: string) {
 
   const [rewardMsg, setRewardMsg] = useState<string | null>(null);
   // opcjonalnie: ranking jak w bubble_shooter
-  const [rankingData, setRankingData] = useState<any[]>([]);
+  const [rankingData, setRankingData] = useState<RankingItem[]>([]);
   const [rankingStatusMessage, setRankingStatusMessage] = useState<string | null>(null);
 
-  // ---------- SHAPES ----------
+  const randomShape = useCallback((): ShapeMatrix =>
+    BASE_SHAPES[Math.floor(Math.random() * BASE_SHAPES.length)], []);
 
-  const BASE_SHAPES: ShapeMatrix[] = [
-    // klocek 1x1
-    [[1]],
-    // klocek 1x2
-    [[1, 1]],
-    // klocek 1x3
-    [[1, 1, 1]],
-    // klocek 2x2
-    [
-      [1, 1],
-      [1, 1],
-    ],
-    // L 2x2
-    [
-      [1, 0],
-      [1, 1],
-    ],
-    [
-      [0, 1],
-      [1, 1],
-    ],
-    // kwadrat 3x3
-    [
-      [1, 1, 1],
-      [1, 1, 1],
-      [1, 1, 1],
-    ],
-    // mały T
-    [
-      [1, 1, 1],
-      [0, 1, 0],
-    ],
-    // krzyżyk
-    [
-      [0, 1, 0],
-      [1, 1, 1],
-      [0, 1, 0],
-    ],
-  ];
+  const randomColor = useCallback((): string =>
+    COLORS[Math.floor(Math.random() * COLORS.length)], []);
 
-  const randomShape = (): ShapeMatrix =>
-    BASE_SHAPES[Math.floor(Math.random() * BASE_SHAPES.length)];
-
-  const randomColor = (): string =>
-    COLORS[Math.floor(Math.random() * COLORS.length)];
-
-  const generateDeck = (): DeckShape[] => {
+  const generateDeck = useCallback((): DeckShape[] => {
     const gap = CANVAS_WIDTH / 4;
     const baseY = BOARD_SIZE + 40;
 
@@ -166,11 +167,11 @@ export function useKlocki(playerName: string) {
       deckY: baseY,
       used: false,
     }));
-  };
+  }, [randomShape, randomColor]);
 
   // ---------- UTILS GRID ----------
 
-  const canPlaceShapeAt = (shape: ShapeMatrix, row: number, col: number): boolean => {
+  const canPlaceShapeAt = useCallback((shape: ShapeMatrix, row: number, col: number): boolean => {
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
@@ -181,9 +182,9 @@ export function useKlocki(playerName: string) {
       }
     }
     return true;
-  };
+  }, []);
 
-  const placeShape = (shape: ShapeMatrix, color: string, row: number, col: number) => {
+  const placeShape = useCallback((shape: ShapeMatrix, color: string, row: number, col: number) => {
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
         if (!shape[r][c]) continue;
@@ -194,9 +195,9 @@ export function useKlocki(playerName: string) {
         }
       }
     }
-  };
+  }, []);
 
-  const checkAndClearLines = () => {
+  const checkAndClearLines = useCallback(() => {
     const toClear = new Set<string>();
 
     const rowsToClear = new Set<number>();
@@ -306,9 +307,9 @@ export function useKlocki(playerName: string) {
       groupsCleared:
         rowsToClear.size + colsToClear.size + squaresToClear.size,
     };
-  };
+  }, []);
 
-  const hasAnyMove = (deckShapes: DeckShape[]): boolean =>
+  const hasAnyMove = useCallback((deckShapes: DeckShape[]): boolean =>
     deckShapes.some((s) => {
       if (s.used) return false;
       for (let r = 0; r < GRID_SIZE; r++) {
@@ -317,7 +318,7 @@ export function useKlocki(playerName: string) {
         }
       }
       return false;
-    });
+    }), [canPlaceShapeAt]);
 
   const endGame = useCallback(async () => {
     if (gameOverRef.current) return;
@@ -369,7 +370,7 @@ export function useKlocki(playerName: string) {
 
   // ---------- RENDERING ----------
 
-  const drawRoundedBlock = (
+  const drawRoundedBlock = useCallback((
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
@@ -408,7 +409,7 @@ export function useKlocki(playerName: string) {
     ctx.strokeStyle = 'rgba(255,255,255,0.25)';
     ctx.lineWidth = 2;
     ctx.stroke();
-  };
+  }, []);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -628,7 +629,7 @@ export function useKlocki(playerName: string) {
     particles.current = particles.current.filter((p) => p.life > 0);
 
     animationRef.current = requestAnimationFrame(render);
-  }, [deck]);
+  }, [deck, drawRoundedBlock]);
 
   // ---------- GAME LOOP (particles) ----------
 
@@ -643,7 +644,7 @@ export function useKlocki(playerName: string) {
 
   // ---------- INTERAKCJA POINTER ----------
 
-  const getCanvasCoords = (
+  const getCanvasCoords = useCallback((
     e: React.PointerEvent<HTMLCanvasElement>,
   ): { x: number; y: number } | null => {
     const canvas = canvasRef.current;
@@ -656,9 +657,9 @@ export function useKlocki(playerName: string) {
       x: (e.clientX - rect.left) * scaleX,
       y: (e.clientY - rect.top) * scaleY,
     };
-  };
+  }, []);
 
-  const findDeckShapeAt = (x: number, y: number): number | null => {
+  const findDeckShapeAt = useCallback((x: number, y: number): number | null => {
     // proste trafienie w bounding box obszaru decku
     for (let i = 0; i < deck.length; i++) {
       const s = deck[i];
@@ -681,9 +682,9 @@ export function useKlocki(playerName: string) {
       }
     }
     return null;
-  };
+  }, [deck]);
 
-  const updateSnapForDrag = () => {
+  const updateSnapForDrag = useCallback(() => {
     const ds = dragState.current;
     if (ds.shapeIndex === null) {
       ds.snappingRow = null;
@@ -726,9 +727,9 @@ export function useKlocki(playerName: string) {
       ds.snappingRow = null;
       ds.snappingCol = null;
     }
-  };
+  }, [deck, canPlaceShapeAt]);
 
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isStarted || gameOverRef.current) return;
     const pos = getCanvasCoords(e);
     if (!pos) return;
@@ -742,9 +743,9 @@ export function useKlocki(playerName: string) {
     dragState.current.offsetX = 0;
     dragState.current.offsetY = 0;
     updateSnapForDrag();
-  };
+  }, [isStarted, getCanvasCoords, findDeckShapeAt, updateSnapForDrag]);
 
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerMove = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     if (dragState.current.shapeIndex === null) return;
     const pos = getCanvasCoords(e);
     if (!pos) return;
@@ -752,9 +753,9 @@ export function useKlocki(playerName: string) {
     dragState.current.x = pos.x;
     dragState.current.y = pos.y;
     updateSnapForDrag();
-  };
+  }, [getCanvasCoords, updateSnapForDrag]);
 
-  const onPointerUp = () => {
+  const onPointerUp = useCallback(() => {
     const ds = dragState.current;
     if (ds.shapeIndex === null) return;
     const shape = deck[ds.shapeIndex];
@@ -867,7 +868,7 @@ export function useKlocki(playerName: string) {
       };
       requestAnimationFrame(shake);
     }
-  };
+  }, [deck, placeShape, checkAndClearLines, generateDeck, hasAnyMove, endGame]);
 
   // ---------- INIT / RESET ----------
 
@@ -900,16 +901,16 @@ export function useKlocki(playerName: string) {
     setComboMessage(null);
 
     setIsStarted(true);
-  }, []);
+  }, [generateDeck]);
 
-  const rerollDeck = () => {
+  const rerollDeck = useCallback(() => {
     if (!isStarted || gameOverRef.current) return;
     if (rerollsLeft <= 0) return;
 
     const newDeck = generateDeck();
     setDeck(newDeck);
     setRerollsLeft((x) => x - 1);
-  };
+  }, [isStarted, rerollsLeft, generateDeck]);
 
   // ---------- BEST SCORE z localStorage ----------
 

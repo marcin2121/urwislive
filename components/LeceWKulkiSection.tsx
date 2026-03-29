@@ -10,8 +10,8 @@ import Image from 'next/image'
 
 export default function LeceWKulkiSection() {
     const trackSocial = (platform: string) => {
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'social_klikniecie', {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'social_klikniecie', {
           'event_category': 'Social',
           'event_label': platform
         });
@@ -129,7 +129,16 @@ export default function LeceWKulkiSection() {
   )
 }
 
-function SocialLink({ href, icon, label, baseColor, hoverColor, onClick }: any) {
+interface SocialLinkProps {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  baseColor: string;
+  hoverColor: string;
+  onClick?: () => void;
+}
+
+function SocialLink({ href, icon, label, baseColor, hoverColor, onClick }: SocialLinkProps) {
   return (
     <a 
       href={href} 
@@ -143,7 +152,13 @@ function SocialLink({ href, icon, label, baseColor, hoverColor, onClick }: any) 
   )
 }
 
-function FeatureItem({ icon, title, desc }: any) {
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}
+
+function FeatureItem({ icon, title, desc }: FeatureItemProps) {
   return (
     <motion.div 
       whileHover={{ x: 10 }}

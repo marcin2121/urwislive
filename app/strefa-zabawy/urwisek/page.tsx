@@ -66,23 +66,13 @@ export default async function UrwisekPage() {
           ) : (
             <UrwisekDashboard 
               initialState={{
-                playerName: pet.player_name,
-                petName: pet.name,
-                gender: pet.gender,
-                level: pet.level,
-                hunger: pet.hunger_level,
-                happiness: pet.happiness_level,
-                hygiene: pet.hygiene_level,
-                urwisCoins: pet.urwis_coins,
-                goldenUrwis: pet.golden_urwis,
-                points_earned: pet.points_earned,
-                lastInteraction: pet.last_interaction,
+                ...pet,
                 inventory: pet.inventory || [],
-                equippedItems: pet.equipped_items || {},
-                completedQuests: pet.completed_quests || [],
-                questProgress: pet.quest_progress || {},
+                equipped_items: pet.equipped_items || {},
+                completed_quests: pet.completed_quests || [],
+                quest_progress: pet.quest_progress || {},
                 achievements: pet.achievements || [],
-                achievementPoints: pet.achievement_points || 0
+                achievement_points: pet.achievement_points || 0
               }} 
             />
           )}

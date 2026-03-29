@@ -4,13 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ScanFace, Sparkles, Box } from 'lucide-react';
 
-declare module "react" {
-  namespace JSX {
-    interface IntrinsicElements {
-      "model-viewer": any;
-    }
-  }
-}
 
 export default function UrwisAR() {
   const [isMobile, setIsMobile] = useState<boolean | null>(null); // ← null = jeszcze nie sprawdzono

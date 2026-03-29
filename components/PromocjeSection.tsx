@@ -88,8 +88,8 @@ export default function PromocjeSection() {
   const [loading, setLoading] = useState(true)
 
   const trackPromoInteraction = (action: string, itemName: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'promocje_interakcja', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'promocje_interakcja', {
         'event_category': 'Promotions_2026',
         'event_label': itemName,
         'interaction_type': action,

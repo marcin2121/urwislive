@@ -25,8 +25,8 @@ export interface ColoringZoneProps {
 }
 
 const trackEvent = (action: string, params?: object) => {
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('event', action, params);
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', action, params);
   }
 };
 
@@ -541,20 +541,23 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     return { x: (clientX - rect.left) * (1280 / rect.width), y: (clientY - rect.top) * (720 / rect.height) };
   };
 
-  const handleStart = (e: any) => {
-    if (e.touches && e.touches.length === 2) {
+  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const isTouch = 'touches' in e;
+    const touches = isTouch ? (e as React.TouchEvent).touches : null;
+
+    if (touches && touches.length === 2) {
       setIsDrawing(false); setIsPanning(true); setIsTemporaryPan(true);
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
       setInitialPinchDistance(dist); setInitialScale(scale);
       
       setPanStart({ 
-        x: ((e.touches[0].clientX + e.touches[1].clientX) / 2) - offset.x, 
-        y: ((e.touches[0].clientY + e.touches[1].clientY) / 2) - offset.y 
+        x: ((touches[0].clientX + touches[1].clientX) / 2) - offset.x, 
+        y: ((touches[0].clientY + touches[1].clientY) / 2) - offset.y 
       });
       return;
     }
-    const cx = e.touches ? e.touches[0].clientX : e.clientX; 
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const cx = touches ? touches[0].clientX : (e as React.MouseEvent).clientX; 
+    const cy = touches ? touches[0].clientY : (e as React.MouseEvent).clientY;
     const pos = getPos(cx, cy);
     
     if (tool === 'picker') {
@@ -572,7 +575,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         return;
     }
 
-    if (tool === 'pan' || e.button === 1) {
+    if (tool === 'pan' || (!isTouch && (e as React.MouseEvent).button === 1)) {
       setIsPanning(true); setPanStart({ x: cx - offset.x, y: cy - offset.y });
     } else if (tool === 'fill') {
       fillCanvas(pos.x, pos.y);
@@ -584,19 +587,22 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     }
   };
 
-  const handleMove = (e: any) => {
-    if (e.touches && e.touches.length === 2 && initialPinchDistance) {
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
+    const isTouch = 'touches' in e;
+    const touches = isTouch ? (e as React.TouchEvent).touches : null;
+
+    if (touches && touches.length === 2 && initialPinchDistance) {
+      const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
       const newScale = Math.max(1, Math.min(5, initialScale * (dist / initialPinchDistance)));
       setScale(newScale);
 
-      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const cx = (touches[0].clientX + touches[1].clientX) / 2;
+      const cy = (touches[0].clientY + touches[1].clientY) / 2;
       setOffset({ x: cx - panStart.x, y: cy - panStart.y });
       return;
     }
-    const cx = e.touches ? e.touches[0].clientX : e.clientX; 
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const cx = touches ? touches[0].clientX : (e as React.MouseEvent).clientX; 
+    const cy = touches ? touches[0].clientY : (e as React.MouseEvent).clientY;
     const pos = getPos(cx, cy);
     if (isPanning) {
       setOffset({ x: cx - panStart.x, y: cy - panStart.y });
@@ -685,7 +691,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
           <div className="hidden lg:flex flex-col gap-8 p-4">
              <div className="grid grid-cols-2 gap-3">
                {[ {id:'brush',n:'Pędzel',i:Paintbrush}, {id:'fill',n:'Wiadro',i:PaintBucket}, {id:'eraser',n:'Gumka',i:Eraser}, {id:'magic',n:'Tęcza',i:Wand2}, {id:'picker',n:'Pipeta',i:Pipette}, {id:'pan',n:'Rączka',i:Hand} ].map(t => (
-                 <button key={t.id} onClick={() => setTool(t.id as any)} aria-label={t.n} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all cursor-pointer outline-none ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
+                 <button key={t.id} onClick={() => setTool(t.id as 'brush' | 'magic' | 'eraser' | 'pan' | 'picker' | 'stamp' | 'fill')} aria-label={t.n} className={`p-4 rounded-2xl flex flex-col items-center gap-2 border-2 transition-all cursor-pointer outline-none ${tool===t.id ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-white/5 text-white border-transparent'}`}>
                    <t.i size={24} /><span className="text-[10px] font-black uppercase">{t.n}</span>
                  </button>
                ))}

@@ -18,17 +18,26 @@ const TEMPLATES: Template[] = [
   { id: 'kotek', title: 'Urwis z kotkiem', brand: 'Kotek', difficulty: 'Łatwy', thumb: '/coloring/thumb-kotek.webp', src: '/coloring/urwis-kotek.webp' },
 ];
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export default function ClientLobby() {
   const [activeGame, setActiveGame] = useState<Template | null>(null);
   
   const [accessStatus, setAccessStatus] = useState<'loading' | 'granted' | 'blocked'>('loading');
   const [isIOS, setIsIOS] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -40,7 +49,8 @@ export default function ClientLobby() {
       const isMobile = /iphone|ipad|ipod|android|windows phone/i.test(userAgent);
       const isApple = /iphone|ipad|ipod/i.test(userAgent);
       
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+        (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
       setIsIOS(isApple);
 

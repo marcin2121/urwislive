@@ -52,8 +52,8 @@ const PARTY_CATEGORIES = [
 export default function ImprezySection() {
   // Funkcja śledzenia zdarzeń GTAG
   const trackPartyInteraction = (action: string, label: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'imprezy_interakcja', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'imprezy_interakcja', {
         'event_category': 'Offer_Party_2026',
         'event_label': label,
         'interaction_type': action,

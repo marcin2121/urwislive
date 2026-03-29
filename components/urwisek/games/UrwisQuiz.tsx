@@ -99,8 +99,8 @@ export default function UrwisQuiz() {
   const [result, setResult] = useState<keyof typeof URWIS_TYPES | null>(null);
 
   const trackQuizEvent = (action: string, resultLabel?: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'quiz_interakcja', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'quiz_interakcja', {
         'event_category': 'Quiz',
         'event_label': action,
         'quiz_result': resultLabel

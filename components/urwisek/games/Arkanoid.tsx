@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { Trophy, Play, RotateCcw, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { finishArcadeGame, submitArkanoidScore, getArkanoidRanking } from '@/app/actions/tamagotchi'
 import { cn } from '@/lib/utils'
+import { RankingItem } from '@/types/urwis'
 
 // ─── Stałe ────────────────────────────────────────────────────────────────────
 const CW = 340
@@ -202,7 +203,7 @@ export default function Arkanoid() {
   const [level,     setLevel]     = useState(1)
   const [lives,     setLives]     = useState(3)
   const [playerName, setPlayerName] = useState('')
-  const [rankingData, setRankingData] = useState<any[]>([])
+  const [rankingData, setRankingData] = useState<RankingItem[]>([])
   const [rankingStatusMessage, setRankingStatusMessage] = useState<string | null>(null)
   const [isSubmittingScore, setIsSubmittingScore] = useState(false)
   const [rewardMsg, setRewardMsg] = useState<string | null>(null)
@@ -333,6 +334,37 @@ export default function Arkanoid() {
       localStorage.setItem('urwis_arkanoid_nickname', playerName.trim());
     }
   }, [playerName, spawnBall])
+
+  const handleGameOver = useCallback(async () => {
+    setGameOver(true)
+    setIsSubmittingScore(true)
+    
+    if (scoreRef.current > 500) {
+       const reward = await finishArcadeGame('arkanoid')
+       if (reward.success && reward.reward) {
+         setRewardMsg(`Ekstra, Urwisie! Otrzymujesz +${reward.reward.coins} Monet 🪙 i +${reward.reward.exp} EXP ⭐!`)
+       }
+    }
+    
+    const finalScore = scoreRef.current
+    if (playerName.trim() !== '') {
+        const saveRes = await submitArkanoidScore(playerName.trim(), finalScore, levelRef.current)
+        if (saveRes?.success) {
+            const rankData = await getArkanoidRanking(finalScore)
+            if (rankData.success) {
+               setRankingData(rankData.topScores || [])
+               setRankingStatusMessage(rankData.statsMessage || null)
+            }
+        }
+    } else {
+        const rankData = await getArkanoidRanking(finalScore)
+        if (rankData.success) {
+           setRankingData(rankData.topScores || [])
+           setRankingStatusMessage(rankData.statsMessage || null)
+        }
+    }
+    setIsSubmittingScore(false)
+  }, [playerName]);
 
   // ── render / game loop ────────────────────────────────────────────────────
   const render = useCallback(() => {
@@ -525,40 +557,10 @@ export default function Arkanoid() {
     }
 
     animationRef.current = requestAnimationFrame(render)
-  }, [isStarted, spawnBall, nextLevel, applyPowerUp])
+  }, [isStarted, spawnBall, nextLevel, applyPowerUp, handleGameOver])
 
   // ── Effects ───────────────────────────────────────────────────────────────
 
-  const handleGameOver = async () => {
-    setGameOver(true)
-    setIsSubmittingScore(true)
-    
-    if (scoreRef.current > 500) {
-       const reward = await finishArcadeGame('arkanoid')
-       if (reward.success && reward.reward) {
-         setRewardMsg(`Ekstra, Urwisie! Otrzymujesz +${reward.reward.coins} Monet 🪙 i +${reward.reward.exp} EXP ⭐!`)
-       }
-    }
-    
-    const finalScore = scoreRef.current
-    if (playerName.trim() !== '') {
-        const saveRes = await submitArkanoidScore(playerName.trim(), finalScore, levelRef.current)
-        if (saveRes?.success) {
-            const rankData = await getArkanoidRanking(finalScore)
-            if (rankData.success) {
-               setRankingData(rankData.topScores || [])
-               setRankingStatusMessage(rankData.statsMessage || null)
-            }
-        }
-    } else {
-        const rankData = await getArkanoidRanking(finalScore)
-        if (rankData.success) {
-           setRankingData(rankData.topScores || [])
-           setRankingStatusMessage(rankData.statsMessage || null)
-        }
-    }
-    setIsSubmittingScore(false)
-  };
 
   useEffect(() => {
     if (isStarted && !gameOver) render()

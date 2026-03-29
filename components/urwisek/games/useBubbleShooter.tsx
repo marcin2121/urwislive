@@ -114,9 +114,14 @@ export function useBubbleShooter(playerName: string) {
   const availableColors = useRef<string[]>(COLORS.slice(0, COLORS_START));
   const scoreRef = useRef(0);
   const gameOverRef = useRef(false);
+  const playerNameRef = useRef(playerName);
+
+  useEffect(() => {
+    playerNameRef.current = playerName;
+  }, [playerName]);
 
   // Hex‑sąsiedzi
-  const getNeighbors = (r: number, c: number) => {
+  const getNeighbors = useCallback((r: number, c: number) => {
     const isOffset = r % 2 !== 0;
     const neighbors: { r: number; c: number; ball: Ball }[] = [];
 
@@ -153,10 +158,10 @@ export function useBubbleShooter(playerName: string) {
       }
     }
     return neighbors;
-  };
+  }, []);
 
   // BFS klastra tego samego koloru
-  const findCluster = (startR: number, startC: number, targetColor: string) => {
+  const findCluster = useCallback((startR: number, startC: number, targetColor: string) => {
     const cluster = [{ r: startR, c: startC }];
     const visited = new Set([`${startR},${startC}`]);
     let i = 0;
@@ -175,10 +180,10 @@ export function useBubbleShooter(playerName: string) {
       i++;
     }
     return cluster;
-  };
+  }, [getNeighbors]);
 
   // BFS kule przyczepione do sufitu
-  const removeFloatingBalls = () => {
+  const removeFloatingBalls = useCallback(() => {
     const attached = new Set<string>();
     const toCheck: { r: number; c: number }[] = [];
 
@@ -224,7 +229,7 @@ export function useBubbleShooter(playerName: string) {
       }
     }
     return { points, dropped };
-  };
+  }, [getNeighbors]);
 
   const endGame = useCallback(async () => {
     if (gameOverRef.current) return;
@@ -251,10 +256,11 @@ export function useBubbleShooter(playerName: string) {
     }
 
     const finalScore = scoreRef.current;
+    const pName = playerNameRef.current.trim();
     try {
-      if (playerName.trim() !== '') {
+      if (pName !== '') {
         const saveRes = await submitBubbleShooterScore(
-          playerName.trim(),
+          pName,
           finalScore,
           levelRef.current,
         );
@@ -277,9 +283,43 @@ export function useBubbleShooter(playerName: string) {
     }
 
     setIsSubmittingScore(false);
-  }, [playerName]);
+  }, []);
 
-  const snapToGrid = (mBall: MovingBall, hitTargetR?: number, hitTargetC?: number) => {
+  const shiftBoardDown = useCallback(() => {
+    grid.current.unshift([], []);
+
+    for (let r = 0; r <= 1; r++) {
+      const isOffset = r % 2 !== 0;
+      const colsInRow = isOffset ? COLS - 1 : COLS;
+      for (let c = 0; c < colsInRow; c++) {
+        const color =
+          availableColors.current[Math.floor(Math.random() * availableColors.current.length)];
+        if (!grid.current[r]) grid.current[r] = [];
+        grid.current[r][c] = { x: 0, y: 0, color, gridR: r, gridC: c };
+      }
+    }
+
+    for (let row = 0; row < grid.current.length; row++) {
+      if (!grid.current[row]) continue;
+      const off = row % 2 !== 0;
+      for (let col = 0; col < grid.current[row].length; col++) {
+        if (grid.current[row][col]) {
+          const b = grid.current[row][col]!;
+          b.gridR = row;
+          b.gridC = col;
+          b.x = off ? col * DIAMETER + DIAMETER : col * DIAMETER + BALL_RADIUS;
+          b.y = row * (DIAMETER - 4) + BALL_RADIUS + 20;
+
+          if (b.y >= SHOOTER_Y - DIAMETER) {
+            endGame();
+            return;
+          }
+        }
+      }
+    }
+  }, [endGame]);
+
+  const snapToGrid = useCallback((mBall: MovingBall, hitTargetR?: number, hitTargetC?: number) => {
     let r = Math.floor((mBall.y - 20) / (DIAMETER - 4));
     let isOffset = r % 2 !== 0;
     let c = isOffset
@@ -527,43 +567,11 @@ export function useBubbleShooter(playerName: string) {
       color: generated,
     };
     setNextColorUI(generated);
-  };
+  }, [endGame, findCluster, removeFloatingBalls, getNeighbors, shiftBoardDown]);
 
-  const shiftBoardDown = () => {
-    grid.current.unshift([], []);
 
-    for (let r = 0; r <= 1; r++) {
-      const isOffset = r % 2 !== 0;
-      const colsInRow = isOffset ? COLS - 1 : COLS;
-      for (let c = 0; c < colsInRow; c++) {
-        const color =
-          availableColors.current[Math.floor(Math.random() * availableColors.current.length)];
-        if (!grid.current[r]) grid.current[r] = [];
-        grid.current[r][c] = { x: 0, y: 0, color, gridR: r, gridC: c };
-      }
-    }
 
-    for (let row = 0; row < grid.current.length; row++) {
-      if (!grid.current[row]) continue;
-      const off = row % 2 !== 0;
-      for (let col = 0; col < grid.current[row].length; col++) {
-        if (grid.current[row][col]) {
-          const b = grid.current[row][col]!;
-          b.gridR = row;
-          b.gridC = col;
-          b.x = off ? col * DIAMETER + DIAMETER : col * DIAMETER + BALL_RADIUS;
-          b.y = row * (DIAMETER - 4) + BALL_RADIUS + 20;
-
-          if (b.y >= SHOOTER_Y - DIAMETER) {
-            endGame();
-            return;
-          }
-        }
-      }
-    }
-  };
-
-  const updatePhysics = () => {
+  const updatePhysics = useCallback(() => {
     if (!flyingBall.current) return;
 
     const SUBSTEPS = 2;
@@ -617,9 +625,9 @@ export function useBubbleShooter(playerName: string) {
         return;
       }
     }
-  };
+  }, [snapToGrid]);
 
-  const drawTrajectory = (
+  const drawTrajectory = useCallback((
     ctx: CanvasRenderingContext2D,
     startX: number,
     startY: number,
@@ -692,7 +700,7 @@ export function useBubbleShooter(playerName: string) {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.lineWidth = 2;
     ctx.stroke();
-  };
+  }, []);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -793,7 +801,7 @@ export function useBubbleShooter(playerName: string) {
     }
 
     animationRef.current = requestAnimationFrame(render);
-  }, [isStarted]);
+  }, [isStarted, updatePhysics, drawTrajectory]);
 
   useEffect(() => {
     if (isStarted && !gameOver) {
@@ -821,7 +829,7 @@ export function useBubbleShooter(playerName: string) {
     return () => window.removeEventListener('keydown', handler);
   }, [swapBalls]);
 
-  const updateMousePos = (
+  const updateMousePos = useCallback((
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
   ) => {
     if (!canvasRef.current) return;
@@ -846,25 +854,25 @@ export function useBubbleShooter(playerName: string) {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top) * scaleY,
     };
-  };
+  }, []);
 
-  const handleInteractionStart = (
+  const handleInteractionStart = useCallback((
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
   ) => {
     if (!isStarted || flyingBall.current || gameOver) return;
     isAiming.current = true;
     updateMousePos(e);
-  };
+  }, [isStarted, gameOver, updateMousePos]);
 
-  const handleInteractionMove = (
+  const handleInteractionMove = useCallback((
     e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
   ) => {
     if (isAiming.current) {
       updateMousePos(e);
     }
-  };
+  }, [updateMousePos]);
 
-  const handleInteractionEnd = (
+  const handleInteractionEnd = useCallback((
     _e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>,
   ) => {
     if (!isStarted || !isAiming.current || !currentBall.current || flyingBall.current || gameOver)
@@ -887,9 +895,9 @@ export function useBubbleShooter(playerName: string) {
       dx: vx,
       dy: vy,
     };
-  };
+  }, [isStarted, gameOver]);
 
-  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (nextBall.current && isStarted && !gameOver && canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect();
       const scaleX = CANVAS_WIDTH / rect.width;
@@ -906,9 +914,9 @@ export function useBubbleShooter(playerName: string) {
       }
     }
     handleInteractionStart(e);
-  };
+  }, [isStarted, gameOver, swapBalls, handleInteractionStart]);
 
-  const handleCanvasTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+  const handleCanvasTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (nextBall.current && isStarted && !gameOver && canvasRef.current && e.touches.length > 0) {
       const rect = canvasRef.current.getBoundingClientRect();
       const scaleX = CANVAS_WIDTH / rect.width;
@@ -925,7 +933,7 @@ export function useBubbleShooter(playerName: string) {
       }
     }
     handleInteractionStart(e);
-  };
+  }, [isStarted, gameOver, swapBalls, handleInteractionStart]);
 
 
   const initGame = useCallback(() => {

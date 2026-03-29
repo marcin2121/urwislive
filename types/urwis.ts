@@ -31,6 +31,7 @@ export interface UrwisPet {
   inventory?: string[];
   equipped_items?: Record<string, string>;
   quest_progress?: Record<string, number>;
+  completed_quests?: string[];
 }
 
 export interface InteractionResult {

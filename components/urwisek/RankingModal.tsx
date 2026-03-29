@@ -4,10 +4,12 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { Trophy, X, Star } from 'lucide-react'
 
+import { UrwisPet } from '@/types/urwis'
+
 export default function RankingModal({ isOpen, onClose, ranking }: { 
   isOpen: boolean, 
   onClose: () => void, 
-  ranking: any[] 
+  ranking: Partial<UrwisPet>[] 
 }) {
   if (!isOpen) return null
 

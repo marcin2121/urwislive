@@ -1,12 +1,32 @@
 import React, { useState } from 'react';
-import { Utensils, Droplets, Heart, Trophy, ShoppingBag, Gamepad2, ScrollText, LayoutGrid, X, Coins, Medal } from 'lucide-react';
+import { Utensils, Droplets, Heart, Trophy, ShoppingBag, Gamepad2, ScrollText, LayoutGrid, X, Coins, Medal, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UrwisPet } from '@/types/urwis';
 
-export default function ActionPanel({ state, onAction, onModeChange, activeMode }: any) {
+type GameMode = 'none' | 'washing' | 'feeding' | 'playing' | 'quests' | 'ranking' | 'shopping' | 'arcade' | 'achievements';
+
+interface ActionPanelProps {
+  state: UrwisPet;
+  onModeChange: (mode: GameMode) => void;
+  activeMode: GameMode;
+}
+
+interface ActionButtonProps {
+  icon: LucideIcon;
+  label: string;
+  active: boolean;
+  color: string;
+  bgColor: string;
+  shadowColor: string;
+  onClick: () => void;
+  subLabel: React.ReactNode;
+}
+
+export default function ActionPanel({ state, onModeChange, activeMode }: ActionPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const ActionButton = ({ icon: Icon, label, active, color, bgColor, shadowColor, onClick, subLabel }: any) => (
+  const ActionButton = ({ icon: Icon, label, active, color, bgColor, shadowColor, onClick, subLabel }: ActionButtonProps) => (
     <motion.button 
       whileTap={active ? { scale: 0.9 } : {}}
       onClick={active ? onClick : undefined} 
@@ -43,19 +63,19 @@ export default function ActionPanel({ state, onAction, onModeChange, activeMode 
             className="mb-4 grid grid-cols-4 sm:grid-cols-4 xs:grid-cols-3 gap-2 bg-white/80 backdrop-blur-xl p-4 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,85,255,0.15)] border-4 border-white origin-bottom"
           >
             <ActionButton 
-              icon={Utensils} label="Karm" active={state.hunger < 80 && state.urwisCoins >= 40} 
+              icon={Utensils} label="Karm" active={state.hunger_level < 80 && state.urwis_coins >= 40} 
               color="text-[#bf2024]" bgColor="bg-red-50" shadowColor="shadow-red-500/30" 
               subLabel={<>-40 <Coins size={10} strokeWidth={3} /></>} 
               onClick={() => { onModeChange('feeding'); setIsOpen(false); }} 
             />
             <ActionButton 
-              icon={Droplets} label="Myj" active={state.hygiene < 80} 
+              icon={Droplets} label="Myj" active={state.hygiene_level < 80} 
               color="text-[#0055ff]" bgColor="bg-blue-50" shadowColor="shadow-blue-500/30" 
               subLabel={<>+20 <Coins size={10} strokeWidth={3} /></>} 
               onClick={() => { onModeChange('washing'); setIsOpen(false); }}
             />
             <ActionButton 
-              icon={Heart} label="Graj" active={state.happiness < 80} 
+              icon={Heart} label="Graj" active={state.happiness_level < 80} 
               color="text-pink-500" bgColor="bg-pink-50" shadowColor="shadow-pink-500/30" 
               subLabel={<>+20 <Coins size={10} strokeWidth={3} /></>} 
               onClick={() => { onModeChange('playing'); setIsOpen(false); }} 

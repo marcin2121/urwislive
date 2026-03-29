@@ -45,10 +45,13 @@ export default function UrwisekAuth() {
       // że mamy sesję i płynnie przerzuci nas do UrwisekLobby
       router.refresh()
     } catch (err) {
-      const error = err as any
-      if (error.message.includes('Invalid login')) setError('Nieprawidłowy email lub hasło.')
-      else if (error.message.includes('already registered')) setError('Ten email jest już zarejestrowany!')
-      else setError('Wystąpił błąd. Spróbuj ponownie.')
+      if (err instanceof Error) {
+        if (err.message.includes('Invalid login')) setError('Nieprawidłowy email lub hasło.')
+        else if (err.message.includes('already registered')) setError('Ten email jest już zarejestrowany!')
+        else setError('Wystąpił błąd. Spróbuj ponownie.')
+      } else {
+        setError('Wystąpił nieoczekiwany błąd.')
+      }
     } finally {
       setLoading(false)
     }

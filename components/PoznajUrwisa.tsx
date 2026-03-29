@@ -150,8 +150,8 @@ export default function PoznajUrwisa() {
             <Link
               href="/oferta"
               onClick={() => {
-                if ((window as any).gtag) {
-                  (window as any).gtag('event', 'hero_cta_klikniecie', { cel: 'oferta_urwisa' });
+                if (window.gtag) {
+                  window.gtag('event', 'hero_cta_klikniecie', { cel: 'oferta_urwisa' });
                 }
               }}
               className="group relative inline-flex items-center gap-4 px-12 py-6 bg-gradient-to-r from-[#0055ff] to-blue-600 text-white rounded-[2rem] font-black text-xl overflow-hidden transition-all hover:scale-105 shadow-2xl uppercase tracking-tighter italic border-4 border-white/20"
@@ -169,7 +169,15 @@ export default function PoznajUrwisa() {
   );
 }
 
-function FeatureCard({ icon: Icon, title, desc, color, index }: any) {
+interface FeatureCardProps {
+  icon: ComponentType<any>;
+  title: string;
+  desc: string;
+  color: string;
+  index: number;
+}
+
+function FeatureCard({ icon: Icon, title, desc, color, index }: FeatureCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -30 }}

@@ -52,8 +52,8 @@ const GAME_CATEGORIES = [
 export default function GrySection() {
   // Funkcja śledzenia zdarzeń GTAG
   const trackGameInteraction = (action: string, label: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'gry_interakcja', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'gry_interakcja', {
         'event_category': 'Offer_Games_2026',
         'event_label': label,
         'interaction_type': action,

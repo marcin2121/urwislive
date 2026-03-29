@@ -399,76 +399,91 @@ export default function UrwisSwarm() {
     return { klocki: totalKlocki, zapal: data.baseCostZapal * amount };
   };
 
-  const calcMax = (unitKey: UnitKey): number => {
+  const calcMax = useCallback((unitKey: UnitKey): number => {
     const data = UNIT_DATA[unitKey];
-    const current = Math.floor(state.units[unitKey]);
+    const s = stateRef.current;
+    const current = Math.floor(s.units[unitKey]);
     let n = 0, totalK = 0, totalZ = 0;
     while (true) {
       totalK += data.baseCostKlocki * Math.pow(data.costMultiplier, current + n);
       totalZ += data.baseCostZapal;
-      if (totalK > state.klocki || totalZ > state.zapal) break;
+      if (totalK > s.klocki || totalZ > s.zapal) break;
       n++;
+      // Bezpiecznik przed nieskończoną pętlą dla ekstremalnych wartości
+      if (n > 10000) break;
     }
     return Math.max(1, n);
-  };
+  }, []);
 
   // --- KUPOWANIE ---
-  const buyUnit = (unitKey: UnitKey) => {
+  const buyUnit = useCallback((unitKey: UnitKey) => {
+    const s = stateRef.current;
     const amount = buyAmount === -1 ? calcMax(unitKey) : buyAmount;
     if (amount <= 0) return;
-    const costs = getUnitCost(unitKey, amount);
-    if (state.klocki < costs.klocki || state.zapal < costs.zapal) return;
+    
+    // Oblicz koszt inline lub użyj getUnitCost (lepiej getUnitCost by nie dublować)
+    const data = UNIT_DATA[unitKey];
+    const current = Math.floor(s.units[unitKey]);
+    let totalK = 0;
+    for (let i = 0; i < amount; i++) {
+      totalK += data.baseCostKlocki * Math.pow(data.costMultiplier, current + i);
+    }
+    const costZ = data.baseCostZapal * amount;
+
+    if (s.klocki < totalK || s.zapal < costZ) return;
 
     const ns: GameState = {
-      ...stateRef.current,
-      units: { ...stateRef.current.units },
-      klocki: stateRef.current.klocki - costs.klocki,
-      zapal: stateRef.current.zapal - costs.zapal,
+      ...s,
+      units: { ...s.units },
+      klocki: s.klocki - totalK,
+      zapal: s.zapal - costZ,
     };
     ns.units[unitKey] += amount;
     stateRef.current = ns;
     setState(ns);
-  };
+  }, [buyAmount, calcMax]);
 
   // --- ULEPSZENIA ---
-  const buyUpgrade = (upgrade: Upgrade) => {
-    if (state.klocki < upgrade.costKlocki) return;
-    if (state.boughtUpgrades.includes(upgrade.id)) return;
+  const buyUpgrade = useCallback((upgrade: Upgrade) => {
+    const s = stateRef.current;
+    if (s.klocki < upgrade.costKlocki) return;
+    if (s.boughtUpgrades.includes(upgrade.id)) return;
 
-    const newMultipliers = upgrade.apply({ ...stateRef.current.multipliers });
+    const newMultipliers = upgrade.apply({ ...s.multipliers });
     const ns: GameState = {
-      ...stateRef.current,
-      klocki: stateRef.current.klocki - upgrade.costKlocki,
-      boughtUpgrades: [...stateRef.current.boughtUpgrades, upgrade.id],
+      ...s,
+      klocki: s.klocki - upgrade.costKlocki,
+      boughtUpgrades: [...s.boughtUpgrades, upgrade.id],
       multipliers: newMultipliers,
     };
     stateRef.current = ns;
     setState(ns);
-  };
+  }, []);
 
   // --- PRESTIGE ---
-  const doPrestige = () => {
-    if (!confirm(`Zresetuj postęp? Zyskasz stały bonus +10% produkcji (Prestige #${state.prestige + 1})`)) return;
-    const newPrestige = state.prestige + 1;
+  const doPrestige = useCallback(() => {
+    const s = stateRef.current;
+    if (!confirm(`Zresetuj postęp? Zyskasz stały bonus +10% produkcji (Prestige #${s.prestige + 1})`)) return;
+    const newPrestige = s.prestige + 1;
     const ns: GameState = {
       ...DEFAULT_STATE,
       lastTimestamp: Date.now(),
       prestige: newPrestige,
       prestigeBonus: 1 + newPrestige * 0.1,
-      lifetime_klocki: state.lifetime_klocki,
-      lifetime_clicks: state.lifetime_clicks,
+      lifetime_klocki: s.lifetime_klocki,
+      lifetime_clicks: s.lifetime_clicks,
     };
     stateRef.current = ns;
     setState(ns);
     localStorage.setItem(SAVE_KEY, JSON.stringify(ns));
-  };
+  }, []);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     if (!confirm('Usunąć CAŁY postęp łącznie z Prestige?')) return;
     localStorage.removeItem(SAVE_KEY);
     stateRef.current = DEFAULT_STATE;
     setState(DEFAULT_STATE);
-  };
+  }, []);
 
   // --- DANE DO UI ---
   const maxZapal = 100 + Math.floor(state.units.kierownik) * 10;

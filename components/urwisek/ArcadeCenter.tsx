@@ -15,8 +15,8 @@ export default function ArcadeCenter({ onClose, onGameComplete }: ArcadeCenterPr
   const [activeGame, setActiveGame] = useState<string | null>(null)
 
   const trackArcadeEvent = (gameId: string) => {
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'arcade_gra_uruchomienie', {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'arcade_gra_uruchomienie', {
         'event_category': 'Arcade_Center',
         'event_label': gameId
       });

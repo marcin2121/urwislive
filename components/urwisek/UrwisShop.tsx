@@ -67,7 +67,7 @@ export default function UrwisShop({ coins, level, inventory, equippedItems, onCl
          {['all', 'hat', 'toy'].map(tab => (
            <button 
              key={tab}
-             onClick={() => setActiveTab(tab as any)}
+             onClick={() => setActiveTab(tab as 'all' | 'hat' | 'toy')}
              className={cn(
                "px-4 py-2.5 rounded-2xl font-black uppercase text-xs tracking-wider transition-all whitespace-nowrap border-2 flex items-center gap-2",
                activeTab === tab ? "bg-zinc-900 text-white border-zinc-900 shadow-md" : "bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50"

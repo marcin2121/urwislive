@@ -10,6 +10,7 @@ import {
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
 } from './useBubbleShooter';
+import { RankingItem } from '@/types/urwis';
 
 export default function BubbleShooter() {
   const [playerName, setPlayerName] = useState('');
@@ -228,9 +229,9 @@ export default function BubbleShooter() {
 
                   {rankingData.length > 0 ? (
                     <div className="max-h-[220px] overflow-y-auto pr-2">
-                      {rankingData.map((row: any, idx: number) => (
+                      {rankingData.map((row: RankingItem, idx: number) => (
                         <div
-                          key={row.id ?? `${row.playername}-${idx}`}
+                          key={row.id ?? `${row.player_name}-${idx}`}
                           className={cn(
                             'flex items-center justify-between p-2 rounded-lg text-sm mb-1 transition-all',
                             idx === 0
@@ -239,7 +240,7 @@ export default function BubbleShooter() {
                               ? 'bg-zinc-300/20 border border-zinc-300/30 font-bold text-zinc-300'
                               : idx === 2
                               ? 'bg-orange-700/20 border border-orange-700/30 font-bold text-orange-400'
-                              : row.playername === playerName && row.score === score
+                              : row.player_name === playerName && row.score === score
                                 ? 'bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-bold'
                                 : 'bg-white/5 text-white shadow-sm font-medium',
 
@@ -250,8 +251,8 @@ export default function BubbleShooter() {
                               {idx + 1}.
                             </span>
                             <span className="truncate max-w-[120px]">
-  {row.playername ?? row.player_name ?? row.nickname ?? 'Anonim'}
-</span>
+                              {row.player_name ?? 'Anonim'}
+                            </span>
 
                           </div>
                           <div className="flex items-center gap-2">
