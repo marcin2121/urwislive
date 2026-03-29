@@ -100,6 +100,10 @@ export default function PromocjeSection() {
 
   useEffect(() => {
     async function fetchPromocje() {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
       setLoading(true)
       const { data, error } = await supabase
         .from('promocje')

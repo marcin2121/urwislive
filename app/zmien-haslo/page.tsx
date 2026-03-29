@@ -21,6 +21,7 @@ export default function ResetPasswordPage() {
   // Zabezpieczenie: sprawdzamy czy użytkownik faktycznie przyszedł z linku resetującego
   useEffect(() => {
     const checkSession = async () => {
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setError("Brak autoryzacji do zmiany hasła. Link mógł wygasnąć.");
@@ -42,6 +43,12 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     setError(null);
+
+    if (!supabase) {
+      setError("Błąd połączenia z bazą danych.");
+      setIsLoading(false);
+      return;
+    }
 
     // Zmiana hasła w Supabase
     const { error: updateError } = await supabase.auth.updateUser({

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { initWebPush } from '@/lib/push-server';
+import { ROUTES } from '@/lib/routes';
 import webpush from 'web-push';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
         body: message, 
         icon: '/android-chrome-192x192.png',
         data: { 
-          url: `/?utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}` 
+          url: `${ROUTES.HOME}?utm_source=pwa_push&utm_medium=notification&utm_campaign=push_${topic || 'general'}` 
         }
       })
     );

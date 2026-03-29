@@ -84,7 +84,7 @@ export default function RabatyPage() {
   }, []);
 
   const fetchData = useCallback(async () => {
-    if (!user) {
+    if (!supabase || !user) {
       setIsLoading(false);
       return;
     }
@@ -151,7 +151,7 @@ export default function RabatyPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const coupon = dbCoupons.find(c => c.id === id);
-    if (coupon) {
+    if (coupon && supabase) {
       await supabase.from('kupony').update({ current_usage: (coupon.current_usage || 0) + 1 }).eq('id', id);
     }
   };
@@ -571,7 +571,9 @@ export default function RabatyPage() {
                 <button 
                   onClick={async () => {
                     const supabaseClient = createClient();
-                    await supabaseClient.auth.updateUser({ data: { marketing_consent: true } });
+                    if (supabaseClient) {
+                      await supabaseClient.auth.updateUser({ data: { marketing_consent: true } });
+                    }
                     setShowNotifBanner(false);
                   }}
                   className="px-4 py-2 bg-[#0055ff] text-white text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-blue-600 transition-colors cursor-pointer"

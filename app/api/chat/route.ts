@@ -53,9 +53,7 @@ export async function POST(req: Request) {
 
   for (const modelInfo of modelsToTry) {
     try {
-      console.log(`[CHAT] Próba uruchomienia modelu: ${modelInfo.name}`);
-      
-      // ✅ TECHNIKA PRE-FLIGHT:
+      // PRE-FLIGHT check
       // streamText w niektórych wersjach AI SDK może opóźniać wyrzucenie błędu sieciowego
       // do momentu rozpoczęcia czytania streamu. generateText z 1 tokenem wymusza 
       // natychmiastowe sprawdzenie dostępności (High Demand) wewnątrz tego bloku try-catch.
@@ -100,10 +98,8 @@ TWOJE NAJWAŻNIEJSZE ZASADY:
                            error.status === 429 || 
                            error.status === 503;
 
-      console.warn(`[CHAT] Model ${modelInfo.name} zgłosił błąd: ${error.message || 'Przeciążenie/Nieosiągalny'}`);
       
       if (isOverloaded && modelInfo !== modelsToTry[modelsToTry.length - 1]) {
-        console.warn(`[CHAT] PRZECIĄŻENIE -> Przełączam na kolejny model...`);
         continue;
       }
       

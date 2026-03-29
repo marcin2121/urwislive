@@ -131,6 +131,7 @@ export default function ProfilePage() {
     if (Notification.permission === 'granted') {
       setPushState('SUBSCRIBED');
       try {
+        if (!supabase) return;
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
         if (sub) {
@@ -149,8 +150,10 @@ export default function ProfilePage() {
   const toggleMarketingConsent = async () => {
     setUpdatingData(true);
     const newConsent = !marketingConsent;
-    const { error } = await supabase.auth.updateUser({ data: { marketing_consent: newConsent } });
-    if (!error) { setMarketingConsent(newConsent); toast.success(newConsent ? 'Zgody zaktualizowane!' : 'Wycofano zgodę.'); }
+    if (supabase) {
+      const { error } = await supabase.auth.updateUser({ data: { marketing_consent: newConsent } });
+      if (!error) { setMarketingConsent(newConsent); toast.success(newConsent ? 'Zgody zaktualizowane!' : 'Wycofano zgodę.'); }
+    }
     setUpdatingData(false);
   };
 
@@ -167,9 +170,11 @@ export default function ProfilePage() {
           userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey)
         });
 
-        await supabase.from('push_subscriptions').upsert({ 
-          endpoint: subscription.endpoint, subscription_data: JSON.parse(JSON.stringify(subscription)), topics: ['wszystkie']
-        }, { onConflict: 'endpoint' });
+        if (supabase) {
+          await supabase.from('push_subscriptions').upsert({ 
+            endpoint: subscription.endpoint, subscription_data: JSON.parse(JSON.stringify(subscription)), topics: ['wszystkie']
+          }, { onConflict: 'endpoint' });
+        }
 
         setPushState('SUBSCRIBED');
         setSelectedTopics(['wszystkie']);
@@ -199,7 +204,7 @@ export default function ProfilePage() {
     try {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.getSubscription();
-      if (sub) {
+      if (sub && supabase) {
         await supabase.from('push_subscriptions').update({ topics: newTopics }).eq('endpoint', sub.endpoint);
       }
     } catch (e) { toast.error('Nie udało się zaktualizować kategorii.'); }
@@ -219,15 +224,17 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     setUpdatingData(true);
-    const { error } = await supabase.auth.updateUser({
-      data: { full_name: editData.name, phone: editData.phone }
-    });
-    
-    if (!error) {
-      toast.success('Dane zostały zaktualizowane!');
-      setIsEditing(false);
-    } else {
-      toast.error('Wystąpił błąd podczas aktualizacji.');
+    if (supabase) {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: editData.name, phone: editData.phone }
+      });
+      
+      if (!error) {
+        toast.success('Dane zostały zaktualizowane!');
+        setIsEditing(false);
+      } else {
+        toast.error('Wystąpił błąd podczas aktualizacji.');
+      }
     }
     setUpdatingData(false);
   };
@@ -241,12 +248,12 @@ export default function ProfilePage() {
       // Ze względów bezpieczeństwa (RLS) pełne usunięcie z Auth często wymaga backendu (Edge Function).
       // Zostawiamy tu UX-owe rozwiązanie z wylogowaniem. Możesz podpiąć tu swój RPC w przyszłości.
       toast.success("Twoje konto zostało zgłoszone do trwałego usunięcia.");
-      await supabase.auth.signOut();
+      if (supabase) await supabase.auth.signOut();
       window.location.href = '/';
     }
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = "/"; };
+  const handleLogout = async () => { if (supabase) await supabase.auth.signOut(); window.location.href = "/"; };
 
   if (isLoading) return <div className="min-h-screen bg-zinc-50 flex items-center justify-center"><Loader2 className="animate-spin text-[#0055ff] w-10 h-10" /></div>;
   if (!user) return <GuestView />;

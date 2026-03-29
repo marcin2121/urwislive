@@ -14,6 +14,10 @@ export function KuponyTab() {
   const fetchKupony = async () => {
     setIsRefreshing(true);
     const supabase = createClient();
+    if (!supabase) {
+      setIsRefreshing(false);
+      return;
+    }
     const { data } = await supabase.from('kupony').select('*').is('user_id', null).order('created_at', { ascending: false });
     setKupony(data || []);
     setIsRefreshing(false);
@@ -23,6 +27,10 @@ export function KuponyTab() {
   const handleSaveKupon = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
+    if (!supabase) {
+      toast.error('Błąd konfiguracji bazy danych');
+      return;
+    }
     const payload = { ...kuponForm, usage_limit: kuponForm.usage_limit ? parseInt(kuponForm.usage_limit) : null, expires_at: kuponForm.expires_at ? new Date(kuponForm.expires_at).toISOString() : null, is_active: true };
     const { error } = kuponForm.id ? await supabase.from('kupony').update(payload).eq('id', kuponForm.id) : await supabase.from('kupony').insert([payload]);
     if (!error) { setIsAddingKupon(false); fetchKupony(); toast.success('Zapisano kupon!'); } else toast.error('Błąd');
@@ -44,7 +52,13 @@ export function KuponyTab() {
            <div key={k.id} className={`bg-gradient-to-br ${k.gradient} p-6 rounded-3xl text-white shadow-xl flex flex-col justify-between relative min-h-[200px]`}>
              <div className="absolute top-4 right-4 flex gap-2 z-10">
                <button onClick={() => { setKuponForm({...k}); setIsAddingKupon(true); }} className="p-2 bg-white/20 hover:bg-white/40 rounded-full cursor-pointer"><Pencil size={16} /></button>
-               <button onClick={async () => { await createClient().from('kupony').delete().eq('id', k.id); fetchKupony(); }} className="p-2 bg-white/20 hover:bg-red-500 rounded-full cursor-pointer"><Trash2 size={16} /></button>
+               <button onClick={async () => { 
+                  const supabase = createClient();
+                  if (supabase) {
+                    await supabase.from('kupony').delete().eq('id', k.id); 
+                    fetchKupony(); 
+                  }
+                }} className="p-2 bg-white/20 hover:bg-red-500 rounded-full cursor-pointer"><Trash2 size={16} /></button>
              </div>
              <div className="mb-4 pr-16">
                <h3 className="text-2xl font-black italic uppercase leading-none mb-1">{k.title}</h3>

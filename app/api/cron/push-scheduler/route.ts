@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server';
+import { ROUTES } from '@/lib/routes';
 
 export async function GET(req: Request) {
   // Zabezpieczenie przed wywołaniem przez osoby postronne
@@ -46,11 +47,11 @@ export async function GET(req: Request) {
               body: push.message,
               image: push.image_url,
               icon: '/android-chrome-192x192.png',
-              data: { url: `/?utm_campaign=scheduled_push_${push.topic}` }
+              data: { url: `${ROUTES.HOME}?utm_campaign=scheduled_push_${push.topic}` }
             });
 
             // Wyślij do wszystkich
-            await Promise.all(subs.map((s: any) => 
+            await Promise.all(subs.map((s: { subscription_data: webpush.PushSubscription }) => 
               webpush.sendNotification(s.subscription_data, payload).catch(() => null)
             ));
           }

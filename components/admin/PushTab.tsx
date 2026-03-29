@@ -18,6 +18,10 @@ export function PushTab() {
   const fetchSubs = async () => {
     setIsRefreshing(true);
     const supabase = createClient();
+    if (!supabase) {
+      setIsRefreshing(false);
+      return;
+    }
     let query = supabase.from('push_subscriptions').select('*', { count: 'exact', head: true });
     if (selectedTopic !== 'wszystkie') query = query.or(`topics.cs.{"${selectedTopic}"},topics.cs.{"wszystkie"}`);
     const { count } = await query;
@@ -28,10 +32,13 @@ export function PushTab() {
   useEffect(() => {
     fetchSubs();
     // 🟢 Realtime dla subskrypcji
-    const channel = createClient().channel('push-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'push_subscriptions' }, fetchSubs)
-      .subscribe();
-    return () => { createClient().removeChannel(channel); }
+    const supabase = createClient();
+    if (supabase) {
+      const channel = supabase.channel('push-live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'push_subscriptions' }, fetchSubs)
+        .subscribe();
+      return () => { supabase.removeChannel(channel); }
+    }
   }, [selectedTopic]);
 
   async function handleSendPush(e: React.FormEvent) {
@@ -39,6 +46,11 @@ export function PushTab() {
     if (subs === 0) return toast.error('Brak odbiorców!');
     setIsSending(true);
     const supabase = createClient();
+    if (!supabase) {
+      toast.error('Błąd konfiguracji');
+      setIsSending(false);
+      return;
+    }
     try {
       if (pushData.scheduled_for) {
         await supabase.from('push_history').insert([{ ...pushData, topic: selectedTopic, status: 'scheduled', sent_to_count: subs }]);

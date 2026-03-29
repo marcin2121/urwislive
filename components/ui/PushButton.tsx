@@ -56,7 +56,7 @@ export default function PushButton() {
       try {
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
-        if (sub) {
+        if (sub && supabase) {
           const { data } = await supabase
             .from('push_subscriptions')
             .select('topics')
@@ -135,7 +135,7 @@ export default function PushButton() {
     try {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.getSubscription();
-      if (sub) {
+      if (sub && supabase) {
         const { error } = await supabase
           .from('push_subscriptions')
           .update({ topics: finalTopics })
@@ -177,13 +177,15 @@ export default function PushButton() {
               applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
             });
 
-            await supabase
-              .from('push_subscriptions')
-              .upsert({ 
-                endpoint: subscription.endpoint,
-                subscription_data: JSON.parse(JSON.stringify(subscription)),
-                topics: ['wszystkie']
-              }, { onConflict: 'endpoint' });
+            if (supabase) {
+              await supabase
+                .from('push_subscriptions')
+                .upsert({ 
+                  endpoint: subscription.endpoint,
+                  subscription_data: JSON.parse(JSON.stringify(subscription)),
+                  topics: ['wszystkie']
+                }, { onConflict: 'endpoint' });
+            }
 
             setButtonState('SUBSCRIBED');
             setShowSettings(true); 

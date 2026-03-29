@@ -49,6 +49,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     setSuccessMessage(null);
 
     try {
+      if (!supabase) throw new Error("Błąd konfiguracji usługi uwierzytelniania.");
       if (view === 'login') {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw new Error("Nieprawidłowy email lub hasło.");
@@ -92,6 +93,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     setIsLoading(true);
     setError(null);
     try {
+      if (!supabase) throw new Error("Usługa niedostępna.");
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

@@ -24,8 +24,7 @@
         "name": "next"
       }
     ],
-    "ignoreDeprecations": "6.0", // ✅ TS 6.0 Bridge
-    "baseUrl": ".", // ✅ + paths
+    "ignoreDeprecations": "5.0", // ✅ TS 6.0 Bridge
     "paths": {
       "@/*": [
         "./*"

@@ -8,6 +8,7 @@ import { checkAchievements } from '@/lib/urwis/achievements'
 
 export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd konfiguracji bazy danych.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Zaloguj się!' }
 
@@ -138,8 +139,9 @@ export async function interactWithUrwis(actionType: 'feed' | 'play' | 'wash') {
 
 export async function claimDailyLogin() {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd serwera.' }
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Zaloguj se!' }
+  if (!user) return { error: 'Zaloguj się!' }
 
   const { data: pet } = await supabase.from('urwis_pet').select('urwis_coins, last_login_at').eq('user_id', user.id).single()
   if (!pet) return { error: 'Brak Urwiska.' }
@@ -164,6 +166,7 @@ export async function claimDailyLogin() {
 
 export async function createUrwisPet(playerName: string, petName: string, gender: string) {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd połączenia.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
   
@@ -205,6 +208,7 @@ if (!playerName || playerName.trim().length < 3 || playerName.length > 30) {
 
 export async function getUrwisRanking() {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd bazy danych.' }
   
   const { data, error } = await supabase
     .from('urwis_pet')
@@ -228,6 +232,7 @@ export async function getUrwisRanking() {
 export async function submitBubbleShooterScore(playerName: string, score: number, level: number) {
   try {
     const supabase = await createClient()
+    if (!supabase) return { success: false }
     const { error } = await supabase
       .from('bubble_shooter_scores')
       .insert({
@@ -254,6 +259,7 @@ export async function submitBubbleShooterScore(playerName: string, score: number
 export async function getBubbleShooterRanking(currentScore?: number) {
   try {
     const supabase = await createClient()
+    if (!supabase) return { success: true, topScores: [] }
     
     // Zwykłe TOP 10 po dacie i statystykach
     const { data: topPlayers, error } = await supabase
@@ -307,6 +313,7 @@ export async function getBubbleShooterRanking(currentScore?: number) {
 export async function submitArkanoidScore(playerName: string, score: number, level: number) {
   try {
     const supabase = await createClient()
+    if (!supabase) return { success: false }
     const { error } = await supabase
       .from('arkanoid_scores')
       .insert({
@@ -333,6 +340,7 @@ export async function submitArkanoidScore(playerName: string, score: number, lev
 export async function getArkanoidRanking(currentScore?: number) {
   try {
     const supabase = await createClient()
+    if (!supabase) return { success: true, topScores: [] }
     
     const { data: topPlayers, error } = await supabase
       .from('arkanoid_scores')
@@ -376,6 +384,7 @@ export async function getArkanoidRanking(currentScore?: number) {
 
 export async function buyUrwisItem(itemId: string) {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd konfiguracji.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
 
@@ -428,6 +437,7 @@ export async function buyUrwisItem(itemId: string) {
 
 export async function toggleUrwisItem(itemId: string, category: string) {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd serwera.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
 
@@ -457,6 +467,7 @@ export async function toggleUrwisItem(itemId: string, category: string) {
 
 export async function finishArcadeGame(gameId: string) {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd bazy danych.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
 
@@ -528,6 +539,7 @@ export async function finishArcadeGame(gameId: string) {
 
 export async function claimQuestReward(questId: string, rewardCoins: number) {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Błąd konfiguracji.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
 
@@ -574,6 +586,7 @@ export async function claimQuestReward(questId: string, rewardCoins: number) {
 export async function submitKlockiScore(playerName: string, score: number) {
   try {
     const supabase = await createClient()
+    if (!supabase) return { success: false }
     const { error } = await supabase
       .from('klocki_scores')
       .insert({
@@ -598,6 +611,7 @@ export async function submitKlockiScore(playerName: string, score: number) {
 export async function getKlockiRanking(currentScore?: number) {
   try {
     const supabase = await createClient()
+    if (!supabase) return { success: true, topScores: [] }
     
     const { data: topPlayers, error } = await supabase
       .from('klocki_scores')

@@ -33,6 +33,10 @@ export default function DemoWheelBanner() {
   // 1. Sprawdzanie sesji użytkownika
   useEffect(() => {
     const checkSession = async () => {
+      if (!supabase) {
+        setIsLoadingSession(false);
+        return;
+      }
       try {
         const { data: { session } } = await supabase.auth.getSession();
         setIsLoggedIn(!!session);
@@ -43,11 +47,12 @@ export default function DemoWheelBanner() {
       }
     };
     checkSession();
-  }, [supabase.auth]);
+  }, [supabase]);
 
   // 2. Pobieranie nagród z bazy (demo musi być wiarygodne)
   useEffect(() => {
     const fetchPrizes = async () => {
+      if (!supabase) return;
       const { data } = await supabase.from('wheel_prizes').select('*').eq('is_active', true);
       if (data && data.length > 0) {
         setWheelPrizes(data);

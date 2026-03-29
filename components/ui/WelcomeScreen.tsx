@@ -102,13 +102,15 @@ export default function WelcomeScreen() {
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
         });
 
-        await supabase
-          .from('push_subscriptions')
-          .upsert({ 
-            endpoint: subscription.endpoint,
-            subscription_data: JSON.parse(JSON.stringify(subscription)),
-            topics: ['wszystkie']
-          }, { onConflict: 'endpoint' });
+        if (supabase) {
+          await supabase
+            .from('push_subscriptions')
+            .upsert({ 
+              endpoint: subscription.endpoint,
+              subscription_data: JSON.parse(JSON.stringify(subscription)),
+              topics: ['wszystkie']
+            }, { onConflict: 'endpoint' });
+        }
 
         window.dispatchEvent(new Event('push-permission-changed'));
 

@@ -17,6 +17,10 @@ export function PromosTab() {
   const fetchPromos = async () => {
     setIsRefreshing(true);
     const supabase = createClient();
+    if (!supabase) {
+      setIsRefreshing(false);
+      return;
+    }
     const { data } = await supabase.from('promocje').select('*').order('created_at', { ascending: false });
     setPromos(data || []);
     setIsRefreshing(false);
@@ -26,6 +30,10 @@ export function PromosTab() {
   const handleAddPromo = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
+    if (!supabase) {
+      toast.error('Błąd bazy danych');
+      return;
+    }
     const payload = { ...promoForm, expires_at: promoForm.expires_at ? new Date(promoForm.expires_at).toISOString() : null, is_active: true };
     const { error } = await supabase.from('promocje').insert([payload]);
     if (!error) { setIsAddingPromo(false); setIsCustomCategory(false); setPromoForm({ title: '', old_price: '', new_price: '', discount: '', category: 'Zabawki', expires_at: '', image_url: '' }); toast.success('Okazja opublikowana!'); fetchPromos(); } else toast.error('Błąd zapisu');
@@ -34,7 +42,9 @@ export function PromosTab() {
   const handleDeletePromo = async (id: string) => {
     if (confirm('Usunąć ofertę z serwisu?')) {
       const supabase = createClient();
-      await supabase.from('promocje').delete().eq('id', id); toast.success('Usunięto ofertę'); fetchPromos();
+      if (supabase) {
+        await supabase.from('promocje').delete().eq('id', id); toast.success('Usunięto ofertę'); fetchPromos();
+      }
     }
   };
 

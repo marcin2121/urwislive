@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function spinWheel() {
   const supabase = await createClient()
+  if (!supabase) return { error: 'Usługa tymczasowo niedostępna.' }
 
   try {
     // 1. Sprawdzamy, czy użytkownik jest zalogowany

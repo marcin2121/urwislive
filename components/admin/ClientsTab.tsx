@@ -16,6 +16,10 @@ export function ClientsTab() {
   const fetchUsers = async () => {
     setIsRefreshing(true);
     const supabase = createClient();
+    if (!supabase) {
+      setIsRefreshing(false);
+      return;
+    }
     const [usersRes, extraUsersRes] = await Promise.all([
       supabase.from('loyalty_cards').select('id, full_name, phone_number, created_at').order('created_at', { ascending: false }),
       getAdminUsersDetails()
@@ -45,12 +49,14 @@ export function ClientsTab() {
     fetchUsers();
     // 🟢 Realtime dla bazy klientów (np. gdy ktoś włączy PWA)
     const supabase = createClient();
-    const channel = supabase.channel('clients-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'push_subscriptions' }, fetchUsers)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards' }, fetchUsers)
-      .subscribe();
+    if (supabase) {
+      const channel = supabase.channel('clients-live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'push_subscriptions' }, fetchUsers)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'loyalty_cards' }, fetchUsers)
+        .subscribe();
 
-    return () => { supabase.removeChannel(channel); }
+      return () => { supabase.removeChannel(channel); }
+    }
   }, []);
 
   const handleSelectUser = async (user: any) => {

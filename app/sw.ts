@@ -8,6 +8,9 @@ declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
   }
+  interface ServiceWorkerGlobalScope {
+    Notification: typeof Notification;
+  }
 }
 
 declare const self: ServiceWorkerGlobalScope;
@@ -104,9 +107,7 @@ serwist.addEventListeners();
 
 // Obsługa Push Notifications
 self.addEventListener('push', (event) => {
-  // W SW sprawdzamy dostępność Notification na obiekcie self lub używamy samego registration
-  const anySelf = self as any;
-  if (!(anySelf.Notification && anySelf.Notification.permission === 'granted')) {
+  if (!(self.Notification && self.Notification.permission === 'granted')) {
     return;
   }
 
@@ -137,7 +138,7 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const targetUrl = (event.notification.data as any)?.url || '/';
+  const targetUrl = event.notification.data?.url || '/';
   const fullUrl = new URL(targetUrl, self.location.origin).href;
 
   // Tracking kliknięcia
@@ -157,9 +158,9 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
       if (clientList.length > 0) {
-        const anyClient = clientList[0] as any;
-        if (anyClient.navigate) {
-            return anyClient.navigate(fullUrl).then((c: any) => c?.focus());
+        const anyClient = clientList[0];
+        if ('navigate' in anyClient) {
+            return (anyClient as WindowClient).navigate(fullUrl).then((c) => c?.focus());
         }
       }
       return self.clients.openWindow(fullUrl);

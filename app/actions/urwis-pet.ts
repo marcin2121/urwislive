@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 
 export async function interactWithUrwis(actionType: 'feed' | 'play') {
   const supabase = await createClient();
+  if (!supabase) throw new Error('Konfiguracja Supabase jest nieprawidłowa.');
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) throw new Error('Musisz być zalogowany w Akademii Urwisa!');

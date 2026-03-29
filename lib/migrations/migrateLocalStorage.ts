@@ -12,6 +12,7 @@ interface LocalStorageData {
 
 export async function migrateLocalStorageToSupabase(userId: string) {
   const supabase = createClient()
+  if (!supabase) return { success: false, error: 'Supabase client not initialized' }
 
   try {
     // Get localStorage data

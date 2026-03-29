@@ -16,6 +16,10 @@ export function WheelTab() {
   const fetchData = async () => {
     setIsRefreshing(true);
     const supabase = createClient();
+    if (!supabase) {
+      setIsRefreshing(false);
+      return;
+    }
     
     try {
       // Pobieramy nagrody, kupony z przypisanym użytkownikiem (czyli wylosowane) oraz dane użytkowników
@@ -75,6 +79,10 @@ export function WheelTab() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createClient();
+    if (!supabase) {
+      toast.error('Błąd konfiguracji');
+      return;
+    }
     const payload = { ...form, chance: parseFloat(form.chance), is_active: true };
     const { error } = form.id ? await supabase.from('wheel_prizes').update(payload).eq('id', form.id) : await supabase.from('wheel_prizes').insert([payload]);
     if (!error) { setIsAdding(false); fetchData(); toast.success('Zapisano!'); } else toast.error('Błąd');
@@ -107,7 +115,13 @@ export function WheelTab() {
              <div key={p.id} className={`bg-gradient-to-br ${p.gradient} p-6 rounded-3xl text-white shadow-xl flex flex-col justify-between relative min-h-[200px]`}>
                <div className="absolute top-4 right-4 flex gap-2 z-10">
                  <button onClick={() => { setForm({...p}); setIsAdding(true); }} className="p-2 bg-white/20 hover:bg-white/40 rounded-full cursor-pointer"><Pencil size={16} /></button>
-                 <button onClick={async () => { await createClient().from('wheel_prizes').delete().eq('id', p.id); fetchData(); }} className="p-2 bg-white/20 hover:bg-red-500 rounded-full cursor-pointer"><Trash2 size={16} /></button>
+                 <button onClick={async () => { 
+                  const supabase = createClient();
+                  if (supabase) {
+                    await supabase.from('wheel_prizes').delete().eq('id', p.id); 
+                    fetchData(); 
+                  }
+                }} className="p-2 bg-white/20 hover:bg-red-500 rounded-full cursor-pointer"><Trash2 size={16} /></button>
                </div>
                <div className="mb-4 pr-16">
                  <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-black/30 rounded-xl font-black text-sm mb-3">{p.chance}% Szans</span>

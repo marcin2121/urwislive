@@ -9,6 +9,7 @@ import Particles from "@/components/Particles"
 import { toast } from 'sonner'
 import Link from 'next/link'
 
+
 export default function LoyaltyCardPage() {
   const supabase = createClient()
   const { session, user, isLoading: isAuthLoading } = useAuth() // Magia!
@@ -36,6 +37,7 @@ export default function LoyaltyCardPage() {
 
   const fetchCard = async (userPhone: string, userName: string) => {
     setLoadingCard(true)
+    if (!supabase) return
     try {
       const { data } = await supabase.from('loyalty_cards').select('*').eq('phone_number', userPhone).maybeSingle()
       
@@ -64,6 +66,7 @@ export default function LoyaltyCardPage() {
     const fakeEmail = `${cleanPhone}@sklep-urwis.pl` // <--- TWOJA DOMENA
 
     try {
+        if (!supabase) throw new Error("Błąd konfiguracji bazy.")
         if (isLoginMode) {
           const { error } = await supabase.auth.signInWithPassword({ email: fakeEmail, password })
           if (error) throw new Error("Błąd logowania. Sprawdź numer i hasło.")
@@ -92,7 +95,7 @@ export default function LoyaltyCardPage() {
     }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    if (supabase) await supabase.auth.signOut()
     toast.success("Wylogowano pomyślnie.")
   }
 

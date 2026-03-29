@@ -14,6 +14,11 @@ export function StatsTab() {
   const fetchStats = async () => {
     setIsRefreshing(true);
     const supabase = createClient();
+    if (!supabase) {
+      setLoading(false);
+      setIsRefreshing(false);
+      return;
+    }
     
     const [allCouponsRes, pushSubsRes] = await Promise.all([
       supabase.from('kupony').select('title, current_usage, user_id, created_at, is_active'),
@@ -70,12 +75,14 @@ export function StatsTab() {
     fetchStats();
     // 🟢 Realtime dla Bazy PWA i Kuponów w tle
     const supabase = createClient();
-    const channel = supabase.channel('stats-live')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'push_subscriptions' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'kupony' }, fetchStats)
-      .subscribe();
+    if (supabase) {
+      const channel = supabase.channel('stats-live')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'push_subscriptions' }, fetchStats)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'kupony' }, fetchStats)
+        .subscribe();
 
-    return () => { supabase.removeChannel(channel); }
+      return () => { supabase.removeChannel(channel); }
+    }
   }, []);
 
   if (loading) return <div className="flex justify-center mt-32"><Loader2 className="w-10 h-10 animate-spin text-[#0055ff]" /></div>;

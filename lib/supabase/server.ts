@@ -6,7 +6,7 @@ import { cookies } from 'next/headers'
  * global variable. Always create a new client within each function when using
  * it.
  */
-export async function createClient() {
+export async function createClient(): Promise<ReturnType<typeof createServerClient> | null> {
   const cookieStore = await cookies()
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -15,7 +15,7 @@ export async function createClient() {
     if (process.env.NODE_ENV !== 'production' || !process.env.CI) {
       console.warn('⚠️ Supabase Server: Brak kluczy URL/ANON. Klient nie zostanie zainicjalizowany.');
     }
-    return null as any; // Bezpieczny fallback dla SSR/Build
+    return null; // Zmusza do sprawdzenia przed użyciem (np. ?.)
   }
 
   return createServerClient(

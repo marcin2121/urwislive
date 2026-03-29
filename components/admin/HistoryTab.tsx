@@ -10,7 +10,12 @@ export function HistoryTab() {
 
   const fetchHistory = async () => { 
     setIsRefreshing(true);
-    const { data } = await createClient().from('push_history').select('*').order('created_at', { ascending: false });
+    const supabase = createClient();
+    if (!supabase) {
+      setIsRefreshing(false);
+      return;
+    }
+    const { data } = await supabase.from('push_history').select('*').order('created_at', { ascending: false });
     setHistory(data || []);
     setIsRefreshing(false);
   };

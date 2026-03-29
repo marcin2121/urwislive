@@ -32,6 +32,7 @@ export default function UrwisekAuth() {
     setLoading(true)
 
     try {
+      if (!supabase) throw new Error("Błąd konfiguracji usługi logowania.")
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
@@ -56,6 +57,7 @@ export default function UrwisekAuth() {
     setError('')
     setLoading(true)
     try {
+      if (!supabase) throw new Error("Usługa niedostępna.")
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

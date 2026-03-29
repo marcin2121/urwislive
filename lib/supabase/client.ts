@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 let client: SupabaseClient | undefined;
 
-export function createClient() {
+export function createClient(): SupabaseClient | null {
   if (client) return client;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,7 +14,7 @@ export function createClient() {
     if (process.env.NODE_ENV !== 'production' || !process.env.CI) {
       console.warn('⚠️ Supabase: Brak kluczy URL/ANON. Klient nie zostanie zainicjalizowany.');
     }
-    return null as any; // Bezpieczny fallback dla SSR
+    return null; // Zmusza konsumenta do sprawdzenia przed użyciem
   }
 
   client = createBrowserClient(url, anonKey);

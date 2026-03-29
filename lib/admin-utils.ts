@@ -10,6 +10,7 @@ export const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#
 
 export async function uploadAdminFile(file: File, folder: 'broadcasts' | 'promos' | 'kupony') {
   const supabase = createClient();
+  if (!supabase) return null;
   const ext = file.name.split('.').pop() ?? 'jpg';
   const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   
