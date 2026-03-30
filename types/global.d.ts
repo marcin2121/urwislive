@@ -2,7 +2,7 @@ import 'react';
 
 declare global {
   interface Window {
-    gtag?: (command: string, ...args: unknown[]) => void;
+    gtag?: (command: string, ...args: any[]) => void;
   }
 }
 

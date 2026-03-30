@@ -22,7 +22,7 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
         // Serwist przechwyci to nieudane żądanie i doda do kolejki IndexedDB
         console.log("Żądanie nieudane - Serwist dodał je do kolejki synchronizacji.");
       }
-    } catch (err) {
+    } catch (_err) {
       // Fetch rzuca wyjątek przy całkowitym braku sieci
       console.log("Brak sieci. Punkty zostaną wysłane automatycznie w tle po odzyskaniu połączenia.");
     }

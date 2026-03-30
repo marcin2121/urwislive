@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, X } from 'lucide-react'
+import { Sparkles, X } from "lucide-react"
 
 import WashingGame from './games/WashingGame'
 import FeedingGame from './games/FeedingGame'

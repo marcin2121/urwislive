@@ -85,7 +85,7 @@ export class PushService {
 
     initWebPush();
 
-    const notifications = subs.map((sub: { endpoint: string, subscription_data: unknown }) => 
+    const notifications = subs.map((sub: { endpoint: string, subscription_data: any }) => 
       webpush.sendNotification(sub.subscription_data as webpush.PushSubscription, payload).catch(async (err) => {
         // If 410 (Gone) or 404 (Not Found), the subscription is no longer valid
         if (err.statusCode === 410 || err.statusCode === 404) {

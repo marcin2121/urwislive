@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image'; // 🚀 DODANY IMPORT NEXT/IMAGE
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Sparkles, Trophy, Heart, Smartphone, Share, PlusSquare, MoreVertical, Download } from 'lucide-react';
+import { Play, Sparkles, Trophy, Heart, Smartphone, Share, PlusSquare, MoreVertical, Download } from "lucide-react";
 import ColoringZone, { Template } from '@/components/ColoringZone';
 
 const TEMPLATES: Template[] = [

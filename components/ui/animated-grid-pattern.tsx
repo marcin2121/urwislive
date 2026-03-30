@@ -67,7 +67,7 @@ export function AnimatedGridPattern({
         color: colors[i % colors.length]
       }))
     },
-    [getPos]
+    [getPos, colors]
   )
 
   const updateSquarePosition = useCallback(
@@ -91,9 +91,13 @@ export function AnimatedGridPattern({
 
   useEffect(() => {
     if (dimensions.width && dimensions.height) {
-      setSquares(generateSquares(numSquares))
+      const timeoutId = setTimeout(() => {
+        setSquares(generateSquares(numSquares))
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [dimensions.width, dimensions.height, generateSquares, numSquares])
+
 
   useEffect(() => {
     const element = containerRef.current

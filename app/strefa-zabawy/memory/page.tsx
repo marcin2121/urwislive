@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, RotateCcw, Trophy, Activity, Timer, Brain } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trophy, Activity, Timer, Brain } from "lucide-react";
 import confetti from 'canvas-confetti';
 
 // --- KONFIGURACJA ---
@@ -131,7 +131,7 @@ export default function MemoryGamePage() {
 
     if (newFlipped.length === 2) {
       setMoves(m => m + 1);
-      const [firstIdx, secondIdx] = newFlipped;
+      const [firstIdx, _secondIdx] = newFlipped;
 
       if (cards[firstIdx].emoji === cards[index].emoji) {
         // MATCH

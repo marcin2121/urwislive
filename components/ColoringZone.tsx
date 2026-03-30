@@ -7,8 +7,8 @@ import {
   RotateCcw, Download, Smartphone, ChevronLeft, 
   Eraser, Palette, Pipette, Trash2, Eye, EyeOff,
   Wand2, Star, Sun, Heart, Smile, X, Plus, Minus, Hand, Paintbrush,
-  Volume2, VolumeX, Volume1, ChevronRight, PaintBucket, Printer
-} from 'lucide-react';
+  Volume2, VolumeX, Volume1, PaintBucket, Printer
+} from "lucide-react";
 
 export interface Template { 
   id: string; 
@@ -42,10 +42,10 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   // --- STANY ---
   const [isDrawing, setIsDrawing] = useState(false);
   const [selectedColor, setSelectedColor] = useState(PRESET_PALETTE[0]);
-  const [recentColors, setRecentColors] = useState<string[]>(['#BF2024', '#0055ff', '#FACC15', '#22C55E', '#000000']);
+  const [_recentColors, setRecentColors] = useState<string[]>(['#BF2024', '#0055ff', '#FACC15', '#22C55E', '#000000']);
   const [lineWidth, setLineWidth] = useState(15);
   const [tool, setTool] = useState<'brush' | 'magic' | 'eraser' | 'pan' | 'picker' | 'stamp' | 'fill'>('brush');
-  const [selectedStamp, setSelectedStamp] = useState(STAMP_LIST[0]);
+  const [_selectedStamp, _setSelectedStamp] = useState(STAMP_LIST[0]);
   
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showMobileSizePicker, setShowMobileSizePicker] = useState(false);
@@ -78,8 +78,8 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [dynamicCursor, setDynamicCursor] = useState('default');
 
-  const [showBrushPreview, setShowBrushPreview] = useState(false);
-  const brushPreviewTimer = useRef<NodeJS.Timeout | null>(null);
+  const [showBrushPreview, _setShowBrushPreview] = useState(false);
+  const _brushPreviewTimer = useRef<NodeJS.Timeout | null>(null);
 
   // --- FUNKCJE POMOCNICZE ---
   const selectColor = useCallback((color: string) => {
@@ -340,6 +340,7 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
 
  useEffect(() => {
   trackEvent('kolorowanka_start', { template_id: template.id, template_title: template.title });
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
   // ✅ Najbardziej niezawodna metoda — sprawdza rzeczywiste piksele
@@ -371,10 +372,9 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
     if (mql.addEventListener) {
       mql.addEventListener('change', checkOrientation);
     } else {
-      // @ts-ignore — stare API
       mql.addListener(checkOrientation);
     }
-  } catch (e) {
+  } catch (_e) {
     // matchMedia może rzucić błąd na bardzo starych urządzeniach
   }
 
@@ -413,10 +413,9 @@ export default function ColoringZone({ template, onClose }: ColoringZoneProps) {
         if (mql.removeEventListener) {
           mql.removeEventListener('change', checkOrientation);
         } else {
-          // @ts-ignore
           mql.removeListener(checkOrientation);
         }
-      } catch (e) {}
+      } catch (_e) {}
     }
   };
 }, [template]);

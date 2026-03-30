@@ -1,10 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Heart, Store, Coffee, GraduationCap, ChevronRight } from 'lucide-react'
+import { Heart, Store, Coffee, GraduationCap, ChevronRight } from "lucide-react"
 import Link from 'next/link'
 import MagicBento from '@/components/ui/MagicBento' 
-import Particles from "@/components/Particles"
+import "@/components/Particles"
 
 export default function AboutSection() {
   const trackAboutInteraction = (area: string) => {

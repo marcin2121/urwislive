@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { GraduationCap, Sparkles, ChevronRight, Trophy, MousePointer2 } from "lucide-react"
+import { GraduationCap, Sparkles,  Trophy, } from "lucide-react"
 import Link from 'next/link'
 
 export function AcademyPromo() {

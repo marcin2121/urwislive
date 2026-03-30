@@ -4,7 +4,7 @@ import React from 'react'
 import { 
   MapPin, Phone, Mail, Facebook, 
   Instagram, ArrowRight, Store, Gamepad2, Globe, ShieldCheck, Heart 
-} from 'lucide-react'
+} from "lucide-react"
 import Link from 'next/link'
 import Image from 'next/image'
 

@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { Toaster } from 'sonner';
-import { Suspense } from "react";
+import { } from "react";
 import Script from "next/script";
 import { AuthProvider } from "@/components/AuthProvider";
 import { PopupProvider } from "@/components/PopupProvider";

@@ -1,6 +1,6 @@
 import Arkanoid from '@/components/urwisek/games/Arkanoid'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from "lucide-react"
 
 export default function ArkanoidPage() {
   return (

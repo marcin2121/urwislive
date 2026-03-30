@@ -25,6 +25,7 @@ export function PopupProvider({ children }: { children: React.ReactNode }) {
     
     // Fallback: jeśli intro zakończyło się przed zamontowaniem komponentów lub jest pominęte.
     if (sessionStorage.getItem('urwis_intro_shown') === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentPopup('WELCOME');
     } else {
       // Domyślnie na starcie jesteśmy w fazie INTRO

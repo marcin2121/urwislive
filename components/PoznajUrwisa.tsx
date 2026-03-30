@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRef, useState, useEffect, ComponentType } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { HeartHandshake, Zap, Palette, ChevronRight, Sparkles } from 'lucide-react';
+import { HeartHandshake, Zap, Palette, ChevronRight, Sparkles } from "lucide-react";
 import type { ViewerProps } from '@/components/ModelViewer';
 
 export default function PoznajUrwisa() {

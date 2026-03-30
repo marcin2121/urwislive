@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion';
-import { Utensils, Droplets, Heart, LucideIcon } from 'lucide-react';
+import { Utensils, Droplets, Heart, LucideIcon } from "lucide-react";
 import { getXPForLevel } from '@/lib/urwis/engine';
 import { cn } from '@/lib/utils';
 import { UrwisPet } from '@/types/urwis';

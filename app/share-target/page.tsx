@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Share2, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Share2, ArrowRight, ShoppingBag } from "lucide-react";
 import { toast } from 'sonner';
 
 // 1. Wydzielamy logikę formularza do osobnego komponentu "wewnętrznego"
@@ -20,6 +20,7 @@ function ShareTargetContent() {
     const url = searchParams.get('url') || '';
 
     if (title || text || url) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSharedData({ title, text, url });
       
       if (!hasSaved.current) {

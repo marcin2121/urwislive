@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
-import { Zap, Users, TicketPercent, CheckCircle2, TrendingUp, MousePointer2, CircleDashed, Loader2, RefreshCw } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, AreaChart, Area } from 'recharts'
+import { Zap, Users, TicketPercent, CheckCircle2, TrendingUp, MousePointer2, CircleDashed, Loader2, RefreshCw } from "lucide-react"
+import {   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,   Cell, PieChart, Pie, AreaChart, Area } from 'recharts'
 import { COLORS } from '@/lib/admin-utils'
 
 export function StatsTab() {
@@ -72,6 +72,7 @@ export function StatsTab() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats();
     // 🟢 Realtime dla Bazy PWA i Kuponów w tle
     const supabase = createClient();

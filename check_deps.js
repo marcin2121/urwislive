@@ -7,7 +7,7 @@ if (callbacks) {
   callbacks.forEach(cb => {
     const match = cb.match(/const (\w+) = useCallback\(\(([\s\S]*?)\) => \{([\s\S]*?)\}, \[(.*?)\]\);/);
     if (!match) return;
-    const [_, name, args, body, deps] = match;
+    const [_, name, _args, body, deps] = match;
     console.log(`\nFunction: ${name}`);
     console.log(`Deps: [${deps}]`);
     

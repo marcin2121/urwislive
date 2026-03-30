@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     await supabase.from('push_analytics').insert([{ action, url }]);
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ success: false }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Coins, ArrowRight, Zap, Trophy, Smile, Store, Sparkles } from 'lucide-react'
+import { Coins, ArrowRight, Zap,  Smile, Store, Sparkles } from "lucide-react"
 
 export default function LoyaltySection() {
   return (

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Check, X, Info, Cookie } from 'lucide-react' 
+import { Check, X, Info, Cookie } from "lucide-react" 
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -139,7 +139,6 @@ export default function CookieModal() {
                           className="object-contain"
                           sizes="(max-width: 640px) 96px, (max-width: 768px) 192px, 256px"
                           loading="lazy"
-                          // @ts-ignore
                           fetchPriority="low"
                         />
                       )}

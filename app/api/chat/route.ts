@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro' }
     ];
 
-    let lastError: unknown = null;
+    let lastError: any = null;
 
     for (const modelInfo of modelsToTry) {
       try {

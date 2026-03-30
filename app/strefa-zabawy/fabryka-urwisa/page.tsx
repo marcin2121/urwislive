@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import UrwisSwarm from '@/components/urwisek/games/UrwisSwarm'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from "lucide-react"
 
 export const metadata: Metadata = {
   title: 'Fabryka Urwisa - Incremental Game',

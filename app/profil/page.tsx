@@ -182,7 +182,7 @@ export default function ProfilePage() {
       } else {
         toast.error('Brak zgody przeglądarki.');
       }
-    } catch (e) { toast.error("Wystąpił błąd techniczny."); }
+    } catch (_e) { toast.error("Wystąpił błąd techniczny."); }
     setUpdatingData(false);
   };
 
@@ -207,7 +207,7 @@ export default function ProfilePage() {
       if (sub && supabase) {
         await supabase.from('push_subscriptions').update({ topics: newTopics }).eq('endpoint', sub.endpoint);
       }
-    } catch (e) { toast.error('Nie udało się zaktualizować kategorii.'); }
+    } catch (_e) { toast.error('Nie udało się zaktualizować kategorii.'); }
     setUpdatingData(false);
   };
 

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TicketPercent, Plus, Pencil, Trash2, X, RefreshCw } from 'lucide-react'
+import { TicketPercent, Plus, Pencil, Trash2, X, RefreshCw } from "lucide-react"
 import { toast } from 'sonner'
 
 export function KuponyTab() {
@@ -22,6 +22,7 @@ export function KuponyTab() {
     setKupony(data || []);
     setIsRefreshing(false);
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchKupony(); }, []);
 
   const handleSaveKupon = async (e: React.FormEvent) => {
@@ -78,16 +79,16 @@ export function KuponyTab() {
               
               <div className="space-y-4 mb-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Tytuł Kuponu</label><input required placeholder="np. -10% na LEGO" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-blue-500" value={kuponForm.title} onChange={e => setKuponForm((p:any) => ({ ...p, title: e.target.value }))} /></div>
-                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Kod</label><input required placeholder="np. LEGO10" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-blue-500 uppercase" value={kuponForm.code} onChange={e => setKuponForm((p:any) => ({ ...p, code: e.target.value.toUpperCase() }))} /></div>
+                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Tytuł Kuponu</label><input required placeholder="np. -10% na LEGO" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-blue-500" value={kuponForm.title} onChange={e => setKuponForm((p: any) => ({ ...p, title: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Kod</label><input required placeholder="np. LEGO10" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-blue-500 uppercase" value={kuponForm.code} onChange={e => setKuponForm((p: any) => ({ ...p, code: e.target.value.toUpperCase() }))} /></div>
                 </div>
-                <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Opis (Opcjonalnie)</label><input className="w-full p-4 rounded-2xl bg-zinc-50 font-bold outline-none focus:ring-2 ring-blue-500" value={kuponForm.description} onChange={e => setKuponForm((p:any) => ({ ...p, description: e.target.value }))} /></div>
+                <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Opis (Opcjonalnie)</label><input className="w-full p-4 rounded-2xl bg-zinc-50 font-bold outline-none focus:ring-2 ring-blue-500" value={kuponForm.description} onChange={e => setKuponForm((p: any) => ({ ...p, description: e.target.value }))} /></div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Limit użyć</label><input type="number" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none" value={kuponForm.usage_limit} onChange={e => setKuponForm((p:any) => ({ ...p, usage_limit: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Limit użyć</label><input type="number" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none" value={kuponForm.usage_limit} onChange={e => setKuponForm((p: any) => ({ ...p, usage_limit: e.target.value }))} /></div>
                   <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Kolor</label>
                     <div className="flex gap-2 mt-2">
                       {[ 'from-[#0055ff] to-blue-500', 'from-[#BF2024] to-red-500', 'from-amber-400 to-orange-500', 'from-emerald-500 to-green-500' ].map(c => (
-                        <button key={c} type="button" onClick={() => setKuponForm((p:any) => ({...p, gradient: c}))} className={`w-8 h-8 rounded-full bg-gradient-to-br ${c} border-4 transition-all cursor-pointer ${kuponForm.gradient === c ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
+                        <button key={c} type="button" onClick={() => setKuponForm((p: any) => ({...p, gradient: c}))} className={`w-8 h-8 rounded-full bg-gradient-to-br ${c} border-4 transition-all cursor-pointer ${kuponForm.gradient === c ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
                       ))}
                     </div>
                   </div>

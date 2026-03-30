@@ -10,7 +10,7 @@ import {
   Layers,
   Users,
   Sparkles
-} from 'lucide-react'
+} from "lucide-react"
 import Link from 'next/link'
 import Particles from "@/components/Particles";
 

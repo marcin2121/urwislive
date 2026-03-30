@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CircleDashed, PartyPopper, UserPlus, Gift, ArrowRight } from 'lucide-react';
+import { CircleDashed, PartyPopper, UserPlus, Gift, ArrowRight } from "lucide-react";
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation'; // Dodano useRouter
-import Link from 'next/link';
+import 'next/link';
 
 // IMPORT MODALA AUTORYZACJI
 import AuthModal from '@/components/ui/AuthModal'; 

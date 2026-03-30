@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Mail, Lock, User, Phone, ArrowRight, Loader2, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { IconBrandGoogle, IconBrandFacebook } from "@tabler/icons-react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 
 interface AuthModalProps {
@@ -89,7 +87,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
     }
   };
   
-  const handleSocialAuth = async (provider: 'google' | 'facebook') => {
+  const _handleSocialAuth = async (provider: 'google' | 'facebook') => {
     setIsLoading(true);
     setError(null);
     try {
@@ -101,7 +99,7 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
         }
       });
       if (error) throw error;
-    } catch (err) {
+    } catch (_err) {
       setError(`Błąd logowania przez ${provider === 'google' ? 'Google' : 'Facebook'}.`);
       setIsLoading(false);
     }

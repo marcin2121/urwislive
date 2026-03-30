@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Palette, Paintbrush, ArrowRight, MousePointerClick } from 'lucide-react';
+import { Palette, Paintbrush, ArrowRight, MousePointerClick } from "lucide-react";
 
 export default function ColoringBanner() {
   return (

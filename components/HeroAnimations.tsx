@@ -25,6 +25,7 @@ export default function HeroAnimations() {
       ? ALL_PARTICLES.filter((_, i) => i % 3 === 0).slice(0, 10) 
       : ALL_PARTICLES;
     
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setParticles(finalParticles);
     setMounted(true);
   }, []);
@@ -33,7 +34,7 @@ export default function HeroAnimations() {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-transparent">
-      {particles.map((p, i) => (
+      {particles.map((p, _i) => (
         <div
           key={p.id}
           className={`absolute opacity-40 will-change-transform ${

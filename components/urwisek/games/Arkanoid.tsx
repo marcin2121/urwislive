@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
-import { Trophy, Play, RotateCcw, Heart } from 'lucide-react'
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, } from 'react'
+import { Trophy, Play, RotateCcw, Heart } from "lucide-react"
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -210,7 +210,9 @@ export default function Arkanoid() {
 
   useEffect(() => {
     const savedName = localStorage.getItem('urwis_arkanoid_nickname');
-    if (savedName) setPlayerName(savedName);
+    if (savedName) {
+      setTimeout(() => setPlayerName(savedName), 0);
+    }
   }, []);
 
   const balls     = useRef<Ball[]>([])
@@ -367,6 +369,8 @@ export default function Arkanoid() {
   }, [playerName]);
 
   // ── render / game loop ────────────────────────────────────────────────────
+  const renderRef = useRef<() => void>(() => {});
+
   const render = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -556,8 +560,12 @@ export default function Arkanoid() {
       if (bricks.current.length === 0) nextLevel()
     }
 
-    animationRef.current = requestAnimationFrame(render)
+    animationRef.current = requestAnimationFrame(renderRef.current)
   }, [isStarted, spawnBall, nextLevel, applyPowerUp, handleGameOver])
+
+  useLayoutEffect(() => {
+    renderRef.current = render;
+  }, [render]);
 
   // ── Effects ───────────────────────────────────────────────────────────────
 

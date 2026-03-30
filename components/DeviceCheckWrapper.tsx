@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card'
 import JellyButton from '@/components/ui/JellyButton'
-import { MonitorSmartphone, Download } from 'lucide-react'
+import { MonitorSmartphone, Download } from "lucide-react"
 
 export default function DeviceCheckWrapper({ children }: { children: React.ReactNode }) {
   return (

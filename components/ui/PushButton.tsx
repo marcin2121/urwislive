@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BellRing, Bell, Download, Check, Settings2, Loader2 } from 'lucide-react';
+import { BellRing, Bell, Download, Check, Settings2, Loader2 } from "lucide-react";
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { PUSH_CATEGORIES } from '@/lib/push-config';
@@ -144,7 +144,7 @@ export default function PushButton() {
         if (error) throw error;
         trackPushEvent('updated_topics_success', { final_topics: finalTopics });
       }
-    } catch (e) {
+    } catch (_e) {
       toast.error("Nie udało się zapisać zmian.");
     } finally {
       setIsUpdating(false);
@@ -192,7 +192,7 @@ export default function PushButton() {
             window.dispatchEvent(new Event('push-permission-changed'));
             toast.success('Urwis melduje się na posterunku!');
           }
-        } catch (error) {
+        } catch (_error) {
           toast.error("Błąd subskrypcji.");
         }
         break;

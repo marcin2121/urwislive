@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { calculateDecay, getXPForLevel } from '@/lib/urwis/engine'
+import {  getXPForLevel } from '@/lib/urwis/engine'
 import { SHOP_ITEMS } from '@/lib/urwis/items'
 import { checkAchievements } from '@/lib/urwis/achievements'
 import { UrwisService } from '@/lib/services/urwisService';
@@ -201,7 +201,7 @@ export async function getBubbleShooterRanking(currentScore?: number) {
        statsMessage 
     }
 
-  } catch (error) {
+  } catch (_error) {
     return { success: false, topScores: [] }
   }
 }
@@ -277,7 +277,7 @@ export async function getArkanoidRanking(currentScore?: number) {
        statsMessage 
     }
 
-  } catch (error) {
+  } catch (_error) {
     return { success: false, topScores: [] }
   }
 }
@@ -548,7 +548,7 @@ export async function getKlockiRanking(currentScore?: number) {
        statsMessage 
     }
 
-  } catch (error) {
+  } catch (_error) {
     return { success: false, topScores: [] }
   }
 }

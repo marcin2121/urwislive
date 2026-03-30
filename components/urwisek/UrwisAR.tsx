@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect,  useState } from 'react';
 import { motion } from 'framer-motion';
-import { ScanFace, Sparkles, Box } from 'lucide-react';
+import { ScanFace, Sparkles, Box } from "lucide-react";
 
 
 export default function UrwisAR() {
@@ -12,6 +12,7 @@ export default function UrwisAR() {
 
   useEffect(() => {
     const checkMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobile(checkMobile);
   }, []);
 

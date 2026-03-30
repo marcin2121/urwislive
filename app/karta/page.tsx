@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/AuthProvider' // Zaciągamy nasz globalny stan!
-import { Loader2, ArrowLeft, Coins, Sparkles, Store, Coffee, Lock, User, Phone, LogOut } from 'lucide-react'
+import { Loader2, ArrowLeft, Coins, Sparkles, Store, Coffee, Lock, User, Phone, LogOut } from "lucide-react"
 import Particles from "@/components/Particles"
 import { toast } from 'sonner'
 import Link from 'next/link'

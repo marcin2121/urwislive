@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import PushButton from "./PushButton";
+import "./PushButton";
 import { useAuth } from "@/components/AuthProvider";
 import AuthModal from "./AuthModal";
 import {
@@ -125,6 +125,7 @@ export default function Navbar() {
   }, [mobileMenuOpen]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     
     // Usunąłem stąd nasłuchiwanie na event Push, bo przenieśliśmy to na stałe do Profilu.

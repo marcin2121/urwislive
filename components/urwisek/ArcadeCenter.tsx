@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Gamepad2, X, Brain, Zap, Clock, Coins, HelpCircle } from 'lucide-react'
+import { Gamepad2, X, Brain, Zap,  Coins, HelpCircle } from "lucide-react"
 import ArcadeMemoryGame from './games/ArcadeMemoryGame'
-import { cn } from '@/lib/utils'
+import { } from '@/lib/utils'
 
 interface ArcadeCenterProps {
   onClose: () => void

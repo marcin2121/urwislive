@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import ClientLobby from '@/components/ClientLobby';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: 'Darmowe Kolorowanki Online dla Dzieci | Sklep Urwis',

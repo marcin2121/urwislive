@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Trophy, Play, RotateCcw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trophy, Play, RotateCcw, AlertCircle } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -37,6 +37,7 @@ export default function KlockiGame() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('urwis_klocki_nick');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (saved) setPlayerName(saved);
     } catch {}
   }, []);

@@ -1,6 +1,6 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, LogOut, X, Menu, LayoutDashboard, Users, TicketPercent, CircleDashed, Tag, Bell, History } from 'lucide-react'
+import { Home, LogOut, X, Menu, LayoutDashboard, Users, TicketPercent, CircleDashed, Tag, Bell, History } from "lucide-react"
 import { createClient } from '@/lib/supabase/client'
 
 export const navItems = [

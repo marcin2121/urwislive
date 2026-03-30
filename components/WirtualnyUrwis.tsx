@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import JellyButton from '@/components/ui/JellyButton'
 import { Card } from '@/components/ui/card'
-import { Heart, Utensils, Sparkles, Trophy } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { interactWithUrwis } from '@/app/actions/tamagotchi'
+import { Heart, Utensils, Sparkles, Trophy } from "lucide-react"
+import { } from '@/lib/utils'
+import { } from '@/app/actions/tamagotchi'
 // Wykorzystujemy istniejący styl JellyButton do interakcji
 // Gra promuje lokalizację w Białobrzegach poprzez system nagród
 

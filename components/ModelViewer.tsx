@@ -14,12 +14,12 @@ import Image from 'next/image';
 // ─── Stałe ──────────────────────────────────────────────────────────────────────
 
 const deg2rad = (d: number) => (d * Math.PI) / 180;
-const DECIDE       = 8;
-const ROTATE_SPEED = 0.005;
+const _DECIDE       = 8;
+const _ROTATE_SPEED = 0.005;
 const INERTIA       = 0.925;
-const PARALLAX_MAG  = 0.05;
+const _PARALLAX_MAG  = 0.05;
 const PARALLAX_EASE = 0.12;
-const HOVER_MAG  = deg2rad(6);
+const _HOVER_MAG  = deg2rad(6);
 const HOVER_EASE = 0.15;
 
 // ─── Helper: czyszczenie GPU ─────────────────────────────────────────────────────
@@ -37,6 +37,7 @@ const cleanMaterial = (material: THREE.Material): void => {
 const useIsTouch = (): boolean => {
   const [isTouch, setIsTouch] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
   }, []);
   return isTouch;
@@ -147,14 +148,14 @@ interface ModelCoreProps {
 
 const ModelCore: FC<ModelCoreProps> = ({
   content, xOff, yOff, pivot, initRotX, initRotY,
-  minZoom, maxZoom, enableMouseParallax, enableManualRotation,
-  enableHoverRotation, enableManualZoom, autoFrame, fadeIn,
+  minZoom: _minZoom, maxZoom: _maxZoom, enableMouseParallax: _enableMouseParallax, enableManualRotation: _enableManualRotation,
+  enableHoverRotation: _enableHoverRotation, enableManualZoom: _enableManualZoom, autoFrame, fadeIn,
   autoRotate, autoRotateSpeed, onLoaded,
 }) => {
   const outer = useRef<THREE.Group>(null!);
   const inner = useRef<THREE.Group>(null!);
-  const { camera, gl } = useThree();
-  const isTouch = useIsTouch(); 
+  const { camera, gl: _gl } = useThree();
+  const isTouch: boolean = useIsTouch(); 
 
   const vel   = useRef({ x: 0, y: 0 });
   const tPar = useRef({ x: 0, y: 0 });
@@ -230,7 +231,7 @@ const ModelCore: FC<ModelCoreProps> = ({
           const mesh = o as THREE.Mesh;
           if (!mesh.isMesh) return;
           if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((m: any) => { m.opacity = v; });
+            mesh.material.forEach((m: THREE.Material) => { m.opacity = v; });
           } else {
             (mesh.material as any).opacity = v;
           }
@@ -290,13 +291,13 @@ const ModelViewer: FC<ViewerProps> = ({
   url, title = "Prezentacja produktu 3D", width = "100%", height = 400, modelXOffset = 0, modelYOffset = 0, defaultRotationX = 0, defaultRotationY = 0,
   defaultZoom = 2, minZoomDistance = 0.5, maxZoomDistance = 10, enableMouseParallax = true, enableManualRotation = true,
   enableHoverRotation = true, enableManualZoom = true, ambientIntensity = 0.5, keyLightIntensity = 1, fillLightIntensity = 0.5,
-  rimLightIntensity = 0.8, environmentPreset = 'city', autoFrame = true, placeholderSrc, showScreenshotButton = true,
+  rimLightIntensity: _rimLightIntensity = 0.8, environmentPreset = 'city', autoFrame = true, placeholderSrc, showScreenshotButton = true,
   fadeIn = true, autoRotate = false, autoRotateSpeed = 0.35, onModelLoaded,
 }) => {
   const isTouchDevice = useIsTouch();
   const [canvasKey, setCanvasKey] = useState(0);
 
-  const pivot = useRef(new THREE.Vector3()).current;
+  const [pivot] = useState(() => new THREE.Vector3());
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);

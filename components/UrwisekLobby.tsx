@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createUrwisPet } from '@/app/actions/tamagotchi'
 import JellyButton from '@/components/ui/JellyButton'
-import { User, AlertCircle, PawPrint, Heart, Zap } from 'lucide-react'
+import { User, AlertCircle, PawPrint, Heart, Zap } from "lucide-react"
 import { cn } from '@/lib/utils'
 
 export default function UrwisekLobby() {

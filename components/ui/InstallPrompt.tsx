@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share, PlusSquare, X, Download, Sparkles } from 'lucide-react';
+import { Share, PlusSquare, X, Download, Sparkles } from "lucide-react";
 import Image from 'next/image';
 import { usePopupControl } from '@/components/PopupProvider';
 
@@ -33,6 +33,7 @@ export default function InstallPrompt() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
     const isFromQR = searchParams.get('utm_source') === 'qr_store';
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isIOS) setPlatform('ios');
     else setPlatform('android');
 

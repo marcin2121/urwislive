@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
-import { Bell, RefreshCw, Loader2 } from 'lucide-react'
+import { Bell, RefreshCw, Loader2 } from "lucide-react"
 import { toast } from 'sonner'
 import { PUSH_CATEGORIES, PushTopic } from '@/lib/push-config'
 import { uploadAdminFile } from '@/lib/admin-utils'
@@ -60,7 +60,7 @@ export function PushTab() {
         toast.success('Wysłano natychmiast!');
       }
       setPushData({ title: '', message: '', image_url: '', scheduled_for: '' });
-    } catch (error) { toast.error('Błąd wysyłki'); } finally { setIsSending(false); }
+    } catch (_error) { toast.error('Błąd wysyłki'); } finally { setIsSending(false); }
   }
 
   return (

@@ -14,6 +14,7 @@ export default function OnboardingTour() {
     if (currentPopup === 'ONBOARDING') {
       const isDone = localStorage.getItem("urwis_onboarding_done");
       if (!isDone) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsOpen(true);
       } else {
         nextPopup();

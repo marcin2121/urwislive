@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Flame, ShoppingBag, Timer } from 'lucide-react';
+import { ArrowRight, Flame, ShoppingBag, Timer } from "lucide-react";
 import Link from 'next/link';
 
 // --- DANE PROMOCJI ---

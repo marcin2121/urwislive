@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingBag, X, Check, Lock, Star, Crown, Pizza, Image as ImageIcon, Dog, Coins } from 'lucide-react'
+import { ShoppingBag, X,  Lock, Star, Crown,  Image as  Dog, Coins } from "lucide-react"
 import Image from 'next/image'
 import { SHOP_ITEMS, UrwisItem } from '@/lib/urwis/items'
 import { cn } from '@/lib/utils'

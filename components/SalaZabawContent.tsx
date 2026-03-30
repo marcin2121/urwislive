@@ -1,12 +1,12 @@
 'use client'
 
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, } from 'framer-motion'
 import { 
   Coffee, Ticket, Gamepad2, ArrowRight, Utensils, 
   Cake, Clock, Crown, MapPin, Search, Globe, 
   Facebook, Instagram, Map, ShieldCheck, Star
-} from 'lucide-react'
+} from "lucide-react"
 import Image from 'next/image'
 import Particles from '@/components/Particles'
 import LeceWKulkiSection from '@/components/LeceWKulkiSection'

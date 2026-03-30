@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { RefreshCw, Play, ArrowLeft, HelpCircle } from 'lucide-react';
+import { RefreshCw, Play, ArrowLeft, HelpCircle } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 

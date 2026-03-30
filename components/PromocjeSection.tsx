@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image' // 🚀 IMPORT DLA PERFORMANCE
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Tag, Timer, Sparkles, ChevronRight, Percent, Loader2, Flame, Clock } from 'lucide-react'
+import { ArrowLeft, Tag, Timer, Sparkles, ChevronRight, Percent, Loader2, Flame, Clock } from "lucide-react"
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Particles from "@/components/Particles"
@@ -28,6 +28,7 @@ const CountdownTimer = ({ expiresAt }: { expiresAt: string }) => {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     const interval = setInterval(() => {
       const now = new Date().getTime()

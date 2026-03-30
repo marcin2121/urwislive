@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useTransition, useRef, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Trophy, ArrowLeft, Coins, Star } from 'lucide-react' 
+import { Trophy, ArrowLeft, Coins, Star } from "lucide-react" 
 import Link from 'next/link'
 
 // Importy komponentów modułowych
@@ -16,7 +16,7 @@ import PetDisplay from './urwisek/PetDisplay'
 import RankingModal from './urwisek/RankingModal'
 
 import { cn } from '@/lib/utils'
-import { RankingItem, UrwisPet } from '@/types/urwis'
+import {  UrwisPet } from '@/types/urwis'
 
 // Importy logiki i akcji
 import { interactWithUrwis, claimDailyLogin, getUrwisRanking, buyUrwisItem, toggleUrwisItem, finishArcadeGame, claimQuestReward } from '@/app/actions/tamagotchi'
@@ -34,7 +34,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: Urwis
     equipped_items: initialState.equipped_items || {},
   }))
   
-  const [isPending, startTransition] = useTransition()
+  const [_isPending, startTransition] = useTransition()
   const [activeMode, setActiveMode] = useState<'none' | 'washing' | 'feeding' | 'playing' | 'ranking' | 'shopping' | 'arcade' | 'quests' | 'achievements'>('none')
   const [rewardMessage, setRewardMessage] = useState<React.ReactNode | null>(null)
   const [showSmile, setShowSmile] = useState(false)
@@ -43,6 +43,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: Urwis
   const [rankingData, setRankingData] = useState<Partial<UrwisPet>[]>([])
   const [isRankingOpen, setIsRankingOpen] = useState(false)
   
+  // eslint-disable-next-line react-hooks/purity
   const lastTickRef = useRef(Date.now());
 
   // ✅ FULLSCREEN & HIDE NAVBAR LOGIC

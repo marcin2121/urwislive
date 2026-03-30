@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { } from 'react'
 import { motion } from 'framer-motion'
-import { ScrollText, X, CheckCircle, Gift, Coins } from 'lucide-react'
+import { ScrollText, X, CheckCircle, Gift, Coins } from "lucide-react"
 import { cn } from '@/lib/utils'
 
 interface QuestsPanelProps {

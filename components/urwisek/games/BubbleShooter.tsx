@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, RotateCcw, Trophy, Play, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Trophy, Play, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -40,6 +40,7 @@ export default function BubbleShooter() {
   useEffect(() => {
     const savedName = localStorage.getItem('urwis_bubble_nickname');
     if (savedName) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlayerName(savedName);
     }
   }, []);

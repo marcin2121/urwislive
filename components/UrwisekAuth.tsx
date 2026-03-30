@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import JellyButton from '@/components/ui/JellyButton'
-import { Mail, Lock, AlertCircle } from 'lucide-react'
-import { IconBrandGoogle, IconBrandFacebook } from '@tabler/icons-react'
+import { Mail, Lock, AlertCircle } from "lucide-react"
+import {  } from '@tabler/icons-react'
 
 export default function UrwisekAuth() {
   const [email, setEmail] = useState('')
@@ -57,7 +57,7 @@ export default function UrwisekAuth() {
     }
   }
 
-  const handleSocialAuth = async (provider: 'google' | 'facebook') => {
+  const _handleSocialAuth = async (provider: 'google' | 'facebook') => {
     setError('')
     setLoading(true)
     try {
@@ -69,7 +69,7 @@ export default function UrwisekAuth() {
         }
       })
       if (error) throw error
-    } catch (err) {
+    } catch (_err) {
       setError(`Błąd logowania przez ${provider === 'google' ? 'Google' : 'Facebook'}.`)
       setLoading(false)
     }

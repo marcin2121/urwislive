@@ -4,7 +4,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export async function interactWithUrwis(actionType: 'feed' | 'play') {
+export async function interactWithUrwis(_actionType: 'feed' | 'play') {
   const supabase = await createClient();
   if (!supabase) throw new Error('Konfiguracja Supabase jest nieprawidłowa.');
   const { data: { user } } = await supabase.auth.getUser();
@@ -13,7 +13,7 @@ export async function interactWithUrwis(actionType: 'feed' | 'play') {
 
   // Logika aktualizacji stanu w zależności od czasu
   // Punkty z grywalizacji trafiają do portfela "Złotych Urwisów"
-  const { data, error } = await supabase
+  const { _data, _error } = await supabase
     .from('urwis_pet')
     .update({ 
       last_interaction: new Date().toISOString(),

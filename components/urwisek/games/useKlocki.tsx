@@ -364,7 +364,7 @@ export function useKlocki(playerName: string) {
           }
         }
       }
-    } catch (e) {}
+    } catch (_e) {}
     isSubmittingScore.current = false;
   }, [playerName]);
 

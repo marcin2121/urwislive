@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Medal, X, Lock } from 'lucide-react';
+import { Medal, X, Lock } from "lucide-react";
 import { URWIS_ACHIEVEMENTS } from '@/lib/urwis/achievements';
 import { cn } from '@/lib/utils';
 

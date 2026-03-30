@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Smile, Sparkles, Paintbrush, Target, CircleDot, Blocks, Brain, XSquare, Factory, HelpCircle, ArrowRight } from 'lucide-react';
+import { Smile, Sparkles,  Target, CircleDot,     HelpCircle, ArrowRight } from "lucide-react";
 import MagicBento from '@/components/ui/MagicBento';
 
 const TOP_GAMES = [

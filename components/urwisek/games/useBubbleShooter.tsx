@@ -3,6 +3,7 @@
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -250,7 +251,7 @@ export function useBubbleShooter(playerName: string) {
             `Niesamowite! Zdobywasz +${reward.reward.coins} Monet i +${reward.reward.exp} EXP za tę grę!`,
           );
         }
-      } catch (e) {
+      } catch (_e) {
         // opcjonalnie: log / komunikat
       }
     }
@@ -278,7 +279,7 @@ export function useBubbleShooter(playerName: string) {
           setRankingStatusMessage(rankData.statsMessage || null);
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // opcjonalnie: komunikat błędu rankingu
     }
 
@@ -805,7 +806,9 @@ export function useBubbleShooter(playerName: string) {
     animationRef.current = requestAnimationFrame(renderRef.current);
   }, [isStarted, updatePhysics, drawTrajectory]);
 
-  renderRef.current = render;
+  useLayoutEffect(() => {
+    renderRef.current = render;
+  }, [render]);
 
   useEffect(() => {
     if (isStarted && !gameOver) {

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, X, Star } from 'lucide-react'
+import { Trophy, X, } from "lucide-react"
 
 import { UrwisPet } from '@/types/urwis'
 

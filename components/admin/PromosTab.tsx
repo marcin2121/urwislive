@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Tag, Plus, Trash2, X, Flame, Image as ImageIcon, ChevronDown, Loader2, RefreshCw } from 'lucide-react'
+import { Tag, Plus, Trash2, X, Flame, Image as ImageIcon,  Loader2, RefreshCw } from "lucide-react"
 import { uploadAdminFile } from '@/lib/admin-utils'
 import { toast } from 'sonner'
 
@@ -25,6 +25,7 @@ export function PromosTab() {
     setPromos(data || []);
     setIsRefreshing(false);
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchPromos(); }, []);
 
   const handleAddPromo = async (e: React.FormEvent) => {

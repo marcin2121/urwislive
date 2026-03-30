@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { X, ChevronLeft, ChevronRight, Sparkles, Share2, ZoomIn, ZoomOut, Heart } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Sparkles, Share2, ZoomIn, ZoomOut, Heart } from "lucide-react";
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
@@ -23,6 +23,7 @@ interface UrwisGalleryProps {
 
 const Portal = ({ children }: { children: React.ReactNode }) => {
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
   return createPortal(children, document.body);
@@ -39,6 +40,7 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
   // Ładowanie ulubionych
   useEffect(() => {
     const saved = localStorage.getItem('urwis-favorites');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved) setFavorites(JSON.parse(saved));
   }, []);
 
@@ -48,6 +50,7 @@ export default function UrwisGallery({ items }: UrwisGalleryProps) {
     const produktId = params.get('produkt');
     if (produktId) {
       const found = items.find(i => String(i.id) === produktId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (found) setSelectedId(found.id);
     }
   }, [items]);

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pickaxe, MoveLeft, Home, Sparkles, Factory, Settings, Zap, Briefcase, Star, ChevronUp } from 'lucide-react';
+import { Pickaxe, MoveLeft, Home, Sparkles, Factory, Settings, Zap, Briefcase, Star, ChevronUp } from "lucide-react";
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -256,6 +256,7 @@ export default function UrwisSwarm() {
 
   const clickIdRef = useRef(0);
   const stateRef = useRef(state);
+  // eslint-disable-next-line react-hooks/purity
   const lastSaveTime = useRef(Date.now());
   const reqRef = useRef<number | undefined>(undefined);
 

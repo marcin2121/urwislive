@@ -2,9 +2,8 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { ArrowLeft, History } from "lucide-react";
+import { ArrowLeft, } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import Particles from "@/components/Particles";
 
 // Moduły wyciągnięte ze strony głównej oraz starego O Nas

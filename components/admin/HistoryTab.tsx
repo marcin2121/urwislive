@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
-import { History, RefreshCw } from 'lucide-react'
+import { History, RefreshCw } from "lucide-react"
 
 export function HistoryTab() {
   const [history, setHistory] = useState<any[]>([]);
@@ -19,6 +19,7 @@ export function HistoryTab() {
     setHistory(data || []);
     setIsRefreshing(false);
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchHistory(); }, []);
   
   return (

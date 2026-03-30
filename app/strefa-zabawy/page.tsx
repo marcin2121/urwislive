@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft, MoveLeft, Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare, Flame, Lightbulb, Gamepad2 } from 'lucide-react';
+import { ArrowLeft,  Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare,  Lightbulb, Gamepad2 } from "lucide-react";
 import MagicBento from '@/components/ui/MagicBento';
 
 // Definicje gier podzielone na kategorie - WERSJA PREMIUM (jak reszta sklepu)

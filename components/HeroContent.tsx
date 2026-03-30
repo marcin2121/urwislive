@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { 
   ShoppingBag, Sparkles, Store, Gift, MapPin, X 
-} from 'lucide-react';
+} from "lucide-react";
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ShineTextEffect = () => (

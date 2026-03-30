@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Utensils, Droplets, Heart, Trophy, ShoppingBag, Gamepad2, ScrollText, LayoutGrid, X, Coins, Medal, LucideIcon } from 'lucide-react';
+import { Utensils, Droplets, Heart, Trophy, ShoppingBag, Gamepad2, ScrollText, LayoutGrid, X, Coins, Medal, LucideIcon } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UrwisPet } from '@/types/urwis';
@@ -23,30 +23,30 @@ interface ActionButtonProps {
   subLabel: React.ReactNode;
 }
 
+const ActionButton = ({ icon: Icon, label, active, color, bgColor, shadowColor, onClick, subLabel }: ActionButtonProps) => (
+  <motion.button 
+    whileTap={active ? { scale: 0.9 } : {}}
+    onClick={active ? onClick : undefined} 
+    className={cn(
+      "flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative group min-w-[70px]", 
+      active ? "cursor-pointer" : "opacity-40 grayscale cursor-not-allowed"
+    )}
+  >
+    <div className={cn(
+      "w-14 h-14 rounded-[1.2rem] flex items-center justify-center transition-all duration-300 border-2 border-white",
+      active ? `${bgColor} ${shadowColor} shadow-lg group-hover:-translate-y-1` : "bg-gray-100 shadow-inner border-transparent"
+    )}>
+      <Icon className={cn("w-7 h-7", active ? color : "text-gray-400")} strokeWidth={2.5} />
+    </div>
+    <div className="flex flex-col items-center">
+      <span className="text-[11px] font-black uppercase tracking-wide text-gray-700 leading-none">{label}</span>
+      <span className={cn("text-[9px] font-black mt-0.5 flex items-center gap-0.5", active ? color : "text-gray-400")}>{subLabel}</span>
+    </div>
+  </motion.button>
+);
+
 export default function ActionPanel({ state, onModeChange, activeMode }: ActionPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const ActionButton = ({ icon: Icon, label, active, color, bgColor, shadowColor, onClick, subLabel }: ActionButtonProps) => (
-    <motion.button 
-      whileTap={active ? { scale: 0.9 } : {}}
-      onClick={active ? onClick : undefined} 
-      className={cn(
-        "flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative group min-w-[70px]", 
-        active ? "cursor-pointer" : "opacity-40 grayscale cursor-not-allowed"
-      )}
-    >
-      <div className={cn(
-        "w-14 h-14 rounded-[1.2rem] flex items-center justify-center transition-all duration-300 border-2 border-white",
-        active ? `${bgColor} ${shadowColor} shadow-lg group-hover:-translate-y-1` : "bg-gray-100 shadow-inner border-transparent"
-      )}>
-        <Icon className={cn("w-7 h-7", active ? color : "text-gray-400")} strokeWidth={2.5} />
-      </div>
-      <div className="flex flex-col items-center">
-        <span className="text-[11px] font-black uppercase tracking-wide text-gray-700 leading-none">{label}</span>
-        <span className={cn("text-[9px] font-black mt-0.5 flex items-center gap-0.5", active ? color : "text-gray-400")}>{subLabel}</span>
-      </div>
-    </motion.button>
-  );
 
   return (
     <div className={cn(

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 
 const ChatContent = dynamic(() => import('./ChatContent'), {
   ssr: false,

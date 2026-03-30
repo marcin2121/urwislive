@@ -5,7 +5,7 @@ import DeviceCheckWrapper from '@/components/DeviceCheckWrapper'
 import UrwisekDashboard from '@/components/UrwisekDashboard'
 import { calculateDecay } from '@/lib/urwis/engine'
 import Link from 'next/link'
-import { ArrowLeft, MoveLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft,  } from "lucide-react"
 import CloseWindowButton from '@/components/CloseWindowButton'
 
 export const metadata = {
@@ -22,6 +22,7 @@ export default async function UrwisekPage() {
     const { data } = await supabase.from('urwis_pet').select('*').eq('user_id', user.id).single()
     
     if (data) {
+      // eslint-disable-next-line react-hooks/purity
       const now = Date.now();
       
       let dbDate = data.last_interaction;

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CircleDashed, Plus, Pencil, Trash2, X, RefreshCw, History, Ticket } from 'lucide-react'
+import { CircleDashed, Plus, Pencil, Trash2, X, RefreshCw, History, Ticket } from "lucide-react"
 import { toast } from 'sonner'
 import { getAdminUsersDetails } from '@/app/actions/get-admin-users'
 
@@ -65,7 +65,7 @@ export function WheelTab() {
       });
 
       setSpinHistory(history);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Błąd pobierania danych koła');
     } finally {
       setIsRefreshing(false);
@@ -207,15 +207,15 @@ export function WheelTab() {
               
               <div className="space-y-4 mb-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Tytuł</label><input required placeholder="np. Zniżka 10%" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-amber-500" value={form.title} onChange={e => setForm((p:any) => ({ ...p, title: e.target.value }))} /></div>
-                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Szansa (%)</label><input required type="number" step="0.1" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-amber-500" value={form.chance} onChange={e => setForm((p:any) => ({ ...p, chance: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Tytuł</label><input required placeholder="np. Zniżka 10%" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-amber-500" value={form.title} onChange={e => setForm((p: any) => ({ ...p, title: e.target.value }))} /></div>
+                  <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Szansa (%)</label><input required type="number" step="0.1" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-amber-500" value={form.chance} onChange={e => setForm((p: any) => ({ ...p, chance: e.target.value }))} /></div>
                 </div>
-                <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Prefix Kodu</label><input required placeholder="BONUS10" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-amber-500 uppercase" value={form.code_prefix} onChange={e => setForm((p:any) => ({ ...p, code_prefix: e.target.value.toUpperCase() }))} /></div>
+                <div><label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Prefix Kodu</label><input required placeholder="BONUS10" className="w-full p-4 rounded-2xl bg-zinc-50 font-black outline-none focus:ring-2 ring-amber-500 uppercase" value={form.code_prefix} onChange={e => setForm((p: any) => ({ ...p, code_prefix: e.target.value.toUpperCase() }))} /></div>
                 <div>
                   <label className="text-[10px] font-black text-zinc-400 uppercase block mb-1">Kolor kafelka</label>
                   <div className="flex flex-wrap gap-2 md:gap-3 mt-2">
                     {[ 'from-[#0055ff] to-blue-500', 'from-[#BF2024] to-red-500', 'from-amber-400 to-orange-500', 'from-pink-500 to-rose-500', 'from-emerald-500 to-green-500', 'from-zinc-800 to-black' ].map(c => (
-                      <button key={c} type="button" onClick={() => setForm((prev:any) => ({...prev, gradient: c}))} className={`w-10 h-10 rounded-full bg-gradient-to-br ${c} border-4 transition-all cursor-pointer ${form.gradient === c ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
+                      <button key={c} type="button" onClick={() => setForm((prev: any) => ({...prev, gradient: c}))} className={`w-10 h-10 rounded-full bg-gradient-to-br ${c} border-4 transition-all cursor-pointer ${form.gradient === c ? 'border-zinc-900 scale-110 shadow-lg' : 'border-transparent'}`} />
                     ))}
                   </div>
                 </div>

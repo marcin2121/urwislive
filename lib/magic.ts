@@ -1,5 +1,5 @@
 // Zbiór zabawnych odpowiedzi, które bot będzie wplatał w rozmowę po wywołaniu narzędzia
-export async function askCrystalBall(productName: string) {
+export async function askCrystalBall(_productName: string) {
   const jokes = [
     `Wróżki z działu kreatywnego mówią zdecydowane "MOŻE". Najlepiej wpadnij do nas na Reymonta 38A, to potraktujemy to jako misję poszukiwawczą!`,
     `Kryształowa kula pokazuje, że szef rano używał tego jako podstawki pod kawę... Ale czy to było to, czy tylko coś podobnego? Musisz zadzwonić i zapytać!`,

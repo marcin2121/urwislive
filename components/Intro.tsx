@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 const LoadingScreen = dynamic(() => import('@/components/LoadingScreen'), { ssr: false });
 
 export default function UrwisIntro({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
+  const [_mounted, setMounted] = useState(false);
   const [shouldShowIntro, setShouldShowIntro] = useState(false);
   const [step, setStep] = useState<'loading' | 'video' | 'done'>('done');
   const [videoExiting, setVideoExiting] = useState(false);

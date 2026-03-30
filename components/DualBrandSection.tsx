@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ShoppingBag, Coffee, ChevronRight, Sparkles, PartyPopper } from 'lucide-react'
+import { ShoppingBag, Coffee, ChevronRight, Sparkles, PartyPopper } from "lucide-react"
 import Link from 'next/link'
 
 export default function DualBrandSection() {

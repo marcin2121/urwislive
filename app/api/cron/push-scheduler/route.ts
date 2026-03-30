@@ -68,7 +68,7 @@ export async function GET(req: Request) {
     }
 
     // 2. 🧹 SPRZĄTANIE WYGASŁYCH PROMOCJI
-    const { error: cleanupError } = await supabase
+    const { error: _cleanupError } = await supabase
       .from('promocje')
       .update({ is_active: false })
       .lte('expires_at', now)

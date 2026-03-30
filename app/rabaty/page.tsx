@@ -481,7 +481,7 @@ export default function RabatyPage() {
 
                   {availableCouponsList.map(coupon => {
                     let allowedDays: number[] = [];
-                    try { allowedDays = Array.isArray(coupon.allowed_days) ? coupon.allowed_days : JSON.parse(coupon.allowed_days || '[]'); } catch (e) {}
+                    try { allowedDays = Array.isArray(coupon.allowed_days) ? coupon.allowed_days : JSON.parse(coupon.allowed_days || '[]'); } catch (_e) {}
                     const isCorrectDay = allowedDays.length === 0 || allowedDays.includes(todayIndex);
 
                     return (

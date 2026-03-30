@@ -1,8 +1,7 @@
 'use client'
 
-import { WifiOff, Home, RefreshCw } from 'lucide-react'
-import { motion } from 'framer-motion'
-import Image from 'next/image'
+import { WifiOff, Home, RefreshCw } from "lucide-react"
+import 'next/image'
 
 export default function OfflinePage() {
   return (

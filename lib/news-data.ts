@@ -1,5 +1,5 @@
-import { Newspaper, Gamepad2, Gift, Star, Package, Sparkles, MessageCircle } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import {  Gamepad2, Gift, Star, Package, Sparkles, MessageCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export interface NewsItem {
   id: string;

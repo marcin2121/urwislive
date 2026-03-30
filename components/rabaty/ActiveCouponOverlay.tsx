@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Timer, X } from 'lucide-react';
+import { Timer, X } from "lucide-react";
 
 interface ActiveCouponOverlayProps {
   activeCoupon: { id: string; expiresAt: number };

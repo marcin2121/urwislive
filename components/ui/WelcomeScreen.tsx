@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Gift, Sparkles } from 'lucide-react';
+import { Gift, Sparkles } from "lucide-react";
 import { createClient } from '@/lib/supabase/client';
 import { usePopupControl } from '@/components/PopupProvider';
 
@@ -77,7 +77,7 @@ export default function WelcomeScreen() {
             if (req && typeof req.then === 'function') {
               req.then(resolve).catch(() => resolve('denied'));
             }
-          } catch (e) {
+          } catch (_e) {
             resolve('denied');
           }
         });

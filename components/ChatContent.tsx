@@ -5,7 +5,7 @@ import { useChat } from '@ai-sdk/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, User, Minus } from 'lucide-react';
+import { Send, User, Minus } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import Image from 'next/image';
 

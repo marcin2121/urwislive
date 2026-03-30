@@ -12,7 +12,7 @@ import {
   Send,
   MessageSquare,
   ArrowLeft
-} from 'lucide-react';
+} from "lucide-react";
 import MagicBento from '@/components/ui/MagicBento';
 import Particles from "@/components/Particles";
 import Link from 'next/link';

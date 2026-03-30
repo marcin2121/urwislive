@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { 
   Coffee, Gamepad2, Cake, ShieldCheck, MapPin, 
   Facebook, Instagram, Map, Globe 
-} from 'lucide-react'
+} from "lucide-react"
 import Image from 'next/image'
 
 export default function LeceWKulkiSection() {

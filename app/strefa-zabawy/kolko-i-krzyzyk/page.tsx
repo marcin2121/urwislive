@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, RotateCcw, Smile, Ghost, Trophy, Skull } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Smile,  Trophy, Skull } from "lucide-react";
 
 type Player = 'X' | 'O' | null;
 type Difficulty = 'easy' | 'medium' | 'hard';

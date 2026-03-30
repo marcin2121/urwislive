@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy } from 'lucide-react'
+import { Trophy } from "lucide-react"
 
 const EMOJIS = ['🍎', '🍕', '🍔', '🍓', '🍌', '🍉', '🍇', '🍒']
 
@@ -20,6 +20,7 @@ export default function ArcadeMemoryGame({ onComplete }: MemoryGameProps) {
     // Tasowanie kart - Fisher-Yates shuffle would be better, but keeping it simple for now
     // Just move it inside useEffect to be safe
     const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCards(shuffled)
   }, [])
   

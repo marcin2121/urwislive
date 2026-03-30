@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Pin, Calendar, ChevronRight, Newspaper, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Pin, Calendar,  Newspaper, Sparkles } from "lucide-react";
 import Link from 'next/link';
 import { NEWS_DATA, CATEGORY_STYLES, type NewsItem } from '@/lib/news-data';
 import MagicBento from '@/components/ui/MagicBento';
@@ -27,7 +27,7 @@ function formatDate(dateStr: string) {
 
 export default function AktualnosciPage() {
   const [filter, setFilter] = useState<CategoryFilter>('wszystkie');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [_expandedId, _setExpandedId] = useState<string | null>(null);
 
   const trackNewsEvent = (action: string, label: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {

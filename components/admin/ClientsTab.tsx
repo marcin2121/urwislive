@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Search, Smartphone, Clock, X, Loader2, RefreshCw } from 'lucide-react'
+import { Users, Search, Smartphone, Clock, X, Loader2, RefreshCw } from "lucide-react"
 import { getAdminUsersDetails, getAdminUserCoupons } from '@/app/actions/get-admin-users'
 
 export function ClientsTab() {
