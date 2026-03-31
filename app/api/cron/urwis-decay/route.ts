@@ -39,14 +39,16 @@ export async function GET(request: Request) {
 
     let notificationsSent = 0;
 
-    // 2. Przelicz spadek statystyk i zaktualizuj bazę
+    // 2. Przelicz spadek statystyk i przygotuj paczki do aktualizacji
+    const updatesByHunger = new Map<number, string[]>();
+
     for (const pet of hungryPets) {
       const newHunger = Math.max(0, pet.hunger_level - 20);
       
-      await supabase
-        .from('urwis_pet')
-        .update({ hunger_level: newHunger })
-        .eq('user_id', pet.user_id);
+      if (!updatesByHunger.has(newHunger)) {
+        updatesByHunger.set(newHunger, []);
+      }
+      updatesByHunger.get(newHunger)!.push(pet.user_id);
 
       // Jeśli głód spadł poniżej 30%, zliczamy powiadomienie
       if (newHunger < 30) {
@@ -55,6 +57,17 @@ export async function GET(request: Request) {
         notificationsSent++;
       }
     }
+
+    // 3. Wykonaj aktualizację (po jednej dla każdego unikalnego poziomu głodu)
+    const updatePromises = Array.from(updatesByHunger.entries()).map(([hungerLevel, userIds]) =>
+      supabase
+        .from('urwis_pet')
+        .update({ hunger_level: hungerLevel })
+        .in('user_id', userIds)
+    );
+
+    // Czekamy na wykonanie wszystkich aktualizacji grupowych
+    await Promise.all(updatePromises);
 
     return NextResponse.json({ 
       success: true, 
