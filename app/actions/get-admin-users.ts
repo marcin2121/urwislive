@@ -42,7 +42,7 @@ export async function getAdminUsersDetails() {
 }
 
 // 🚀 OMIJA Zabezpieczenia RLS do sczytania cudzych kuponów z bazy 
-export async function getAdminUserCoupons(userId: string) {
+export async function getAdminUserCoupons(userId: string | string[]) {
   const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!adminKey || !url) {
@@ -50,12 +50,13 @@ export async function getAdminUserCoupons(userId: string) {
   }
 
   const supabaseAdmin = createClient(url, adminKey);
+  const userIds = Array.isArray(userId) ? userId : [userId];
 
   try {
     const { data: coupons, error } = await supabaseAdmin
       .from('kupony')
       .select('*')
-      .eq('user_id', userId)
+      .in('user_id', userIds)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
