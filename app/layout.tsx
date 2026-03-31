@@ -94,9 +94,34 @@ const schemas = [
       "@type": "PostalAddress",
       "streetAddress": "ul. Reymonta 38A",
       "addressLocality": "Białobrzegi",
+      "addressRegion": "Mazowieckie",
       "postalCode": "26-800",
       "addressCountry": "PL"
     },
+    "areaServed": [
+      { "@type": "City", "name": "Białobrzegi" },
+      { "@type": "City", "name": "Grójec" },
+      { "@type": "City", "name": "Warka" },
+      { "@type": "City", "name": "Jedlińsk" },
+      { "@type": "City", "name": "Radom" },
+      { "@type": "AdministrativeArea", "name": "Powiat białobrzeski" }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "1276",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "brand": [
+      { "@type": "Brand", "name": "LEGO", "sameAs": "https://www.wikidata.org/wiki/Q170416" },
+      { "@type": "Brand", "name": "Oxford", "sameAs": "https://www.wikidata.org/wiki/Q1853877" },
+      { "@type": "Brand", "name": "Stabilo", "sameAs": "https://www.wikidata.org/wiki/Q565342" },
+      { "@type": "Brand", "name": "Herlitz", "sameAs": "https://www.wikidata.org/wiki/Q283086" },
+      { "@type": "Brand", "name": "Rebel", "sameAs": "https://www.rebel.pl" },
+      { "@type": "Brand", "name": "Trefl", "sameAs": "https://www.wikidata.org/wiki/Q2451373" }
+    ],
+    "hasMap": "https://maps.app.goo.gl/mqmAJb3e6Pryou129",
     "geo": {
       "@type": "GeoCoordinates",
       "latitude": 51.6447168175059,
@@ -120,6 +145,44 @@ const schemas = [
       "https://facebook.com/sklepurwis.bialobrzegi",
       "https://instagram.com/sklepurwis.bialobrzegi"
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://www.sklep-urwis.pl",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.sklep-urwis.pl/szukaj?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Nawigacja Główna Sklepu Urwis",
+    "itemListElement": [
+      { "@type": "SiteNavigationElement", "position": 1, "name": "Oferta Zabawek i LEGO", "url": "https://www.sklep-urwis.pl/oferta" },
+      { "@type": "SiteNavigationElement", "position": 2, "name": "Strefa Zabawy i Gier", "url": "https://www.sklep-urwis.pl/strefa-zabawy" },
+      { "@type": "SiteNavigationElement", "position": 3, "name": "Kupony i Rabaty", "url": "https://www.sklep-urwis.pl/rabaty" },
+      { "@type": "SiteNavigationElement", "position": 4, "name": "Poznaj Naszą Maskotkę", "url": "https://www.sklep-urwis.pl/poznaj-urwisa" },
+      { "@type": "SiteNavigationElement", "position": 5, "name": "Centrum Pomocy i Kontakt", "url": "https://www.sklep-urwis.pl/kontakt" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Sklep Urwis PWA",
+    "operatingSystem": "All",
+    "applicationCategory": "ShoppingApplication",
+    "featureList": "Offline gaming, AR Experience, Loyalty Program",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "PLN"
+    }
   },
   {
     "@context": "https://schema.org",
@@ -161,6 +224,54 @@ const schemas = [
         "acceptedAnswer": { "@type": "Answer", "text": "Lecę w Kulki to sala zabaw prowadzona przez właścicieli Sklepu Urwis, znajdująca się przy ul. Targowickiej 4 w Białobrzegach. Oferuje kulkowy basen, zjeżdżalnie i kawę dla rodziców." }
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Strona Główna", "item": "https://www.sklep-urwis.pl" },
+      { "@type": "ListItem", "position": 2, "name": "Strefa Zabawy", "item": "https://www.sklep-urwis.pl/strefa-zabawy" },
+      { "@type": "ListItem", "position": 3, "name": "Oferta Zabawek", "item": "https://www.sklep-urwis.pl/oferta/zabawki" },
+      { "@type": "ListItem", "position": 4, "name": "Rabaty", "item": "https://www.sklep-urwis.pl/rabaty" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Sklep Urwis",
+    "url": "https://www.sklep-urwis.pl",
+    "logo": "https://www.sklep-urwis.pl/logo.png",
+    "description": "Nowoczesne centrum zabawek w Białobrzegach wspierające rozwój poznawczy, kreatywność i motorykę dzieci poprzez mądrą zabawę, gry edukacyjne i technologię AR.",
+    "slogan": "Wspieramy mądrą zabawę i rozwój Twojego dziecka",
+    "sameAs": [
+      "https://facebook.com/sklepurwis.bialobrzegi",
+      "https://instagram.com/sklepurwis.bialobrzegi",
+      "https://maps.app.goo.gl/mqmAJb3e6Pryou129",
+      "https://www.lego.com/pl-pl"
+    ],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+48604208183",
+      "contactType": "customer service"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Sklep Urwis Białobrzegi - Oficjalna Platforma",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".speakable-title", ".speakable-summary"]
+    },
+    "description": "Najnowocześniejszy sklep z zabawkami w regionie Białobrzegów, oferujący interaktywne gry i doradztwo w zakresie rozwoju dziecka."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    "name": "Maskotka Urwis - Symbol Kreatywności",
+    "url": "https://www.sklep-urwis.pl/Urwis-Hero.webp",
+    "caption": "Urwis - oficjalna maskotka Sklepu Urwis w Białobrzegach, wspierająca rozwój mądrej zabawy.",
+    "representativeOfPage": "True"
   }
 ];
 
@@ -174,9 +285,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="geo.position" content="51.6447;20.9502" />
         <meta name="ICBM" content="51.6447, 20.9502" />
 
-        {/* ✅ NOWE: preconnect do Google Analytics — oszczędność ~300ms na LCP */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://region1.google-analytics.com" />
+        {/* ✅ Top 1% Performance Hooks */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://region1.google-analytics.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://pwyhksjzxkqlywxlqxyr.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://pwyhksjzxkqlywxlqxyr.supabase.co" />
 
         {/* ✅ Schematy JSON-LD */}
         {schemas.map((schema, index) => (

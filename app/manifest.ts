@@ -2,15 +2,18 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Urwis Białobrzegi - LEGO i Szkoła',
+    name: 'Sklep Urwis — Królestwo Zabawy i Rozwoju',
     short_name: 'Sklep Urwis',
-    description: 'Twoje centrum LEGO, artykułów szkolnych i biurowych w Białobrzegach. Zabawki, balony z helem i wyprawkę szkolną przy ul. Reymonta 38A.',
+    description: 'Nowoczesne centrum zabawek i artykułów szkolnych w Białobrzegach. Wspieramy zdrowy rozwój dzieci poprzez mądrą zabawę, zaawansowane gry edukacyjne i technologię AR.',
+    id: 'pl.sklep-urwis.pwa', // 🚀 Top 1%: Unikalny identyfikator aplikacji
     start_url: '/',
+    scope: '/', // 🚀 Top 1%: Precyzyjny zakres działania
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#0055ff',
+    prefer_related_applications: false, // 🚀 Top 1%: Wymuszanie pierwszeństwa PWA
     orientation: 'any',
-    categories: ['shopping', 'kids', 'education'], // 🚀 SEO: Pomaga sklepom z aplikacjami kategoryzować PWA
+    categories: ['shopping', 'kids', 'education', 'game'], // 🚀 SEO: Rozszerzona kategoryzacja PWA
     icons: [
       {
         src: '/android-chrome-192x192.png',

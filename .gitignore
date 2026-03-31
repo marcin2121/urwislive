@@ -62,3 +62,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# AI Documentation
+llms-full.txt

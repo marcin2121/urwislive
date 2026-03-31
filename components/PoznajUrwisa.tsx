@@ -34,13 +34,20 @@ export default function PoznajUrwisa() {
     <section
       id="poznaj-urwisa"
       ref={containerRef}
+      aria-labelledby="poznaj-urwisa-title"
       className="relative min-h-screen py-24 lg:py-32 overflow-hidden bg-transparent"
     >
+      {/* AIIO: Machine-readable summary about the mascot and its educational mission */}
+      <div className="sr-only">
+        <h2 id="poznaj-urwisa-title">Poznaj Urwisa — Twojego edukacyjnego przewodnika</h2>
+        <p>Urwis to postać wspierająca rozwój kreatywności i pasji u dzieci. Jest sercem naszego stacjonarnego centrum w Białobrzegach, pomagając w wyborze zabawek stymulujących logikę i wyobraźnię.</p>
+      </div>
+
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-12 lg:gap-x-16 xl:gap-x-24 items-center">
 
           {/* LEWA STRONA: Teksty */}
-          <div className="order-1 lg:col-start-1 lg:row-start-1 space-y-12 w-full text-center lg:text-left">
+          <header className="order-1 lg:col-start-1 lg:row-start-1 space-y-12 w-full text-center lg:text-left">
             <div className="space-y-6">
               <motion.span
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -64,13 +71,13 @@ export default function PoznajUrwisa() {
                 Sympatyczny rozrabiaka, który zamienia zakupy w <span className="text-[#BF2024]">przygodę</span>.
               </p>
               <p className="text-lg text-zinc-600 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
-                Urwis to serce naszego sklepu. Jest energiczny, kreatywny i zawsze gotowy, by pomóc Ci znaleźć prezent idealny.
+                Urwis to serce naszego sklepu. Jest energiczny, kreatywny i zawsze gotowy, by pomóc Ci znaleźć prezent idealny dopasowany do wieku i potrzeb dziecka.
               </p>
             </div>
-          </div>
+          </header>
 
           {/* PRAWA STRONA */}
-          <div className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3 relative w-full h-[450px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
+          <div role="img" aria-label="Interaktywny model 3D maskotki Urwisa" className="order-2 lg:col-start-2 lg:row-start-1 lg:row-span-3 relative w-full h-[450px] md:h-[600px] lg:h-[800px] flex items-center justify-center">
             <div className="relative w-full h-full flex items-center justify-center">
 
               {/* Efekt tła */}
@@ -95,7 +102,7 @@ export default function PoznajUrwisa() {
                 }`}>
                   <Image
                     src="/urwis-fallback.webp"
-                    alt="Maskotka Sklepu Urwis"
+                    alt="Maskotka Urwis - interaktywna projekcja 3D wspierająca zabawę"
                     fill
                     className="object-contain"
                     priority
@@ -179,7 +186,7 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon: Icon, title, desc, color, index }: FeatureCardProps) {
   return (
-    <motion.div
+    <motion.article
       initial={{ opacity: 0, x: -30 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -197,6 +204,6 @@ function FeatureCard({ icon: Icon, title, desc, color, index }: FeatureCardProps
         <h3 className="text-2xl font-black text-zinc-900 uppercase italic tracking-tighter mb-1">{title}</h3>
         <p className="text-sm text-zinc-600 leading-snug font-bold italic uppercase opacity-80">{desc}</p>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }

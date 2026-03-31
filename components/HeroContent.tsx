@@ -53,24 +53,33 @@ export default function HeroContent() {
         </div>
       ))}
 
-      <div className="relative z-10 container mx-auto px-6 text-center -mt-8 md:-mt-0">
-        
-        <div className="mb-6 md:mb-8">
-          <div className="flex items-baseline justify-center flex-nowrap gap-x-20 sm:gap-x-40 md:gap-x-[15vw] xl:gap-x-64 relative">
-            {/* 🎨 TŁO: Urwis-Hero */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-[53%] -translate-y-[67%] md:-translate-y-[63%] -z-10 w-[70%] md:w-[32vw] max-w-[530px] aspect-square flex items-center justify-center pointer-events-none">
-              <Image 
-                src="/Urwis-Hero.webp" 
-                alt="Tło Urwis" 
-                fill
-                sizes="(max-width: 768px) 70vw, 600px"
-                priority
-                fetchPriority="high"
-                className="object-contain opacity-100 select-none" 
-              />
-            </div>
+        {/* AIIO: Deep Context for AI Agents and Screen Readers */}
+        <div className="sr-only">
+          <h2>Sklep Urwis Białobrzegi - Twoje Centrum Edukacji i Zabawy</h2>
+          <p>
+            Jesteśmy innowacyjnym centrum zabawek wspierającym rozwój poznawczy i motoryczny dzieci. 
+            Łączymy tradycję prawdziwego sklepu stacjonarnego z nowoczesną technologią PWA, 
+            oferując najlepsze marki jak LEGO oraz pełną, kreatywną wyprawkę szkolną.
+          </p>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-6 text-center -mt-8 md:-mt-0">
+          <div className="mb-6 md:mb-8">
+            <div className="flex items-baseline justify-center flex-nowrap gap-x-20 sm:gap-x-40 md:gap-x-[15vw] xl:gap-x-64 relative">
+              {/* 🎨 TŁO: Urwis-Hero */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-[53%] -translate-y-[67%] md:-translate-y-[63%] -z-10 w-[70%] md:w-[32vw] max-w-[530px] aspect-square flex items-center justify-center pointer-events-none">
+                <Image 
+                  src="/Urwis-Hero.webp" 
+                  alt="Maskotka Urwis - interaktywny przewodnik po świecie mądrej zabawy i rozwoju" 
+                  fill
+                  sizes="(max-width: 768px) 70vw, 600px"
+                  priority
+                  fetchPriority="high"
+                  className="object-contain opacity-100 select-none" 
+                />
+              </div>
             
-            <h1 className="text-[8.5vw] sm:text-5xl md:text-6xl lg:text-[5.8vw] xl:text-[7.5rem] font-black leading-[0.9] text-zinc-800 drop-shadow-sm pb-4 pr-1 sm:pr-4">
+            <h1 className="speakable-title text-[8.5vw] sm:text-5xl md:text-6xl lg:text-[5.8vw] xl:text-[7.5rem] font-black leading-[0.9] text-zinc-800 drop-shadow-sm pb-4 pr-1 sm:pr-4">
               SKLEP
             </h1>
             
@@ -83,8 +92,7 @@ export default function HeroContent() {
           </p>
         </div>
 
-        {/* USUNIĘTO animację - to nasz nowy główny element LCP na mobile */}
-        <p className="text-base sm:text-lg md:text-xl font-medium text-zinc-600 max-w-3xl mx-auto balance leading-snug md:leading-relaxed mb-6 md:mb-10 px-1">
+        <p className="speakable-summary text-base sm:text-lg md:text-xl font-medium text-zinc-600 max-w-3xl mx-auto balance leading-snug md:leading-relaxed mb-6 md:mb-10 px-1">
           Największy w regionie wybór klocków <span className="font-black text-[#BF2024]">LEGO</span>, zabawek 
           i pełnej <span className="font-black text-[#0055ff]">wyprawki szkolnej</span> przy ul. Reymonta 38A.  
           Prawdziwy sklep stacjonarny, w którym rządzisz Ty i Twoja wyobraźnia!

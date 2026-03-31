@@ -147,9 +147,9 @@ export default function AboutSection() {
             <div className="flex flex-col md:flex-row items-center gap-12 md:gap-20 relative z-10">
               
               <div className="flex-1 space-y-8 text-center md:text-left">
-                <h3 className="text-4xl md:text-6xl font-black text-zinc-900 font-heading italic tracking-tighter leading-none">
-                  W URWISIE <span className="text-[#BF2024]">KAŻDY</span> <br />
-                  <span className="text-[#0055ff]">CZUJE SIĘ DZIECKIEM.</span>
+                <h3 className="uppercase text-4xl md:text-6xl font-black text-zinc-900 font-heading italic tracking-tighter leading-none">
+                  W Urwisie <span className="text-[#BF2024]">każdy</span> <br />
+                  <span className="text-[#0055ff]">czuje się dzieckiem.</span>
                 </h3>
                 
                 <div className="space-y-6 text-lg md:text-xl text-zinc-800 font-body font-bold leading-relaxed">

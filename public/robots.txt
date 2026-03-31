@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# AI Documentation
+Sitemap: https://www.sklep-urwis.pl/sitemap.xml
+Sitemap: https://www.sklep-urwis.pl/llms.txt
