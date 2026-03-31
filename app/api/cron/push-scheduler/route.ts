@@ -32,7 +32,7 @@ export async function GET(req: Request) {
       const isPushReady = initWebPush();
 
       if (isPushReady) {
-        for (const push of scheduledPushes) {
+        await Promise.all(scheduledPushes.map(async (push: { id: string; topic: string; title: string; message: string; image_url: string }) => {
           // Pobierz odbiorców dla danego tematu
           let query = supabase.from('push_subscriptions').select('subscription_data');
           if (push.topic !== 'wszystkie') {
@@ -55,12 +55,15 @@ export async function GET(req: Request) {
               webpush.sendNotification(s.subscription_data, payload).catch(() => null)
             ));
           }
+        }));
 
-          // Zmień status na wysłane
+        // Zmień status na wysłane
+        const pushIds = scheduledPushes.map((p: { id: string }) => p.id);
+        if (pushIds.length > 0) {
           await supabase
             .from('push_history')
             .update({ status: 'sent', created_at: now })
-            .eq('id', push.id);
+            .in('id', pushIds);
         }
       } else {
         console.warn('[CRON] Pominięto wysyłkę zaplanowanych powiadomień - brak konfiguracji VAPID.');
