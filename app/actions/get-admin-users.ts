@@ -1,9 +1,19 @@
 'use server'
 
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 
 export async function getAdminUsersDetails() {
-  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseServer = await createServerClient();
+  if (!supabaseServer) {
+    return { success: false, extraData: {}, error: 'Brak połączenia z bazą.' };
+  }
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  if (!user || user.app_metadata?.role !== 'admin') {
+    return { success: false, extraData: {}, error: 'Brak uprawnień administratora.' };
+  }
+
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!adminKey || !url) {
     if (process.env.NODE_ENV !== 'production' || !process.env.CI) {
@@ -43,7 +53,16 @@ export async function getAdminUsersDetails() {
 
 // 🚀 OMIJA Zabezpieczenia RLS do sczytania cudzych kuponów z bazy 
 export async function getAdminUserCoupons(userId: string) {
-  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseServer = await createServerClient();
+  if (!supabaseServer) {
+    return { success: false, coupons: [], error: 'Brak połączenia z bazą.' };
+  }
+  const { data: { user } } = await supabaseServer.auth.getUser();
+  if (!user || user.app_metadata?.role !== 'admin') {
+    return { success: false, coupons: [], error: 'Brak uprawnień administratora.' };
+  }
+
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!adminKey || !url) {
     return { success: false, coupons: [], error: 'Brak kluczy do bazy.' };
