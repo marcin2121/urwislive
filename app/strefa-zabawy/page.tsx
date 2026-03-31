@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowLeft,  Sparkles, Smile, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare,  Lightbulb, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Smile, Search, Paintbrush, Target, ArrowRight, CircleDot, Blocks, Factory, HelpCircle, Brain, XSquare, Lightbulb, Gamepad2 } from "lucide-react";
 import MagicBento from '@/components/ui/MagicBento';
 
 // Definicje gier podzielone na kategorie - WERSJA PREMIUM (jak reszta sklepu)
@@ -14,10 +14,11 @@ const CATEGORIES = [
     title: 'Kreatywność & Odkrywanie',
     icon: <Lightbulb className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />,
     games: [
+      { id: 'detektyw', icon: <Search className="text-purple-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Detektyw Urwis', desc: 'Szukaj prawdziwych skarbów ukrytych w Twoim domu przez kamerę Smartfona!', glowColor: '168, 85, 247', href: '/strefa-zabawy/detektyw', highlight: true, highlightTag: 'AI Magic' },
       { id: 'urwisek', icon: <Smile className="text-yellow-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Wirtualny Urwis', desc: 'Nakarm i baw się ze swoim wirtualnym podopiecznym. Zdobywaj punkty!', glowColor: '250, 204, 21', href: '/strefa-zabawy/urwisek', highlight: true, highlightTag: 'Hit!' },
       { id: 'kolorowanki', icon: <Paintbrush className="text-blue-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kolorowanki', desc: 'Pomaluj moje ekscytujące przygody i świat pełen kolorów.', glowColor: '59, 130, 246', href: '/strefa-zabawy/kolorowanki' },
       { id: 'urwisar', icon: <Target className="text-red-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Urwis AR', desc: 'Wyskoczę prosto na Twój dywan przez kamerę Twojego urządzenia!', glowColor: '239, 68, 68', href: '/strefa-zabawy/urwisar' },
-      { id: 'quiz', icon: <HelpCircle className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Quiz Urwisa', desc: 'Rozwiąż wesoły quiz i przekonaj się, jakim rodzajem Urwisa jesteś.', glowColor: '245, 158, 11', href: '/strefa-zabawy/quiz-urwisa', highlight: true, highlightTag: 'Nowość!' },
+      { id: 'quiz', icon: <HelpCircle className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Quiz Urwisa', desc: 'Rozwiąż wesoły quiz i przekonaj się, jakim rodzajem Urwisa jesteś.', glowColor: '245, 158, 11', href: '/strefa-zabawy/quiz-urwisa' },
     ]
   },
   {

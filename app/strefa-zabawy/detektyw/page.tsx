@@ -1,0 +1,30 @@
+import React from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Metadata } from 'next';
+import DetectiveGame from '@/components/urwisek/games/Detective';
+
+export const metadata: Metadata = {
+  title: 'Urwisowy Detektyw | Gra AI',
+  description: 'Zabaw się z Urwisem i znajdź przedmioty ukryte w pokoju! Interaktywna gra edukacyjna używająca aparatu smartfona bez wysyłania jakichkolwiek zdjęć do chmury.',
+};
+
+export default function DetektywPage() {
+  return (
+    <div className="min-h-screen bg-transparent pt-20 md:pt-[120px] pb-24 md:pb-32 relative z-10 text-zinc-900 overflow-x-hidden">
+      <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+        <Link 
+          href="/strefa-zabawy" 
+          className="inline-flex items-center gap-2 px-6 py-3 bg-white/60 hover:bg-white text-zinc-600 hover:text-[#0055ff] shadow-sm backdrop-blur-md rounded-full transition-all font-black uppercase tracking-widest text-xs border border-white/50 group mb-8 md:mb-12"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
+          Wróć do Centrum Gier
+        </Link>
+
+        {/* Zawartość silnika AI */}
+        <DetectiveGame />
+        
+      </div>
+    </div>
+  );
+}
