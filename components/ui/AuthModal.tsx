@@ -144,11 +144,11 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
                 <div className="flex flex-col gap-4 mb-2">
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                    <input type="text" placeholder="Imię (opcjonalnie)" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
+                    <input aria-label="Imię (opcjonalnie)" type="text" placeholder="Imię (opcjonalnie)" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
                   </div>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                    <input type="tel" placeholder="Nr telefonu (opcjonalnie)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
+                    <input aria-label="Nr telefonu (opcjonalnie)" type="tel" placeholder="Nr telefonu (opcjonalnie)" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
                   </div>
                 </div>
               )}
@@ -156,13 +156,13 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
               {/* POLA WYMAGANE (EMAIL I HASŁO) */}
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                <input type="email" placeholder="Adres E-mail *" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
+                <input aria-label="Adres E-mail" type="email" placeholder="Adres E-mail *" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
               </div>
 
               {view !== 'forgot' && (
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                  <input type="password" placeholder="Hasło *" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
+                  <input aria-label="Hasło" type="password" placeholder="Hasło *" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-bold text-zinc-800 focus:outline-none focus:border-[#0055ff] transition-all" />
                 </div>
               )}
 
@@ -178,22 +178,22 @@ export default function AuthModal({ isOpen, onClose, initialView = 'login' }: Au
               {view === 'register' && (
                 <div className="space-y-3 mt-2 bg-zinc-50 p-4 rounded-2xl border border-zinc-100">
                   {/* Zgoda obowiązkowa */}
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${termsConsent ? 'bg-[#0055ff] border-[#0055ff]' : 'border-zinc-300 group-hover:border-[#0055ff]'}`}>
+                  <label className="flex items-start gap-3 cursor-pointer group relative">
+                    <input type="checkbox" className="sr-only peer" checked={termsConsent} onChange={() => setTermsConsent(!termsConsent)} />
+                    <div className={`w-5 h-5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[#0055ff] peer-focus-visible:ring-offset-2 ${termsConsent ? 'bg-[#0055ff] border-[#0055ff]' : 'border-zinc-300 group-hover:border-[#0055ff]'}`}>
                       {termsConsent && <Check size={14} className="text-white" />}
                     </div>
-                    <input type="checkbox" className="hidden" checked={termsConsent} onChange={() => setTermsConsent(!termsConsent)} />
                     <span className="text-[10px] text-zinc-600 leading-tight">
                       Akceptuję <a href="/regulamin" target="_blank" className="text-[#0055ff] hover:underline">Regulamin sklepu</a> oraz Politykę Prywatności. <span className="text-red-500 font-bold">*</span>
                     </span>
                   </label>
 
                   {/* Zgoda opcjonalna */}
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <div className={`w-5 h-5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors ${marketingConsent ? 'bg-green-500 border-green-500' : 'border-zinc-300 group-hover:border-green-500'}`}>
+                  <label className="flex items-start gap-3 cursor-pointer group relative">
+                    <input type="checkbox" className="sr-only peer" checked={marketingConsent} onChange={() => setMarketingConsent(!marketingConsent)} />
+                    <div className={`w-5 h-5 mt-0.5 rounded border flex items-center justify-center shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-[#0055ff] peer-focus-visible:ring-offset-2 ${marketingConsent ? 'bg-green-500 border-green-500' : 'border-zinc-300 group-hover:border-green-500'}`}>
                       {marketingConsent && <Check size={14} className="text-white" />}
                     </div>
-                    <input type="checkbox" className="hidden" checked={marketingConsent} onChange={() => setMarketingConsent(!marketingConsent)} />
                     <span className="text-[10px] text-zinc-600 leading-tight">
                       Chcę otrzymywać powiadomienia push o nowych promocjach, kuponach i nowościach w Sklepie Urwis.
                     </span>
