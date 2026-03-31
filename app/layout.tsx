@@ -297,7 +297,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <script
             key={index}
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
           />
         ))}
       </head>
