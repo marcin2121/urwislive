@@ -59,7 +59,14 @@ export async function spinWheel() {
 
     // 4. ALGORYTM LOSOWANIA (Ważony) z puli tylko dostępnych nagród
     const totalWeight = availablePrizes.reduce((sum: number, p: any) => sum + Number(p.chance), 0)
-    let randomNum = Math.random() * totalWeight
+
+    // Używamy bezpiecznego generatora liczb losowych zamiast Math.random()
+    const cryptoRandomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(cryptoRandomBuffer);
+    // Przekształcamy uint32 (0 do 0xFFFFFFFF) na float [0, 1)
+    const secureRandomFloat = cryptoRandomBuffer[0] / (0xFFFFFFFF + 1);
+
+    let randomNum = secureRandomFloat * totalWeight;
     let winningPrize = availablePrizes[0]
 
     for (const prize of availablePrizes) {
@@ -71,7 +78,16 @@ export async function spinWheel() {
     }
 
     // 5. Generujemy unikalny kod kuponu (np. BONUS10-A4B9)
-    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase()
+    // Bezpieczne generowanie 4 znaków z bazy 36 (A-Z, 0-9)
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const suffixBuffer = new Uint8Array(4);
+    crypto.getRandomValues(suffixBuffer);
+
+    let randomSuffix = '';
+    for (let i = 0; i < 4; i++) {
+      randomSuffix += charset[suffixBuffer[i] % charset.length];
+    }
+
     const finalCode = `${winningPrize.code_prefix}-${randomSuffix}`
 
     // 6. Zapisujemy wylosowany kupon dla użytkownika
