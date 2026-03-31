@@ -1,4 +1,4 @@
-import {  Gamepad2, Gift, Star, Package, Sparkles, MessageCircle } from "lucide-react";
+import { Gamepad2, Gift, Star, Package, Sparkles, MessageCircle, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NewsItem {
@@ -29,6 +29,18 @@ export { CATEGORY_STYLES };
 // ═══════════════════════════════════════════════════════════
 
 export const NEWS_DATA: NewsItem[] = [
+  {
+    id: 'urwisowy-detektyw',
+    title: 'Nowość: Zagraj z dzieckiem w Detektywa! 🕵️‍♂️',
+    description: 'Bieganie po pokoju i szukanie rzeczy przez obiektyw? Poznaj nową grę interaktywną wspartą bezpiecznymi technologiami analizy. 100% gwarancji prywatności!',
+    date: '2026-03-31',
+    category: 'nowość',
+    icon: Search,
+    pinned: true,
+    link: '/strefa-zabawy/detektyw',
+    ctaText: 'Zagraj w Detektywa',
+    content: 'Szukasz wesołej i aktywnej zabawy, która podniesie Was z kanapy? Rzućcie wyzwanie czasowi i zagrajcie razem w **Urwisowego Detektywa**!\n\nGra używa inteligentnego trybu aparatu wbudowanego bezpośrednio w naszą aplikację WWW. Nasza maskotka wylosuje Wam domowy skarb (np. kubek lub książkę), a zadaniem Twojej pociechy jest odnalezienie go w pokoju zanim upłynie 30 sekund! Gra inteligentnie rozpozna znalezisko i nagrodzi Was deszczem konfetti.\n\n**Mądra i bezpieczna rozrywka 🛡️**\nDrodzy Rodzice, doskonale wiemy, jak cenna jest Wasza prywatność. Dlatego nasz innowacyjny skaner działa całkowicie we wnętrzu Waszego telefonu lub komputera, bez użycia zewnętrznych serwerów. Obraz z kamery nigdzie się nie zapisuje i **nigdy nie jest wysyłany do internetu**. Życzymy Wam wspaniałych uśmiechów i dużo radości z codziennych poszukiwań!',
+  },
   {
     id: 'klocki-urwisa-nowa-gra',
     title: 'Nowa gra logiczna: Klocki Urwisa! 🧩',

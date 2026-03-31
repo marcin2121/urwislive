@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { motion } from 'framer-motion';
-import { Camera, Search, CheckCircle, Volume2, Play } from 'lucide-react';
+import { Camera, Search, CheckCircle, Volume2, Play, SkipForward, Timer, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
@@ -15,9 +15,9 @@ const speakUrwis = (text: string) => {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'pl-PL';
   
-  // 🚀 Zmiana barwy głosu na zabawny/maskotkowy (wysoki pitch)
-  utterance.pitch = 1.6; 
-  utterance.rate = 1.15; 
+  // Domyślne wartości dla native Web Speech
+  utterance.pitch = 1.0; 
+  utterance.rate = 1.0; 
   
   // Znalezienie polskiego głosu (Google Polski, itp.)
   const voices = window.speechSynthesis.getVoices();
@@ -47,6 +47,8 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
   const [found, setFound] = useState(false);
   const [predictions, setPredictions] = useState<any[]>([]);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeUp, setTimeUp] = useState(false);
 
   // Pobranie rozmiaru okna do confetti
   useEffect(() => {
@@ -59,6 +61,24 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
       window.speechSynthesis.getVoices();
     }
   }, []);
+
+  // TIMER (30 sek na cel)
+  useEffect(() => {
+    if (!isScanning || found || timeUp) return;
+    
+    if (timeLeft <= 0) {
+      setTimeUp(true);
+      setIsScanning(false);
+      speakUrwis("Oj, chyba czas minął! Może poszukamy czegoś innego?");
+      return;
+    }
+    
+    const timerId = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+    
+    return () => clearInterval(timerId);
+  }, [isScanning, found, timeUp, timeLeft]);
 
   // ŁADOWANIE LOKALNEGO MODELU AI
   useEffect(() => {
@@ -124,13 +144,27 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
     }
   }, [isScanning, found, detectLoop]);
 
+  const skipTarget = () => {
+    let randomItem;
+    do {
+      randomItem = TARGET_OBJECTS[Math.floor(Math.random() * TARGET_OBJECTS.length)];
+    } while (randomItem.id === target.id);
+    setTarget(randomItem);
+    setPredictions([]);
+    setTimeLeft(30);
+    setTimeUp(false);
+    speakUrwis(`Zmieniamy cel! Szukaj szybko na około siebie... ${randomItem.namePL}! Masz 30 sekund!`);
+  };
+
   const startGame = () => {
     const randomItem = TARGET_OBJECTS[Math.floor(Math.random() * TARGET_OBJECTS.length)];
     setTarget(randomItem);
     setFound(false);
     setIsScanning(true);
     setPredictions([]);
-    speakUrwis(`Zostałeś detektywem! Znajdź szybko na około siebie... ${randomItem.namePL}!`);
+    setTimeLeft(30);
+    setTimeUp(false);
+    speakUrwis(`Zostałeś detektywem! Pokaż mi na kamerze gdzie jest... ${randomItem.namePL}! Zaczynamy odliczanie.`);
   };
 
   return (
@@ -199,13 +233,29 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
                 </div>
               </div>
               
-              <button 
-                onClick={() => speakUrwis(`Znajdź szybko ${target.namePL}!`)} 
-                className="p-3 bg-red-50 text-[#BF2024] hover:bg-red-100 rounded-full transition-colors active:scale-95"
-              >
-                <Volume2 size={24} />
-              </button>
+              <div className="flex flex-col gap-2 shrink-0">
+                <button 
+                  onClick={() => speakUrwis(`Znajdź szybko ${target.namePL}!`)} 
+                  className="p-3 bg-red-50 text-[#BF2024] hover:bg-red-100 rounded-full transition-colors active:scale-95"
+                  title="Powtórz głos"
+                >
+                  <Volume2 size={24} />
+                </button>
+                <button 
+                  onClick={skipTarget} 
+                  className="p-3 bg-zinc-100 text-zinc-500 hover:bg-zinc-200 rounded-full transition-colors active:scale-95 shadow-inner"
+                  title="Nie mam tego w pokoju (Pomiń)"
+                >
+                  <SkipForward size={24} />
+                </button>
+              </div>
             </motion.div>
+
+            {/* WIDŻET TIMERA */}
+            <div className={`w-full max-w-sm flex items-center justify-center gap-3 font-black text-2xl italic tracking-wider py-3 rounded-[1.5rem] border-4 shadow-sm transition-colors ${timeLeft <= 10 ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : 'bg-white text-zinc-800 border-zinc-100'}`}>
+              <Timer size={28} className={timeLeft <= 10 ? 'animate-bounce' : ''} /> 
+              00:{timeLeft.toString().padStart(2, '0')}
+            </div>
 
             {/* WIDOK Z KAMERY LOKALNEJ */}
             <div className="relative w-full max-w-sm aspect-[3/4] rounded-[2.5rem] overflow-hidden shadow-2xl bg-zinc-900 border-8 border-white">
@@ -253,6 +303,21 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
                   <p className="mt-2 font-bold text-green-100">Jesteś urodzonym detektywem!</p>
                 </motion.div>
               )}
+
+              {/* Ekran Porażki (Koniec Czasu) */}
+              {timeUp && !found && (
+                <motion.div 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }} 
+                  className="absolute inset-0 bg-red-500/90 backdrop-blur-md flex flex-col items-center justify-center text-white p-6 text-center"
+                >
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}>
+                    <AlertCircle size={100} className="mb-6 drop-shadow-2xl text-white" />
+                  </motion.div>
+                  <h3 className="text-4xl font-black italic drop-shadow-md">CZAS MINĄŁ!</h3>
+                  <p className="mt-2 font-bold text-red-100">Może nie ma tu tego przedmiotu?</p>
+                </motion.div>
+              )}
             </div>
 
             {found ? (
@@ -260,12 +325,21 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="px-8 py-4 bg-zinc-900 text-white rounded-full font-black tracking-widest text-sm uppercase italic shadow-xl"
+                className="px-8 py-4 bg-zinc-900 text-white rounded-full font-black tracking-widest text-sm uppercase italic shadow-xl focus:outline-none"
               >
                 SZUKAMY DALEJ!
               </motion.button>
+            ) : timeUp ? (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={startGame}
+                className="px-8 py-4 bg-zinc-900 text-white rounded-full font-black tracking-widest text-sm uppercase italic shadow-xl focus:outline-none"
+              >
+                LOSUJ PONOWNIE
+              </motion.button>
             ) : (
-              <div className="flex items-center gap-3 text-zinc-500 text-xs font-black uppercase tracking-widest bg-zinc-200 px-4 py-2 rounded-full">
+              <div className="flex items-center gap-3 text-zinc-500 text-xs font-black uppercase tracking-widest bg-zinc-200 px-4 py-2 rounded-full shadow-inner">
                 <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
                 Skanowanie przestrzeni...
               </div>
@@ -275,9 +349,10 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
         )}
       </div>
       
-      {/* SECURITY NOTE (100% Client-Side AEO) */}
-      <div className="w-full bg-zinc-100 p-4 text-center text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
-        Prywatność Gwarantowana. Zastosowano na-urządzeniowe AI (Edge AI). <br/>Obraz nie jest wysyłany do sieci.
+      {/* SECURITY NOTE (Rodzicielska Note) */}
+      <div className="w-full bg-zinc-100 p-4 text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider relative z-10 box-border border-t border-zinc-200 shadow-inner">
+        Mądra i bezpieczna zabawa 🛡️<br/>
+        Obraz analizowany jest lokalnie na Twoim sprzęcie i nigdy nie trafia do internetu.
       </div>
     </div>
   );
