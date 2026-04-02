@@ -64,8 +64,9 @@ export async function POST(req: Request) {
 
     // 5. Model configuration with fallbacks
     const modelsToTry = [
-      { id: 'gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash' },
-      { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro' }
+      { id: 'gemini-3.1-flash-lite-preview', name: 'Gemini 3.1 Flash Lite' },
+      { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' },
+      { id: 'gemini-3-flash', name: 'Gemini 3 Flash' }
     ];
 
     let lastError: any = null;
