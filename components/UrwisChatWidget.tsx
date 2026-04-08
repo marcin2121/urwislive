@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,12 @@ const ChatContent = dynamic(() => import('./ChatContent'), {
 
 export function UrwisChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Ukrywamy czat w strefie zabawy, żeby nie zasłaniał gier i kolorowanek
+  const isPlayZone = pathname?.includes('/strefa-zabawy');
+
+  if (isPlayZone) return null;
 
   return (
     <div
