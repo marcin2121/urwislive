@@ -30,6 +30,18 @@ export { CATEGORY_STYLES };
 
 export const NEWS_DATA: NewsItem[] = [
   {
+    id: 'strefa-zabawy-5-nowych-gier',
+    title: '5 nowych gier w Strefie Zabawy! 🎮🍉',
+    description: 'Gra w Arbuza, Tetris, 2048, Literki (polskie Wordle) i Trzy w Rząd — Strefa Zabawy dostała potężny zastrzyk rozrywki! Wszystko za darmo, prosto w przeglądarce.',
+    date: '2026-04-08',
+    category: 'nowość',
+    icon: Gamepad2,
+    pinned: true,
+    link: '/strefa-zabawy',
+    ctaText: 'Zagraj teraz',
+    content: 'Strefa Zabawy Urwisa właśnie się rozrosła o **5 zupełnie nowych gier**! Teraz masz jeszcze więcej powodów, by odwiedzić nasz sklep online:\n\n🍉 **Gra w Arbuza** — Upuszczaj owoce i łącz identyczne! Fizyczny hit inspirowany japońskim Suika Game. Kto pierwszy zrobi arbuza?\n\n🧱 **Tetris** — Legendarny klasyk z ghost piece, hard dropem i poziomami trudności. Układaj klocki, czyść linie!\n\n🔢 **2048** — Przesuwaj kafelki, łącz liczby i dotrzyj do magicznego 2048. Obsługa gestów dotykowych.\n\n🔠 **Literki** — Polskie Wordle! Zgadnij 5-literowe słowo w 6 prób. Kolorowe podpowiedzi pomogą Ci dojść do rozwiązania.\n\n🍬 **Trzy w Rząd** — Zamień sąsiednie kafelki, by ułożyć trzy w rząd. Kaskadowe combo dają podwójne punkty!\n\nWszystkie gry działają na telefonach, tabletach i komputerach — bez instalacji, bez logowania. Zapraszamy całą rodzinę!',
+  },
+  {
     id: 'urwisowy-detektyw',
     title: 'Nowość: Zagraj z dzieckiem w Detektywa! 🕵️‍♂️',
     description: 'Bieganie po pokoju i szukanie rzeczy przez obiektyw? Poznaj nową grę interaktywną wspartą bezpiecznymi technologiami analizy. 100% gwarancji prywatności!',
