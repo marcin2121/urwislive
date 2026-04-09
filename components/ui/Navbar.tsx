@@ -92,6 +92,8 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isHoursDropdownOpen, trackEvent]);
 
+  const isGamePage = pathname.startsWith('/strefa-zabawy/');
+
   useEffect(() => {
     let touchStartX = 0;
     let touchStartY = 0;
@@ -107,7 +109,8 @@ export default function Navbar() {
       const deltaX = touchEndX - touchStartX;
       const deltaY = Math.abs(touchEndY - touchStartY);
 
-      if (deltaX < -40 && deltaY < 40 && touchStartX > window.innerWidth - 50) {
+      // Wyłącz swipe-to-open na stronach gier
+      if (!isGamePage && deltaX < -40 && deltaY < 40 && touchStartX > window.innerWidth - 50) {
         setMobileMenuOpen(true);
       }
       if (deltaX > 50 && deltaY < 50 && mobileMenuOpen) {
@@ -122,7 +125,7 @@ export default function Navbar() {
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, isGamePage]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

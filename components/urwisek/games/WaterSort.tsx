@@ -235,15 +235,22 @@ export default function WaterSortGame() {
   const [history, setHistory] = useState<Tube[][]>([]);
   const [moves, setMoves] = useState(0);
   const [won, setWon] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [best, setBest] = useState(0);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   React.useEffect(() => {
     setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    const hs = localStorage.getItem('urwis-watersort-streak');
+    if (hs) setBest(parseInt(hs));
   }, []);
 
   const startNewGame = useCallback(
-    (diffIdx?: number) => {
+    (diffIdx?: number, isNextGame = false) => {
       const dIdx = diffIdx ?? difficulty;
+      if (!isNextGame && !won && moves > 0) {
+        setStreak(0);
+      }
       setDifficulty(dIdx);
       setTubes(generateLevel(DIFFICULTIES[dIdx].colors));
       setSelectedTube(null);
@@ -298,6 +305,15 @@ export default function WaterSortGame() {
         // Check win
         if (isSolved(newTubes)) {
           setWon(true);
+          setStreak(s => {
+            const ns = s + 1;
+            setBest(b => {
+              const nb = Math.max(b, ns);
+              localStorage.setItem('urwis-watersort-streak', String(nb));
+              return nb;
+            });
+            return ns;
+          });
         }
       } else {
         // Niedozwolony ruch – zmień selekcję na klikniętą (jeśli niepusta)
@@ -353,7 +369,9 @@ export default function WaterSortGame() {
       </div>
 
       {/* STATS BAR */}
-      <div className="flex items-center gap-6 mt-4 text-zinc-500 text-xs font-black uppercase tracking-widest">
+      <div className="flex items-center gap-4 mt-4 text-zinc-500 text-[10px] sm:text-xs font-black uppercase tracking-widest px-4 flex-wrap justify-center">
+        <span>Seria: <span className="text-emerald-600">{streak}</span></span>
+        <span>Rekord: <span className="text-zinc-900">{best}</span></span>
         <span>
           Ruchy: <span className="text-zinc-900">{moves}</span>
         </span>
@@ -383,14 +401,14 @@ export default function WaterSortGame() {
               Posortowano w <span className="font-black text-zinc-800">{moves}</span>{' '}
               ruchach!
             </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => startNewGame()}
-              className="px-10 py-5 bg-zinc-900 text-white rounded-full font-black text-lg italic tracking-wider shadow-xl"
-            >
-              NASTĘPNY POZIOM
-            </motion.button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => startNewGame(difficulty, true)}
+                className="px-6 py-3 bg-zinc-900 text-white rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 transition-transform"
+              >
+                Kolejny poziom
+              </button>
+            </div>
           </motion.div>
         ) : (
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-5 max-w-xl">
@@ -435,7 +453,7 @@ export default function WaterSortGame() {
 
       {/* FOOTER */}
       <div className="w-full bg-zinc-100 p-3 text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-t border-zinc-200">
-        Kliknij probówkę źródłową, potem docelową, by przelać płyn 🧪
+        Dotknij probówkę źródłową, potem docelową, by przelać płyn 🧪
       </div>
     </div>
   );

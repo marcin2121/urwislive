@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useIsTouch } from '@/hooks/useIsTouch';
 import { motion } from 'framer-motion';
 import { Trophy, RotateCcw, Sparkles } from 'lucide-react';
 
@@ -103,6 +104,7 @@ function areAdjacent(a: Pos, b: Pos): boolean {
 // ═══════════════════════════════════════════════════════════
 
 export default function Match3Game() {
+  const isTouch = useIsTouch();
   const [grid, setGrid] = useState<Grid>(createGrid);
   const [selected, setSelected] = useState<Pos | null>(null);
   const [score, setScore] = useState(0);
@@ -297,7 +299,7 @@ export default function Match3Game() {
       </div>
 
       <div className="w-full bg-zinc-100 p-3 text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-t border-zinc-200">
-        Zamień sąsiednie kafelki, by ułożyć 3 w rząd! 🍬
+        {isTouch ? 'Przesuń palcem po kafelku, by zamienić 🍬' : 'Kliknij dwa sąsiednie kafelki, by zamienić 🍬'}
       </div>
     </div>
   );

@@ -147,7 +147,7 @@ export async function submitBubbleShooterScore(playerName: string, score: number
     }
     
     // Inwaliduj cache gdy uaktualniono wynik
-    revalidatePath('/strefa-zabawy/lece-w-kulki');
+    revalidatePath('/kulki');
     
     return { success: true }
   } catch(e) {

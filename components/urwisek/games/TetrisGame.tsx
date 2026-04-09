@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useIsTouch } from '@/hooks/useIsTouch';
 import { motion } from 'framer-motion';
 import { Trophy, RotateCcw, Pause, Play } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -80,6 +81,7 @@ function clearLines(board: Board): { board: Board; cleared: number } {
 // ═══════════════════════════════════════════════════════════
 
 export default function TetrisGame() {
+  const isTouch = useIsTouch();
   const [board, setBoard] = useState<Board>(createBoard);
   const [piece, setPiece] = useState(randomPiece);
   const [pos, setPos] = useState({ row: 0, col: 3 });
@@ -88,6 +90,7 @@ export default function TetrisGame() {
   const [level, setLevel] = useState(1);
   const [gameOver, setGameOver] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [best, setBest] = useState(0);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   const boardRef = useRef(board);
@@ -101,7 +104,11 @@ export default function TetrisGame() {
   useEffect(() => { posRef.current = pos; }, [pos]);
   useEffect(() => { gameOverRef.current = gameOver; }, [gameOver]);
   useEffect(() => { pausedRef.current = paused; }, [paused]);
-  useEffect(() => { setWindowSize({ width: window.innerWidth, height: window.innerHeight }); }, []);
+  useEffect(() => {
+    setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    const saved = localStorage.getItem('urwis-tetris-best');
+    if (saved) setBest(parseInt(saved));
+  }, []);
 
   const drop = useCallback(() => {
     if (gameOverRef.current || pausedRef.current) return;
@@ -132,6 +139,15 @@ export default function TetrisGame() {
       const np = randomPiece();
       if (!isValid(newBoard, np.shape, 0, 3)) {
         setGameOver(true);
+        // Save highscore
+        setScore(s => {
+          setBest(b => {
+            const newBest = Math.max(b, s);
+            localStorage.setItem('urwis-tetris-best', String(newBest));
+            return newBest;
+          });
+          return s;
+        });
         return;
       }
       setPiece(np);
@@ -197,31 +213,62 @@ export default function TetrisGame() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [drop]);
 
-  // Touch
-  const touchRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  // Touch – ciągłe przeciąganie
+  const touchRef = useRef<{ x: number; y: number; time: number; startCol: number; moved: boolean } | null>(null);
+
   const onTouchStart = (e: React.TouchEvent) => {
-    touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
+    if (gameOver || paused) return;
+    touchRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      time: Date.now(),
+      startCol: posRef.current.col,
+      moved: false,
+    };
   };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!touchRef.current || gameOver || paused) return;
+    const dx = e.touches[0].clientX - touchRef.current.x;
+    const dy = e.touches[0].clientY - touchRef.current.y;
+
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) touchRef.current.moved = true;
+
+    // Horizontal: mapuj piksele na kolumny (1 kolumna = CELL_SIZE px)
+    const colDelta = Math.round(dx / CELL_SIZE);
+    const targetCol = touchRef.current.startCol + colDelta;
+    const { row } = posRef.current;
+    const p = pieceRef.current;
+    const b = boardRef.current;
+
+    if (targetCol !== posRef.current.col && isValid(b, p.shape, row, targetCol)) {
+      setPos({ row, col: targetCol });
+    }
+  };
+
   const onTouchEnd = (e: React.TouchEvent) => {
     if (!touchRef.current || gameOver || paused) return;
-    const dx = e.changedTouches[0].clientX - touchRef.current.x;
     const dy = e.changedTouches[0].clientY - touchRef.current.y;
     const dt = Date.now() - touchRef.current.time;
 
-    if (Math.abs(dx) < 20 && Math.abs(dy) < 20 && dt < 300) {
+    if (!touchRef.current.moved && dt < 300) {
       // Tap = rotate
       const p = pieceRef.current;
       const { row, col } = posRef.current;
       const rotated = rotate(p.shape);
       if (isValid(boardRef.current, rotated, row, col)) setPiece({ ...p, shape: rotated });
-    } else if (Math.abs(dx) > Math.abs(dy)) {
+      else if (isValid(boardRef.current, rotated, row, col - 1)) { setPiece({ ...p, shape: rotated }); setPos({ row, col: col - 1 }); }
+      else if (isValid(boardRef.current, rotated, row, col + 1)) { setPiece({ ...p, shape: rotated }); setPos({ row, col: col + 1 }); }
+    } else if (dy > 40) {
+      // Swipe down = hard drop
       const p = pieceRef.current;
-      const { row, col } = posRef.current;
-      const nc = col + (dx > 0 ? 1 : -1);
-      if (isValid(boardRef.current, p.shape, row, nc)) setPos({ row, col: nc });
-    } else if (dy > 30) {
-      drop();
+      const { col } = posRef.current;
+      let dr = posRef.current.row;
+      while (isValid(boardRef.current, p.shape, dr + 1, col)) dr++;
+      setPos({ row: dr, col });
+      setTimeout(drop, 50);
     }
+
     touchRef.current = null;
   };
 
@@ -283,8 +330,8 @@ export default function TetrisGame() {
           </button>
         </div>
         <div className="text-center">
-          <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Poziom</div>
-          <div className="text-lg font-black text-indigo-600">{level}</div>
+          <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Rekord</div>
+          <div className="text-lg font-black text-indigo-600">{best}</div>
         </div>
       </div>
 
@@ -292,6 +339,7 @@ export default function TetrisGame() {
         className="relative bg-zinc-900 m-4 rounded-xl select-none touch-none border-2 border-zinc-700"
         style={{ width: COLS * CELL_SIZE + 4, height: ROWS * CELL_SIZE + 4 }}
         onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         {displayBoard.map((row, r) =>
@@ -331,7 +379,7 @@ export default function TetrisGame() {
       </div>
 
       <div className="w-full bg-zinc-100 p-3 text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-t border-zinc-200">
-        Strzałki / WASD + Spacja (hard drop) • P = pauza 🎮
+        {isTouch ? 'Przeciągnij = przesuń • Swipe ↓ = upuść • Tap = obróć 📱' : 'Strzałki / WASD + Spacja (hard drop) • P = pauza 🎮'}
       </div>
     </div>
   );

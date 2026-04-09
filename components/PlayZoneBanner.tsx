@@ -28,7 +28,7 @@ const TOP_GAMES = [
     title: 'Kulki',
     desc: 'Strzelaj bąbelkami i łącz kolory.',
     glowColor: '6, 182, 212',
-    href: '/strefa-zabawy/lece-w-kulki',
+    href: '/kulki',
     tag: 'Popularne'
   },
   {

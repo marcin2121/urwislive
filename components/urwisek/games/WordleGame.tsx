@@ -12,19 +12,9 @@ const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
 // ═══════════════════════════════════════════════════════════
 
 const WORDS = [
-  'kotek','miody','lampa','arbuz','morze','tanio','motyl','klasa','domek','numer',
-  'stary','pirat','kwiat','torba','gracz','igloo','balon','mleko','kolor','owoce',
-  'robak','zamek','panda','dzban','farba','kukla','lalka','medal','obiit','palma',
-  'radio','salon','wieża','burza','chleb','deski','fotel','głowa','hełmy','jasny',
-  'kiedy','leśny','mango','nocny','ostra','pięść','runda','smoki','trawa','ubogi',
-  'widok','zegar','akwen','bilet','chmur','drogi','ekipa','firma','guzik','humor',
-  'iskry','jutro','klucz','licho','minut','nisko','obiad','punkt','rower','serce',
-  'tłumy','urlop','wazon','zając','bagno','celny','dynia','efekt','fakty','garść',
-  'hasło','jabłk','karta','linia','meble','nauka','okazy','pilot','rzecz','światła',
-  'temat','udany','włosy','zmysł','agres','broda','ciało','dolar','etyka','fobia',
+  'KOTEK', 'MIODY', 'LAMPA', 'ARBUZ', 'MORZE', 'TANIO', 'MOTYL', 'KLASA', 'DOMEK', 'NUMER',
+  'STARY', 'PIRAT', 'KWIAT', 'TORBA', 'GRACZ', 'IGLOO', 'BALON', 'MLEKO', 'KOLOR', 'OWOCE'
 ];
-
-const VALID_GUESSES = new Set(WORDS);
 
 const MAX_GUESSES = 6;
 const WORD_LENGTH = 5;
@@ -51,12 +41,35 @@ export default function WordleGame() {
   const [shake, setShake] = useState(false);
   const [message, setMessage] = useState('');
   const [showHelp, setShowHelp] = useState(false);
+  const [dictionary, setDictionary] = useState<Set<string>>(new Set(WORDS));
+  const [dictList, setDictList] = useState<string[]>(WORDS);
+  const [best, setBest] = useState(0);
+  const [streak, setStreak] = useState(0);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    setAnswer(WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase());
-  }, []);
+    const hs = localStorage.getItem('urwis-literki-streak');
+    if (hs) setBest(parseInt(hs));
+
+    fetch('/words5.json')
+      .then(res => res.json())
+      .then((data: string[]) => {
+        const up = data.map(w => w.toUpperCase());
+        setDictList(up);
+        setDictionary(new Set(up));
+        // Wylosuj nowe od razu z nowego, większego słownika
+        if (guesses.length === 0) {
+          setAnswer(up[Math.floor(Math.random() * up.length)]);
+        }
+      })
+      .catch(console.error);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Initial answer (fallback until fetch completes)
+  useEffect(() => {
+    if (!answer) setAnswer(WORDS[Math.floor(Math.random() * WORDS.length)]);
+  }, [answer]);
 
   const getLetterState = (guess: string, idx: number): TileState => {
     const letter = guess[idx];
@@ -90,16 +103,33 @@ export default function WordleGame() {
   const submitGuess = useCallback(() => {
     if (current.length !== WORD_LENGTH) return;
 
+    if (!dictionary.has(current.toUpperCase())) {
+      setMessage('Nie znamy takiego słowa');
+      setShake(true);
+      setTimeout(() => { setShake(false); setMessage(''); }, 1500);
+      return;
+    }
+
     const newGuesses = [...guesses, current.toUpperCase()];
     setGuesses(newGuesses);
     setCurrent('');
 
     if (current.toUpperCase() === answer) {
       setGameState('won');
+      setStreak(s => {
+        const ns = s + 1;
+        setBest(b => {
+          const nb = Math.max(b, ns);
+          localStorage.setItem('urwis-literki-streak', String(nb));
+          return nb;
+        });
+        return ns;
+      });
     } else if (newGuesses.length >= MAX_GUESSES) {
       setGameState('lost');
+      setStreak(0);
     }
-  }, [current, guesses, answer]);
+  }, [current, guesses, answer, dictionary]);
 
   const addLetter = useCallback((l: string) => {
     if (gameState !== 'playing') return;
@@ -120,14 +150,14 @@ export default function WordleGame() {
   }, [addLetter]);
 
   const restart = () => {
-    setAnswer(WORDS[Math.floor(Math.random() * WORDS.length)].toUpperCase());
+    setAnswer(dictList[Math.floor(Math.random() * dictList.length)].toUpperCase());
     setGuesses([]);
     setCurrent('');
     setGameState('playing');
     setMessage('');
   };
 
-  const rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+  const rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM', 'ĄĆĘŁŃÓŚŹŻ'];
 
   return (
     <div className="relative w-full max-w-lg mx-auto bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col items-center">
@@ -137,6 +167,17 @@ export default function WordleGame() {
         <button onClick={() => setShowHelp(h => !h)} className="p-2 rounded-full hover:bg-white/20"><HelpCircle size={20} /></button>
         <h2 className="text-2xl font-black italic tracking-wider">LITERKI</h2>
         <button onClick={restart} className="p-2 rounded-full hover:bg-white/20"><RotateCcw size={20} /></button>
+      </div>
+
+      <div className="w-full flex items-center justify-between px-6 py-2 bg-white border-b border-zinc-100">
+        <div className="text-center w-24">
+          <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Seria</div>
+          <div className="text-lg font-black text-emerald-600">{streak}</div>
+        </div>
+        <div className="text-center w-24">
+          <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Rekord</div>
+          <div className="text-lg font-black text-zinc-900">{best}</div>
+        </div>
       </div>
 
       {message && (

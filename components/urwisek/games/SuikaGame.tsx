@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useIsTouch } from '@/hooks/useIsTouch';
 import Matter from 'matter-js';
 import { Cherry, Trophy } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -25,8 +26,8 @@ const FRUITS = [
   { radius: 110, color: '#16a34a', name: 'Arbuz',      score: 66 },
 ];
 
-const GAME_W = 380;
-const GAME_H = 600;
+const BASE_W = 380;
+const BASE_H = 600;
 const WALL_T = 20;
 const DROP_Y = 60;
 const LOSE_LINE = 100;
@@ -36,6 +37,7 @@ const LOSE_LINE = 100;
 // ═══════════════════════════════════════════════════════════
 
 export default function SuikaGame() {
+  const isTouch = useIsTouch();
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
@@ -67,6 +69,14 @@ export default function SuikaGame() {
   // ──────── INICJALIZACJA MATTER.JS ────────
   useEffect(() => {
     if (!sceneRef.current) return;
+
+    // Dynamiczny rozmiar: dopasuj do ekranu na mobile
+    const containerW = Math.min(BASE_W, window.innerWidth - 32);
+    const scale = containerW / BASE_W;
+    const GAME_W = Math.round(BASE_W * scale);
+    const GAME_H = Math.round(BASE_H * scale);
+    const dropY = Math.round(DROP_Y * scale);
+    const loseLine = Math.round(LOSE_LINE * scale);
 
     const engine = Matter.Engine.create();
     const render = Matter.Render.create({
@@ -103,7 +113,7 @@ export default function SuikaGame() {
 
     // Preview ball
     const fruit = FRUITS[currentIndexRef.current];
-    const preview = Matter.Bodies.circle(GAME_W / 2, DROP_Y, fruit.radius, {
+    const preview = Matter.Bodies.circle(GAME_W / 2, dropY, fruit.radius * scale, {
       isStatic: true,
       isSensor: true,
       render: { fillStyle: fruit.color },
@@ -137,7 +147,7 @@ export default function SuikaGame() {
         Matter.Composite.remove(engine.world, [bodyA, bodyB]);
 
         const newFruit = FRUITS[newIdx];
-        const merged = Matter.Bodies.circle(mx, my, newFruit.radius, {
+        const merged = Matter.Bodies.circle(mx, my, newFruit.radius * scale, {
           friction: 0.005,
           frictionStatic: 0.005,
           restitution: 0.2,
@@ -162,7 +172,7 @@ export default function SuikaGame() {
         if ((body as any).sizeIndex === undefined) continue;
         if (Date.now() - ((body as any).dropTime || Date.now()) < 2000) continue;
 
-        if (body.position.y - (body.circleRadius || 0) < LOSE_LINE) {
+        if (body.position.y - (body.circleRadius || 0) < loseLine) {
           gameOverRef.current = true;
           setGameOver(true);
           Matter.Runner.stop(runner);
@@ -192,9 +202,9 @@ export default function SuikaGame() {
     const onMove = (e: MouseEvent | TouchEvent) => {
       if (gameOverRef.current || !previewRef.current) return;
       const x = getMouseX(e);
-      const fruit = FRUITS[(previewRef.current as any).sizeIndex];
-      const clampedX = Math.max(fruit.radius + 2, Math.min(GAME_W - fruit.radius - 2, x));
-      Matter.Body.setPosition(previewRef.current, { x: clampedX, y: DROP_Y });
+      const r = FRUITS[(previewRef.current as any).sizeIndex].radius * scale;
+      const clampedX = Math.max(r + 2, Math.min(GAME_W - r - 2, x));
+      Matter.Body.setPosition(previewRef.current, { x: clampedX, y: dropY });
     };
 
     const onDrop = (e: MouseEvent | TouchEvent) => {
@@ -210,7 +220,7 @@ export default function SuikaGame() {
       Matter.Composite.remove(engine.world, previewRef.current);
 
       // Upuść prawdziwy owoc
-      const dropped = Matter.Bodies.circle(dropX, DROP_Y, f.radius, {
+      const dropped = Matter.Bodies.circle(dropX, dropY, f.radius * scale, {
         friction: 0.005,
         frictionStatic: 0.005,
         restitution: 0.2,
@@ -229,7 +239,7 @@ export default function SuikaGame() {
       setTimeout(() => {
         if (gameOverRef.current) return;
         const nf = FRUITS[currentIndexRef.current];
-        const newPreview = Matter.Bodies.circle(dropX, DROP_Y, nf.radius, {
+        const newPreview = Matter.Bodies.circle(dropX, dropY, nf.radius * scale, {
           isStatic: true,
           isSensor: true,
           render: { fillStyle: nf.color },
@@ -262,8 +272,8 @@ export default function SuikaGame() {
       ctx.lineWidth = 2;
       ctx.setLineDash([8, 6]);
       ctx.beginPath();
-      ctx.moveTo(0, LOSE_LINE);
-      ctx.lineTo(GAME_W, LOSE_LINE);
+      ctx.moveTo(0, loseLine);
+      ctx.lineTo(GAME_W, loseLine);
       ctx.stroke();
       ctx.setLineDash([]);
     });
@@ -314,7 +324,7 @@ export default function SuikaGame() {
       <div
         ref={sceneRef}
         className="w-full bg-orange-50 flex items-center justify-center touch-none"
-        style={{ maxWidth: GAME_W }}
+        style={{ maxWidth: BASE_W }}
       />
 
       {/* GAME OVER */}
@@ -335,7 +345,7 @@ export default function SuikaGame() {
 
       {/* FOOTER */}
       <div className="w-full bg-zinc-100 p-3 text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-t border-zinc-200">
-        Upuszczaj owoce, łącz identyczne! 🍉 Nie przekrocz linii!
+        {isTouch ? 'Przeciągnij palcem i puść, by upuścić owoc 🍉' : 'Przesuń myszą i kliknij, by upuścić owoc 🍉'}
       </div>
     </div>
   );

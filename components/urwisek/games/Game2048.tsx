@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useIsTouch } from '@/hooks/useIsTouch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, RotateCcw } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -113,6 +114,7 @@ function has2048(grid: Grid): boolean {
 // ═══════════════════════════════════════════════════════════
 
 export default function Game2048() {
+  const isTouch = useIsTouch();
   const [grid, setGrid] = useState<Grid>(() => addRandom(addRandom(createEmptyGrid())));
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
@@ -295,7 +297,7 @@ export default function Game2048() {
 
       {/* FOOTER */}
       <div className="w-full bg-zinc-100 p-3 text-center text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-t border-zinc-200">
-        Przesuń kafelki strzałkami lub palcem 🎯
+        {isTouch ? 'Przesuń palcem w dowolnym kierunku 👆' : 'Strzałki / WASD 🎯'}
       </div>
     </div>
   );
