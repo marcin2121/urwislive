@@ -33,6 +33,7 @@ export default function Footer() {
               Zapraszamy mieszkańców miejscowości: Grójec, Warka, Jedlińsk, Kozienice, Potworów, Stromiec oraz Radom. 
               Gwarantujemy największy wybór klocków LEGO, edukacyjnych zabawek wspierających rozwój dziecka 
               oraz pełną wyprawkę szkolną dostępną od ręki blisko Ciebie.
+              Odwiedź naszą wizytówkę w Google Maps: https://www.google.com/maps?cid=8126296602477932572
             </p>
           </section>
 
@@ -69,7 +70,7 @@ export default function Footer() {
                 <Store size={16} aria-hidden="true" /> Sklep Urwis
               </div>
               <ul className="flex flex-col gap-5">
-                <FooterLink href="https://www.google.com/maps/search/?api=1&query=Sklep+Urwis+Białobrzegi" icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="Białobrzegi 26-800" />
+                <FooterLink href="https://www.google.com/maps?cid=8126296602477932572" icon={<MapPin size={18} />} label="ul. Reymonta 38A" sublabel="Białobrzegi 26-800" />
                 <FooterLink href="tel:+48604208183" icon={<Phone size={18} />} label="+48 604 208 183" />
                 <FooterLink href="mailto:kontakt@sklep-urwis.pl" icon={<Mail size={18} />} label="kontakt@sklep-urwis.pl" />
               </ul>

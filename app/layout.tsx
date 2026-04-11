@@ -121,7 +121,7 @@ const schemas = [
       { "@type": "Brand", "name": "Rebel", "sameAs": "https://www.rebel.pl" },
       { "@type": "Brand", "name": "Trefl", "sameAs": "https://www.wikidata.org/wiki/Q2451373" }
     ],
-    "hasMap": "https://maps.app.goo.gl/mqmAJb3e6Pryou129",
+    "hasMap": "https://www.google.com/maps?cid=8126296602477932572",
     "geo": {
       "@type": "GeoCoordinates",
       "latitude": 51.6447168175059,
@@ -143,7 +143,8 @@ const schemas = [
     ],
     "sameAs": [
       "https://facebook.com/sklepurwis.bialobrzegi",
-      "https://instagram.com/sklepurwis.bialobrzegi"
+      "https://instagram.com/sklepurwis.bialobrzegi",
+      "https://www.google.com/maps?cid=8126296602477932572"
     ]
   },
   {
@@ -246,7 +247,7 @@ const schemas = [
     "sameAs": [
       "https://facebook.com/sklepurwis.bialobrzegi",
       "https://instagram.com/sklepurwis.bialobrzegi",
-      "https://maps.app.goo.gl/mqmAJb3e6Pryou129",
+      "https://www.google.com/maps?cid=8126296602477932572",
       "https://www.lego.com/pl-pl"
     ],
     "contactPoint": {
