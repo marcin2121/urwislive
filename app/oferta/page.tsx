@@ -13,6 +13,47 @@ export const metadata: Metadata = {
   },
 };
 
+const ofertaSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Pełna oferta Sklepu Urwis Białobrzegi",
+  "description": "Zabawki, LEGO, wyprawka szkolna, artykuły biurowe oraz balony z helem.",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "url": "https://www.sklep-urwis.pl/oferta/zabawki",
+      "name": "Klocki LEGO & Zabawki"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "url": "https://www.sklep-urwis.pl/oferta/szkola-i-biuro",
+      "name": "Wyprawka Szkolna"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "url": "https://www.sklep-urwis.pl/oferta/imprezy",
+      "name": "Party & Balony z Helem"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "url": "https://www.sklep-urwis.pl/oferta/gry",
+      "name": "Gry Planszowe & Edu"
+    }
+  ]
+};
+
 export default function OfertaPage() {
-  return <OfertaContent />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ofertaSchema) }}
+      />
+      <OfertaContent />
+    </>
+  );
 }

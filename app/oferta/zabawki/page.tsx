@@ -13,6 +13,47 @@ export const metadata: Metadata = {
   }
 };
 
+const toySchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Kategorie zabawek w Sklepie Urwis Białobrzegi",
+  "description": "Największy wybór klocków LEGO, lalek, pojazdów i gier edukacyjnych w regionie.",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Klocki LEGO i Konstrukcje",
+      "description": "Zestawy LEGO Technic, City, Friends, Duplo oraz klocki Cobi."
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Lalki i Figurki",
+      "description": "Barbie, L.O.L. Surprise, Baby Born oraz figurki Schleich."
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Pojazdy i RC",
+      "description": "Bruder, Hot Wheels oraz pojazdy sterowane radiowo."
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Gry i Edukacja",
+      "description": "Gry planszowe Clementoni, Trefl i edukacyjne zestawy naukowe."
+    }
+  ]
+};
+
 export default function ZabawkiPage() {
-  return <ZabawkiSection />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(toySchema) }}
+      />
+      <ZabawkiSection />
+    </>
+  );
 }

@@ -150,15 +150,8 @@ const schemas = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "url": "https://www.sklep-urwis.pl",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://www.sklep-urwis.pl/szukaj?q={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
+    "name": "Sklep Urwis",
+    "url": "https://www.sklep-urwis.pl"
   },
   {
     "@context": "https://schema.org",

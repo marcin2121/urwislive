@@ -13,6 +13,47 @@ export const metadata: Metadata = {
   }
 };
 
+const schoolSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Wyprawka szkolna i artykuły biurowe w Białobrzegach - Sklep Urwis",
+  "description": "Kompletna oferta dla uczniów i firm: plecaki, zeszyty Oxford, artykuły plastyczne i biurowe.",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Wyprawka Szkolna",
+      "description": "Zeszyty, piórniki, farby i akcesoria marek Bambino, Oxford, Herlitz."
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Plecaki i Tornistry",
+      "description": "Ergonomiczne plecaki St.Right, CoolPack, Herlitz dbające o kręgosłup."
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Artykuły Plastyczne",
+      "description": "Kredki, farby, bloki rysunkowe i techniczne dla małych artystów."
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "Biuro i Firma",
+      "description": "Papier ksero, segregatory, tusze i kluczowe materiały eksploatacyjne."
+    }
+  ]
+};
+
 export default function SzkolaPage() {
-  return <SzkolaSection />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schoolSchema) }}
+      />
+      <SzkolaSection />
+    </>
+  );
 }
