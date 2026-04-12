@@ -117,10 +117,10 @@ export function StatsTab() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-zinc-100 shadow-md">
+        <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-zinc-100 shadow-md min-w-0">
           <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-zinc-700 mb-6"><TrendingUp className="w-4 h-4 text-[#0055ff]" /> Generowanie Kuponów (7 dni)</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%" minHeight={0}>
               <AreaChart data={stats.chartData}>
                 <defs>
                   <linearGradient id="colorAktywnosc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0055ff" stopOpacity={0.3}/><stop offset="95%" stopColor="#0055ff" stopOpacity={0}/></linearGradient>
@@ -134,10 +134,10 @@ export function StatsTab() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-md flex flex-col">
+        <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-md flex flex-col min-w-0">
           <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 text-zinc-700 mb-6"><MousePointer2 className="w-4 h-4 text-amber-500" /> Rozkład Nagród</h3>
-          <div className="h-[200px] flex-1">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[200px] w-full flex-1">
+            <ResponsiveContainer width="100%" height="100%" minHeight={0}>
               <PieChart>
                 <Pie data={stats.wheelStats} innerRadius={50} outerRadius={80} paddingAngle={8} dataKey="value">
                   {stats.wheelStats.map((entry: any, index: number) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}

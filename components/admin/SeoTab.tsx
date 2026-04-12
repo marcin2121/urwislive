@@ -96,21 +96,45 @@ export function SeoTab() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([refetchGsc(), refetchGbp()]);
-    
-    // Generowanie nowych insightów bazując na nowych danych można tu wpiąć do osobnego endpointu AI.
-    setTimeout(() => {
+    try {
+      // 1. Zaktualizuj i pobierz najświeższe dane z Google
+      const { data: latestGsc } = await refetchGsc();
+      const { data: latestGbp } = await refetchGbp();
+
+      // 2. Przekaż pobrane dane do Silnika AI z zapytaniem o Audyt
+      const aiRes = await fetch('/api/admin/seo/ai-insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gscData: latestGsc || gscData,
+          gbpData: latestGbp || gbpData,
+        })
+      });
+
+      const aiJson = await aiRes.json();
+      
+      if (!aiRes.ok) {
+        throw new Error(aiJson.error || 'Błąd generacji AI');
+      }
+
+      // 3. Wstrzyknij wyniki bezpośrednio do komponentów wizualnych
+      if (aiJson.success && aiJson.data?.length > 0) {
+        setInsights(aiJson.data);
+      }
+    } catch (error) {
+      console.error("AI Insight Error:", error);
+      // Fallback jeśli AI nie odpowie optymalnie na dany czas
       setInsights([
         {
           id: Date.now(),
-          type: 'success',
-          message: 'Wygenerowano nowy audyt analizując najświeższe dane z Google Search Console.',
-          actionPlan: `Utrzymanie stabilności. Frazy wyświetlają się w pozycjach ok. ${gscData?.stats?.position || 'N/A'}.`
-        },
-        ...INITIAL_AI_INSIGHTS.slice(0, 2)
+          type: 'warning',
+          message: 'Silnik sztucznej inteligencji napotkał problem komunikacyjny (przeciążenie sieci).',
+          actionPlan: 'Powiadomienie zastępcze. Spróbuj kliknąć "Generuj Audyt" ponownie za kilkanaście sekund.'
+        }
       ]);
+    } finally {
       setIsRefreshing(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -330,7 +354,7 @@ export function SeoTab() {
 }
 
 function MetricCard({ title, value, trend, icon, color, bg, invertTrend = false }: { title: string, value: string, trend?: string, icon: React.ReactNode, color: string, bg: string, invertTrend?: boolean }) {
-  const isPositive = trend.startsWith('+');
+  const isPositive = trend?.startsWith('+') ?? false;
   const showGreen = invertTrend ? !isPositive : isPositive;
 
   return (

@@ -11,6 +11,7 @@ import { PopupProvider } from "@/components/PopupProvider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClientLayoutComponents } from "@/components/ClientLayoutComponents";
 import { SerwistProvider } from "./lib/client";
+import { QueryProvider } from "@/components/QueryProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -297,11 +298,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className="antialiased bg-white text-zinc-900 selection:bg-blue-500 selection:text-white h-dvh overflow-hidden" suppressHydrationWarning>
-        <SerwistProvider swUrl="/serwist/sw.js">
-          <AuthProvider>
-            <PopupProvider>
-  
-              <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
+        <QueryProvider>
+          <SerwistProvider swUrl="/serwist/sw.js">
+            <AuthProvider>
+              <PopupProvider>
+    
+                <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
                 <Navbar />
   
                 {/* Dedykowany obszar przewijania (Mobile Shell) */}
@@ -328,6 +330,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </PopupProvider>
           </AuthProvider>
         </SerwistProvider>
+      </QueryProvider>
 
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}

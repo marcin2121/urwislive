@@ -47,6 +47,13 @@ export async function GET() {
 
     const firstAccountName = accounts[0].name;
 
+    if (!firstAccountName) {
+      return NextResponse.json({
+        success: false,
+        warning: 'Konto nie posiada poprawnego identyfikatora nazwy.'
+      });
+    }
+
     // Pobierz lokalizacje dla konta
     const locationsResponse = await businessProfile.accounts.locations.list({
       parent: firstAccountName,

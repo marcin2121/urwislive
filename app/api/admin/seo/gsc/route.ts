@@ -73,7 +73,6 @@ export async function GET() {
         endDate: endDate,
         dimensions: ['query'],
         rowLimit: 10,
-        orderBy: [{ dimension: 'query' }], // We will sort manually anyway to get top
       },
     });
 
