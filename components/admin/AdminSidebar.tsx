@@ -1,6 +1,6 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, LogOut, X, Menu, LayoutDashboard, Users, TicketPercent, CircleDashed, Tag, Bell, History } from "lucide-react"
+import { Home, LogOut, X, Menu, LayoutDashboard, Users, TicketPercent, CircleDashed, Tag, Bell, History, TrendingUp } from "lucide-react"
 import { createClient } from '@/lib/supabase/client'
 
 export const navItems = [
@@ -10,7 +10,8 @@ export const navItems = [
   { id: 'wheel', label: 'Koło Fortuny', icon: CircleDashed },
   { id: 'promos', label: 'Katalog Ofert', icon: Tag },
   { id: 'push', label: 'Kreator Push', icon: Bell },
-  { id: 'history', label: 'Historia Wysyłek', icon: History }
+  { id: 'history', label: 'Historia Wysyłek', icon: History },
+  { id: 'seo', label: 'SEO Hub & AI', icon: TrendingUp }
 ] as const;
 
 export function AdminSidebar({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen }: any) {

@@ -9,9 +9,10 @@ import { KuponyTab } from '@/components/admin/KuponyTab'
 import { WheelTab } from '@/components/admin/WheelTab'
 import { PushTab } from '@/components/admin/PushTab'
 import { HistoryTab } from '@/components/admin/HistoryTab'
+import { SeoTab } from '@/components/admin/SeoTab'
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history' | 'clients' | 'kupony' | 'wheel'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'promos' | 'push' | 'history' | 'clients' | 'kupony' | 'wheel' | 'seo'>('stats')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
@@ -33,6 +34,7 @@ export default function AdminPage() {
           {activeTab === 'wheel' && <WheelTab />}
           {activeTab === 'push' && <PushTab />}
           {activeTab === 'history' && <HistoryTab />}
+          {activeTab === 'seo' && <SeoTab />}
         </div>
       </main>
 
