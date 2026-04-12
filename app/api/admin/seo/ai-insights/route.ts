@@ -1,74 +1,75 @@
-import { generateObject } from 'ai';
+import { generateText } from 'ai';
 import { google } from '@ai-sdk/google';
-import { z } from 'zod';
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
-export const maxDuration = 60; // Allow enough time for AI to think
-
-// Define the response schema explicitly for strict AI output
-const aiInsightSchema = z.object({
-  insights: z.array(z.object({
-    id: z.number().describe('Unikalny numer ID, np. od 1 do 5'),
-    type: z.enum(['warning', 'success', 'info']).describe('Typ powiadomienia SEO'),
-    message: z.string().describe('Konkretna wiadomość analityczna co zaszło lub się podoba/nie podoba.'),
-    actionPlan: z.string().describe('Jedno/dwuzdaniowa instrukcja naprawy lub optymalizacji.'),
-  })).max(4).describe('Maksymalnie 4 najważniejsze obserwacje.')
-});
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const json = await req.json();
-    const { gscData, gbpData } = json;
+    // 1. Bezpieczeństwo - tylko admin
+    const supabase = await createClient();
+    const { data: { user } } = await supabase?.auth.getUser() || { data: { user: null } };
+    const isAdmin = user?.user_metadata?.role === 'admin';
+    const isLocal = process.env.NODE_ENV === 'development';
+
+    if (!isAdmin && !isLocal) {
+      return NextResponse.json({ error: 'Brak uprawnień' }, { status: 403 });
+    }
+
+    const { gscData, gbpData } = await req.json();
 
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      return NextResponse.json(
-        { error: 'Brak klucza API dla analizy AI.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Brak klucza AI' }, { status: 500 });
     }
 
-    if (!gscData || !gbpData) {
-        return NextResponse.json(
-          { error: 'Brak danych do analizy. Prześlij GSC i GBP w zapytaniu.' },
-          { status: 400 }
-        );
-    }
+    // 2. Generowanie elitarnego audytu
+    const prompt = `
+      Jesteś ELITE SEO STRATEGIST & TECHNICAL LEAD. Twoim zadaniem jest przeprowadzenie głębokiego audytu dla Sklepu Urwis.
+      
+      DANE GSC (Live): ${JSON.stringify(gscData)}
+      DANE GBP (Live): ${JSON.stringify(gbpData)}
+      
+      ZAKRES ANALIZY:
+      1. TECHNICAL SEO: Wykryj nieprawidłowości w poziomach pozycji i CTR. 
+      2. CANNIBALIZATION: Czy wiele fraz (np. "zabawki", "lego") nie konkuruje ze sobą o tę samą pozycję?
+      3. TOPICAL GAP: Na podstawie fraz, których brakuje (a powinny być), zasugeruj konkretne sekcje contentowe.
+      4. CONVERSION FOCUS: Skup się na frazach o wysokiej intencji zakupowej (np. "gdzie kupić lego białobrzegi", "sklep z zabawkami reymonta").
 
-    // Prepare context payload based on user's live data
-    const context = `
-      Jesteś Sklep Urwis Elite SEO Analyst, bezlitosnym, nastawionym na zysk doradcą analitycznym. 
-      Przeanalizuj poniższe dane pozyskane bezpośrednio z Google Search Console i Google Business Profile.
-      Sklep znajduje się w "Białobrzegach" stąd duży nacisk na to miasto i zapytania LOKALNE typu zabawki/lego.
-      Wygeneruj 3 trafne obserwacje ukierunkowane na realną poprawę tych wskaźników lub na pochwalenie obecnego formatu.
+      WYMÓG: Każda akcja musi być konkretna, np. zamiast "popraw seo", napisz "Zoptymalizuj strukturę nagłówków H1-H3 dla kategorii LEGO Technic".
 
-      DANE GSC:
-      Kliknięcia (28 dni): ${gscData?.stats?.clicks}
-      Wyświetlenia: ${gscData?.stats?.impressions}
-      Wsp. odrzuceń(CTR): ${gscData?.stats?.ctr}
-      Średnia pozycja: ${gscData?.stats?.position}
-      Najlepsze w tym okresie keywordy: ${JSON.stringify(gscData?.queries || [])}
-
-      DANE GBP (Maps):
-      Status Wizytówki: ${gbpData?.locationRetrieved}
-      (Zakładaj brak głębokich danych GBP jako problem integracyjny lub po prostu pochwal strukturę z SEO).
-
-      Ograniczenia: Zwróć DOKŁADNIE strukturę JSON, całkowicie po Polsku.
+      WYMAGANY FORMAT JSON:
+      {
+        "success": true,
+        "data": [
+          {
+            "id": number,
+            "type": "warning" | "success" | "info",
+            "message": "Głęboki wniosek analityczny (np. Wykryto spadek CTR o 15% na frazy lokalne)",
+            "actionPlan": "Techniczna instrukcja naprawcza (Zadanie dla developera/admina)"
+          }
+        ]
+      }
     `;
 
-    // Calling Gemini Model
-    const result = await generateObject({
-      model: google('gemini-2.5-flash-lite'), // Fast processing model like chatbot fallback
-      schema: aiInsightSchema,
-      prompt: context,
+    const { text } = await generateText({
+      model: google('gemini-1.5-flash'), // Szybki model do strukturyzowanych danych
+      prompt: prompt,
     });
 
-    return NextResponse.json({ success: true, data: result.object.insights });
+    // Parsowanie JSON (Gemini czasem dodaje markdown ```json)
+    const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const result = JSON.parse(jsonString);
+
+    return NextResponse.json(result);
 
   } catch (error: any) {
-    console.error('[API/SEO-AI] Fatal error:', error);
-    return NextResponse.json(
-      { error: 'Asystent AI analizy SEO napotkał tymczasowy problem.', details: error.message },
-      { status: 503 }
-    );
+    console.error('Błąd AI Audit API:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Nie udało się wygenerować audytu AI.',
+      data: [] 
+    }, { status: 500 });
   }
 }

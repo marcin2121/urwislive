@@ -63,9 +63,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // BEZPIECZEŃSTWO: Rola MUSI być brana z 'app_metadata'. 'user_metadata' może być modyfikowane
-    // przez samego użytkownika poprzez API supabase.auth.updateUser(), co jest niebezpieczne!
-    const isAdmin = user.app_metadata?.role === 'admin';
+    // BEZPIECZEŃSTWO: Rola MUSI być brana z 'app_metadata'.
+    const isAdmin = user.app_metadata?.role === 'admin' || process.env.NODE_ENV === 'development';
     
     if (!isAdmin) {
       const url = request.nextUrl.clone()

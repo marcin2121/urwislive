@@ -29,25 +29,45 @@ export async function GET() {
       auth: auth,
     });
 
-    const siteUrl = 'https://www.sklep-urwis.pl/'; // Exact property URL as in GSC
-
-    // Calculate dynamic dates (last 28 days vs previous 28 days to calculate trend)
+    // Calculate dynamic dates
     const today = new Date();
-    // 3 days shifted because GSC data usually has a 2-3 day lag
     const endDate = format(subDays(today, 3), 'yyyy-MM-dd');
-    const startDate = format(subDays(today, 31), 'yyyy-MM-dd'); // 28 days range
+    const startDate = format(subDays(today, 31), 'yyyy-MM-dd');
 
-    // 1. Fetch Global Stats for the last 28 days
-    const globalResponse = await searchconsole.searchanalytics.query({
-      siteUrl: siteUrl,
-      requestBody: {
-        startDate: startDate,
-        endDate: endDate,
-        dimensions: ['date'], // Group by date to get sum
-      },
-    });
+    const possibleSiteUrls = [
+      'https://www.sklep-urwis.pl/',
+      'sc-domain:sklep-urwis.pl',
+      'https://sklep-urwis.pl/'
+    ];
 
-    const globalRows = globalResponse.data.rows || [];
+    let queryResponse = null;
+    let successfulUrl = '';
+    let lastGscError: any = null;
+
+    for (const url of possibleSiteUrls) {
+      try {
+        const response = await searchconsole.searchanalytics.query({
+          siteUrl: url,
+          requestBody: {
+            startDate: startDate,
+            endDate: endDate,
+            dimensions: ['date'],
+          },
+        });
+        queryResponse = response;
+        successfulUrl = url;
+        break;
+      } catch (err: any) {
+        lastGscError = err;
+        continue;
+      }
+    }
+
+    if (!queryResponse) {
+      throw lastGscError || new Error('Brak uprawnień do witryny w GSC.');
+    }
+
+    const globalRows = queryResponse.data.rows || [];
     let totalClicks = 0;
     let totalImpressions = 0;
     let sumCtr = 0;
@@ -65,9 +85,9 @@ export async function GET() {
     const avgCtr = globalRows.length > 0 ? (sumCtr / globalRows.length) * 100 : 0;
     const avgPosition = globalRows.length > 0 ? (sumPosition / globalRows.length) : 0;
 
-    // 2. Fetch Top Queries
+    // 2. Fetch Top Queries using the SUCCESSFUL URL
     const queriesResponse = await searchconsole.searchanalytics.query({
-      siteUrl: siteUrl,
+      siteUrl: successfulUrl,
       requestBody: {
         startDate: startDate,
         endDate: endDate,
@@ -90,6 +110,11 @@ export async function GET() {
           ctr: `${avgCtr.toFixed(1)}%`,
           position: avgPosition.toFixed(1),
         },
+        daily: globalRows.map(row => ({
+          date: row.keys?.[0],
+          clicks: row.clicks,
+          impressions: row.impressions
+        })),
         queries: topQueries.map(q => ({
           query: q.keys ? q.keys[0] : 'Nieznana',
           clicks: q.clicks,
