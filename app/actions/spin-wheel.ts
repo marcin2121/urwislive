@@ -49,9 +49,10 @@ export async function spinWheel() {
 
     const unspentCoupons = userCurrentCoupons?.filter((c: any) => (c.current_usage || 0) < (c.usage_limit || 1)) || [];
     const usedTitles = unspentCoupons.map((c: any) => c.title);
+    const usedTitlesSet = new Set(usedTitles);
     
     // Filtrujemy nagrody
-    const availablePrizes = prizes.filter((p: any) => !usedTitles.includes(p.title));
+    const availablePrizes = prizes.filter((p: any) => !usedTitlesSet.has(p.title));
 
     if (availablePrizes.length === 0) {
       return { error: 'Posiadasz już wszystkie rabaty! Zużyj przynajmniej jeden z nich pod kasą, by zwolnić miejsce.' }
