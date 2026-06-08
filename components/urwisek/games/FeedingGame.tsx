@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useRef } from 'react'
 import { motion, useAnimation, AnimatePresence, PanInfo } from 'framer-motion'
+import { toast } from 'sonner'
 
 export default function FeedingGame({ onComplete }: { onComplete: () => void }) {
   const [foodCount, setFoodCount] = useState(0)
@@ -20,11 +21,10 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
   
       if (!response.ok) {
         // Serwist przechwyci to nieudane żądanie i doda do kolejki IndexedDB
-        console.log("Żądanie nieudane - Serwist dodał je do kolejki synchronizacji.");
       }
     } catch (_err) {
       // Fetch rzuca wyjątek przy całkowitym braku sieci
-      console.log("Brak sieci. Punkty zostaną wysłane automatycznie w tle po odzyskaniu połączenia.");
+      toast.info("Brak sieci. Punkty zostaną wysłane automatycznie w tle po odzyskaniu połączenia.");
     }
   };
 
