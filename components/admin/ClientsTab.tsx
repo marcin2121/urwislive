@@ -68,7 +68,8 @@ export function ClientsTab() {
     } finally { setLoadingUserCoupons(false); }
   };
 
-  const filteredClients = allUsers.filter((u: any) => !clientSearchQuery || (u.email || '').toLowerCase().includes(clientSearchQuery.toLowerCase()) || (u.phone_number || '').includes(clientSearchQuery) || (u.full_name || '').toLowerCase().includes(clientSearchQuery.toLowerCase()));
+  const lowerQuery = (clientSearchQuery || '').toLowerCase();
+  const filteredClients = allUsers.filter((u: any) => !clientSearchQuery || (u.email || '').toLowerCase().includes(lowerQuery) || (u.phone_number || '').includes(clientSearchQuery) || (u.full_name || '').toLowerCase().includes(lowerQuery));
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 md:space-y-8">
