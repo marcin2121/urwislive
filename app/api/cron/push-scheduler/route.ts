@@ -80,8 +80,9 @@ export async function GET(req: Request) {
       timestamp: now 
     });
 
-  } catch (error: any) {
-    console.error('CRON Error:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('CRON Error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
