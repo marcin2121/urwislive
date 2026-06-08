@@ -3,6 +3,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+interface UserCoupon {
+  title: string;
+  current_usage: number | null;
+  usage_limit: number | null;
+}
+
+interface WheelPrize {
+  title: string;
+  chance: number | string;
+  code_prefix: string;
+  description: string | null;
+  gradient: string | null;
+}
+
 export async function spinWheel() {
   const supabase = await createClient()
   if (!supabase) return { error: 'Usługa tymczasowo niedostępna.' }
@@ -47,18 +61,18 @@ export async function spinWheel() {
       .eq('user_id', user.id)
       .eq('is_active', true)
 
-    const unspentCoupons = userCurrentCoupons?.filter((c: any) => (c.current_usage || 0) < (c.usage_limit || 1)) || [];
-    const usedTitles = unspentCoupons.map((c: any) => c.title);
+    const unspentCoupons = userCurrentCoupons?.filter((c: UserCoupon) => (c.current_usage || 0) < (c.usage_limit || 1)) || [];
+    const usedTitles = unspentCoupons.map((c: UserCoupon) => c.title);
     
     // Filtrujemy nagrody
-    const availablePrizes = prizes.filter((p: any) => !usedTitles.includes(p.title));
+    const availablePrizes = prizes.filter((p: WheelPrize) => !usedTitles.includes(p.title));
 
     if (availablePrizes.length === 0) {
       return { error: 'Posiadasz już wszystkie rabaty! Zużyj przynajmniej jeden z nich pod kasą, by zwolnić miejsce.' }
     }
 
     // 4. ALGORYTM LOSOWANIA (Ważony) z puli tylko dostępnych nagród
-    const totalWeight = availablePrizes.reduce((sum: number, p: any) => sum + Number(p.chance), 0)
+    const totalWeight = availablePrizes.reduce((sum: number, p: WheelPrize) => sum + Number(p.chance), 0)
     let randomNum = Math.random() * totalWeight
     let winningPrize = availablePrizes[0]
 
