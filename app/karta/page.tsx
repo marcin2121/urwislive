@@ -95,10 +95,10 @@ export default function LoyaltyCardPage() {
           toast.success("Konto utworzone! 🎉")
         }
       } catch (error) {
-        const err = error as any
-        console.error("Szczegóły błędu:", err)
+        console.error("Szczegóły błędu:", error)
         // Jeśli błąd to 500, to prawdopodobnie problem po stronie bazy (Trigger)
-        toast.error(err.message || "Błąd serwera. Spróbuj ponownie.")
+        const errorMessage = error instanceof Error ? error.message : ""
+        toast.error(errorMessage || "Błąd serwera. Spróbuj ponownie.")
       } finally {
         setFormLoading(false)
       }
