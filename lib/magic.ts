@@ -13,9 +13,6 @@ export async function askCrystalBall(_productName: string) {
     `Kula zrobiła się mętna... Jeśli to w ogóle u nas jest, to pewnie służy teraz jako podpórka do kiwającego się stołu na zapleczu. Kto wie? Tylko szef wie!`
   ];
 
-  // Symulacja "myślenia" magicznej kuli (opóźnienie dla lepszego efektu w UI)
-  await new Promise(resolve => setTimeout(resolve, 800));
-
   // Losujemy jeden z żartów
   const randomIndex = Math.floor(Math.random() * jokes.length);
   return jokes[randomIndex];
