@@ -7,6 +7,7 @@ import { SHOP_ITEMS } from '@/lib/urwis/items'
 import { checkAchievements } from '@/lib/urwis/achievements'
 import { UrwisService } from '@/lib/services/urwisService';
 import { urwisInteractSchema, UrwisAction } from '@/lib/validations/urwis';
+import { UrwisPet } from '@/types/urwis';
 
 export async function interactWithUrwis(actionType: UrwisAction) {
   // 1. Validation
@@ -304,7 +305,7 @@ export async function buyUrwisItem(itemId: string) {
   const currentCoins = pet.urwis_coins || 0
   if (currentCoins < itemDef.price) return { error: 'Brak wystarczającej liczby monet.' }
 
-  const updates: any = {
+  const updates: Partial<UrwisPet> = {
     urwis_coins: currentCoins - itemDef.price
   }
 
@@ -408,7 +409,7 @@ export async function finishArcadeGame(gameId: string) {
     coinsEarned += 100 // Mały bonus za Level Up
   }
 
-  const updates: any = {
+  const updates: Partial<UrwisPet> = {
     urwis_coins: Math.floor((pet.urwis_coins || 0) + coinsEarned),
     points_earned: Math.floor(newTotalExp),
     level: Math.floor(newLvl)
@@ -455,7 +456,7 @@ export async function claimQuestReward(questId: string, rewardCoins: number) {
      return { error: 'Nagroda została już odebrana!' }
   }
 
-  const updates: any = {
+  const updates: Partial<UrwisPet> = {
     urwis_coins: Math.floor((pet.urwis_coins || 0) + rewardCoins),
     // Zapiszmy id zadania jako ukończone w nowej kolumnie tekstowej jsonb
     completed_quests: [...completedArray, questId] 
