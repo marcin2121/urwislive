@@ -135,10 +135,16 @@ export default function ProfilePage() {
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
         if (sub) {
-          const { data } = await supabase.from('push_subscriptions').select('topics').eq('endpoint', sub.endpoint).single();
-          if (data?.topics) setSelectedTopics(data.topics);
+          const { data, error } = await supabase.from('push_subscriptions').select('topics').eq('endpoint', sub.endpoint).single();
+          if (error) {
+            console.error('Błąd pobierania tematów powiadomień:', error);
+          } else if (data?.topics) {
+            setSelectedTopics(data.topics);
+          }
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error('Błąd podczas sprawdzania statusu subskrypcji:', e);
+      }
     } else {
       setPushState('NOT_SUBSCRIBED');
     }
