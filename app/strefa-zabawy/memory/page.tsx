@@ -11,9 +11,9 @@ const ANIMATION_DURATION = 0.25;
 const AUTO_CLOSE_DELAY = 1000;
 
 const SOUNDS = {
-  flip: '/sounds/flip.mp3',
+  flip: '/sfx/click.mp3',
   match: '/sounds/correct.mp3',
-  win: '/sounds/win.mp3',
+  win: '/sfx/success.mp3',
   error: '/sounds/wrong.mp3',
 };
 

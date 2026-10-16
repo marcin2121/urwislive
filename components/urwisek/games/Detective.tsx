@@ -173,7 +173,6 @@ export default function DetectiveGame({ onWin }: { onWin?: () => void }) {
       
       {/* HEADER GRY */}
       <div className="w-full bg-gradient-to-r from-[#BF2024] to-[#ec4899] p-6 text-white text-center shadow-md z-10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
         <h2 className="text-3xl font-black italic tracking-wider flex items-center justify-center gap-3 relative z-10">
           <Search size={32} /> URWISOWY DETEKTYW
         </h2>

@@ -30,7 +30,6 @@ export const metadata: Metadata = {
     template: "%s | Sklep Urwis Białobrzegi"
   },
   description: "Największy w Białobrzegach wybór LEGO, zabawek i artykułów szkolnych. 🧸 Odwiedź nas na Reymonta 38A! Pompujemy balony helem i spełniamy dziecięce marzenia.",
-  manifest: "/manifest.json",
   alternates: {
     // './' = adres bieżącej podstrony (względem metadataBase). Stały adres strony głównej
     // oznaczał wszystkie podstrony jako jej duplikaty i wykluczał je z wyników Google.
