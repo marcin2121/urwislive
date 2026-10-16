@@ -7,7 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/admin',    // Blokujemy dostęp do panelu administratora
-        '/karta',    // Blokujemy dostęp do portfela lojalnościowego
         '/regulamin', // Blokujemy regulaminy z indeksowania
         '/api'
       ],
