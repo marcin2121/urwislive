@@ -10,6 +10,7 @@ import {
 import Image from 'next/image'
 import Particles from '@/components/Particles'
 import LeceWKulkiSection from '@/components/LeceWKulkiSection'
+import SalaZabawInfo from '@/components/SalaZabawInfo'
 
 const PASTEL_BLUE = "#5eb1ff";
 const PASTEL_PINK = "#ff8ca8";
@@ -138,6 +139,9 @@ export default function SalaZabawContent() {
              <InfoCapsule icon={<Utensils size={20}/>} label="Kawiarnia & Przekąski" />
           </div>
         </section>
+
+        {/* --- OPIS, KONTAKT I FAQ (treść pod SEO) --- */}
+        <SalaZabawInfo />
 
         {/* --- FOOTER CTA --- */}
         <section className="py-32 px-4 text-center">
