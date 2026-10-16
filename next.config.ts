@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
 
   turbopack: {},
 
+  async redirects() {
+    return [
+      // Stary adres gry sprzed przeniesienia - nadal widoczny w Google
+      { source: '/strefa-zabawy/lece-w-kulki', destination: '/kulki', permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       {
