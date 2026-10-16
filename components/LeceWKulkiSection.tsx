@@ -32,9 +32,9 @@ export default function LeceWKulkiSection() {
             <MapPin size={14} strokeWidth={3} aria-hidden="true" /> Białobrzegi, ul. Targowicka 4
           </motion.div>
           
-          <h2 className="text-7xl md:text-9xl font-black text-zinc-900 tracking-tighter leading-none uppercase">
+          <h1 className="text-7xl md:text-9xl font-black text-zinc-900 tracking-tighter leading-none uppercase">
             Lecę w <span className="italic text-[#0055ff]">Kulki</span>
-          </h2>
+          </h1>
           <p className="text-zinc-700 font-bold max-w-3xl mx-auto text-xl md:text-2xl uppercase tracking-tight leading-relaxed">
             Bezpieczna przystań dla malucha <br className="hidden md:block" /> i chwila spokoju dla rodzica.
           </p>

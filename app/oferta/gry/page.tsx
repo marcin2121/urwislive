@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "Najlepsze gry planszowe Rebel, puzzle Trefl i karty Pokemon w Białobrzegach! 🎲 Ponad 500 tytułów na rodzinne wieczory i prezenty. Sprawdź ofertę w Sklepie Urwis!",
   keywords: ["gry planszowe Białobrzegi", "puzzle Trefl", "karty Pokemon", "Rebel gry", "sklep z zabawkami Białobrzegi", "planszówki dla dzieci"],
   openGraph: {
+    images: ["/og-image.jpg"],
     title: "Urwis Białobrzegi - Twoje Centrum Gier i Puzzli",
     description: "Odkryj świat planszówek Rebel, Galakta i puzzli Ravensburger. Najlepszy wybór w okolicy, profesjonalne doradztwo i super zabawa!",
     url: 'https://www.sklep-urwis.pl/oferta/gry',

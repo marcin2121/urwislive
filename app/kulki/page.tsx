@@ -1,8 +1,8 @@
 import BubbleShooter from '@/components/urwisek/games/BubbleShooter'
 
 export const metadata = {
-  title: 'Lecę w Kulki',
-  description: 'Graj w kultową grę Bubble Shooter i bij rekordy w strefie Urwiska!',
+  title: 'Kulkowa Bitwa Urwisa',
+  description: 'Celuj, łącz trzy kulki tego samego koloru i bij rekordy w Strefie Zabawy Urwisa!',
 }
 
 export default function BubbleShooterPage() {

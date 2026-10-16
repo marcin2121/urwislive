@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "Największy wybór balonów z helem, dekoracji urodzinowych i przebrań w Białobrzegach! 🎈 Pompujemy helem na miejscu. Stwórz niezapomnianą imprezę ze Sklepem Urwis!",
   keywords: ["balony z helem Białobrzegi", "dekoracje urodzinowe", "stroje karnawałowe Białobrzegi", "świeczki na tort", "hel do balonów", "artykuły imprezowe"],
   openGraph: {
+    images: ["/og-image.jpg"],
     title: "Balony i Dekoracje Imprezowe w Sklepie Urwis - Białobrzegi",
     description: "Planujesz urodziny lub chrzciny? Mamy wszystko: balony z helem, talerzyki, świeczki i przebrania. Odwiedź nas przy ul. Reymonta 38A!",
     url: 'https://www.sklep-urwis.pl/oferta/imprezy',

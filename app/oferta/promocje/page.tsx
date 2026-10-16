@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "Łap gorące okazje w Sklepie Urwis! 🏷️ Najlepsze promocje na zabawki, gry i wyprawkę szkolną w Białobrzegach. Sprawdź aktualne rabaty i rezerwuj produkty online!",
   keywords: ["promocje zabawki Białobrzegi", "tania wyprawka szkolna", "wyprzedaż gier planszowych", "okazje cenowe Białobrzegi", "sklep urwis rabaty"],
   openGraph: {
+    images: ["/og-image.jpg"],
     title: "Gorące Okazje w Sklepie Urwis - Białobrzegi",
     description: "Zabawki, klocki i artykuły biurowe w najniższych cenach. Nie czekaj, aż okazja ucieknie!",
     url: 'https://www.sklep-urwis.pl/oferta/promocje',

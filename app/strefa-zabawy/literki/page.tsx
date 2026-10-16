@@ -5,7 +5,7 @@ import { Metadata } from 'next';
 import WordleGame from '@/components/urwisek/games/WordleGame';
 
 export const metadata: Metadata = {
-  title: 'Literki | Polskie Wordle',
+  title: 'Literki Urwisa | Zgadnij słowo',
   description: 'Zgadnij 5-literowe polskie słowo w 6 prób! Gra słowna dla dzieci i dorosłych.',
 };
 

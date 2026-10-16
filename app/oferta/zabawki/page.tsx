@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "Szukasz wymarzonego prezentu? 🧸 Sklep Urwis w Białobrzegach to prawdziwe królestwo zabawek! Najnowsze LEGO, lalki Barbie i auta Hot Wheels czekają na Ciebie przy ul. Reymonta 38A. Spełniamy dziecięce marzenia!",
   keywords: ["sklep z zabawkami Białobrzegi", "prezent dla dziecka", "LEGO Białobrzegi", "klocki dla dzieci", "lalki dla dziewczynek", "auta dla chłopców", "zabawki edukacyjne"],
   openGraph: {
+    images: ["/og-image.jpg"],
     title: "Urwis Białobrzegi - Tu Mieszkają Twoje Ulubione Zabawki",
     description: "Od klocków LEGO po przytulanki i gry. Największy wybór zabawek w Białobrzegach, profesjonalne doradztwo i najniższe ceny w regionie!",
     url: 'https://www.sklep-urwis.pl/oferta/zabawki',

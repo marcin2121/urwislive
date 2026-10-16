@@ -5,8 +5,8 @@ import { Metadata } from 'next';
 import SuikaGame from '@/components/urwisek/games/SuikaGame';
 
 export const metadata: Metadata = {
-  title: 'Gra w Arbuza | Suika Game',
-  description: 'Upuszczaj owoce i łącz identyczne! Wiśnia, truskawka, arbuz – jak daleko zajdziesz? Gra fizyczna inspirowana japońskim hitem Suika Game.',
+  title: 'Gra w Arbuza | Łączenie owoców',
+  description: 'Upuszczaj owoce i łącz identyczne! Wiśnia, truskawka, arbuz – jak daleko zajdziesz? Wciągająca gra fizyczna dla całej rodziny.',
 };
 
 export default function SuikaPage() {

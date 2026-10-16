@@ -5,11 +5,11 @@ import { Metadata } from 'next';
 import TetrisGame from '@/components/urwisek/games/TetrisGame';
 
 export const metadata: Metadata = {
-  title: 'Tetris | Klasyczna gra z klockami',
-  description: 'Układaj spadające klocki, czyść linie i bij rekordy! Klasyczny Tetris w przeglądarce.',
+  title: 'Spadające Klocki Urwisa | Gra logiczna',
+  description: 'Układaj spadające klocki, czyść linie i bij rekordy! Darmowa gra logiczna w przeglądarce.',
 };
 
-export default function TetrisPage() {
+export default function SpadajaceKlockiPage() {
   return (
     <div className="min-h-screen bg-transparent pt-[70px] md:pt-[120px] pb-24 md:pb-32 relative z-10 text-zinc-900 overflow-x-hidden">
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">

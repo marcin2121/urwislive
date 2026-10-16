@@ -670,7 +670,7 @@ export default function Arkanoid() {
           <h2 className="text-3xl font-black text-white mb-2 tracking-tight text-center leading-tight">
             Urwis<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
-              Arkanoid
+              Breaker
             </span>
           </h2>
           <p className="text-zinc-400 text-sm mb-2 text-center max-w-[240px]">

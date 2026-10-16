@@ -25,11 +25,11 @@ const CATEGORIES = [
     title: 'Rozrywka & Zręczność',
     icon: <Gamepad2 className="w-5 h-5 md:w-6 md:h-6 text-zinc-400" />,
     games: [
-      { id: 'kulki', icon: <CircleDot className="text-cyan-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kulki', desc: 'Połącz trzy takie same bąbelki, by pękły! Dasz radę odeprzeć atak?', glowColor: '6, 182, 212', href: '/kulki', highlight: true, highlightTag: 'Popularne' },
+      { id: 'kulki', icon: <CircleDot className="text-cyan-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Kulkowa Bitwa', desc: 'Połącz trzy takie same bąbelki, by pękły! Dasz radę odeprzeć atak?', glowColor: '6, 182, 212', href: '/kulki', highlight: true, highlightTag: 'Popularne' },
       { id: 'breaker', icon: <Blocks className="text-indigo-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Urwis Breaker', desc: 'Rozbij wszystkie klocki piłką, łap power-upy i bij rekordy!', glowColor: '99, 102, 241', href: '/strefa-zabawy/urwis-breaker' },
       { id: 'fabryka', icon: <Factory className="text-emerald-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Fabryka Urwisa', desc: 'Buduj ogromną fabrykę! Zobacz, jak rośnie Twoje imperium (Idle).', glowColor: '16, 185, 129', href: '/strefa-zabawy/fabryka-urwisa' },
       { id: 'suika', icon: <Cherry className="text-green-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Gra w Arbuza', desc: 'Upuszczaj owoce i łącz identyczne! Kto pierwszy zrobi arbuza?', glowColor: '34, 197, 94', href: '/strefa-zabawy/arbuz', highlight: true, highlightTag: 'Hit!' },
-      { id: 'tetris', icon: <SquareStack className="text-indigo-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Tetris', desc: 'Układaj spadające klocki, czyść linie i bij rekordy!', glowColor: '99, 102, 241', href: '/strefa-zabawy/tetris', highlight: true, highlightTag: 'Klasyk!' },
+      { id: 'tetris', icon: <SquareStack className="text-indigo-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Spadające Klocki', desc: 'Układaj spadające klocki, czyść linie i bij rekordy!', glowColor: '99, 102, 241', href: '/strefa-zabawy/spadajace-klocki', highlight: true, highlightTag: 'Klasyk!' },
       { id: 'match3', icon: <Candy className="text-pink-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Trzy w Rząd', desc: 'Zamień sąsiednie kafelki, by ułożyć trzy w rząd! Kolorowa łamigłówka.', glowColor: '236, 72, 153', href: '/strefa-zabawy/trzy-w-rzad', highlight: true, highlightTag: 'Nowość!' },
     ]
   },
@@ -42,7 +42,7 @@ const CATEGORIES = [
       { id: 'klocki', icon: <Blocks className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Klocki Urwisa', desc: 'Układaj klocki na planszy 9×9! Czyść linie i kwadraty, by zdobywać punkty.', glowColor: '245, 158, 11', href: '/strefa-zabawy/klocki', highlight: true, highlightTag: 'Nowość!' },
       { id: 'przelewanki', icon: <Droplets className="text-cyan-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Przelewanki', desc: 'Posortuj kolorowe płyny w probówkach! Logiczna łamigłówka dla każdego.', glowColor: '6, 182, 212', href: '/strefa-zabawy/przelewanki', highlight: true, highlightTag: 'Nowość!' },
       { id: '2048', icon: <Hash className="text-amber-500 w-8 h-8 md:w-10 md:h-10" />, title: '2048', desc: 'Przesuwaj kafelki, łącz liczby i dotrzyj do 2048! Klasyk logiczny.', glowColor: '245, 158, 11', href: '/strefa-zabawy/2048', highlight: true, highlightTag: 'Klasyk!' },
-      { id: 'literki', icon: <Type className="text-teal-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Literki', desc: 'Zgadnij 5-literowe polskie słowo w 6 prób! Polskie Wordle.', glowColor: '20, 184, 166', href: '/strefa-zabawy/literki', highlight: true, highlightTag: 'Nowość!' },
+      { id: 'literki', icon: <Type className="text-teal-500 w-8 h-8 md:w-10 md:h-10" />, title: 'Literki', desc: 'Zgadnij 5-literowe polskie słowo w 6 prób!', glowColor: '20, 184, 166', href: '/strefa-zabawy/literki', highlight: true, highlightTag: 'Nowość!' },
     ]
   }
 ];

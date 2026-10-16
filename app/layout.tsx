@@ -150,82 +150,6 @@ const schemas = [
   },
   {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "Nawigacja Główna Sklepu Urwis",
-    "itemListElement": [
-      { "@type": "SiteNavigationElement", "position": 1, "name": "Oferta Zabawek i LEGO", "url": "https://www.sklep-urwis.pl/oferta" },
-      { "@type": "SiteNavigationElement", "position": 2, "name": "Strefa Zabawy i Gier", "url": "https://www.sklep-urwis.pl/strefa-zabawy" },
-      { "@type": "SiteNavigationElement", "position": 3, "name": "Kupony i Rabaty", "url": "https://www.sklep-urwis.pl/rabaty" },
-      { "@type": "SiteNavigationElement", "position": 4, "name": "Poznaj Naszą Maskotkę", "url": "https://www.sklep-urwis.pl/poznaj-urwisa" },
-      { "@type": "SiteNavigationElement", "position": 5, "name": "Centrum Pomocy i Kontakt", "url": "https://www.sklep-urwis.pl/kontakt" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Sklep Urwis PWA",
-    "operatingSystem": "All",
-    "applicationCategory": "ShoppingApplication",
-    "featureList": "Offline gaming, AR Experience, Loyalty Program",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "PLN"
-    }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Gdzie znajduje się Sklep Urwis w Białobrzegach?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Sklep stacjonarny Urwis znajduje się przy ulicy Reymonta 38A w Białobrzegach (26-800)." }
-      },
-      {
-        "@type": "Question",
-        "name": "Czy w Sklepie Urwis kupię klocki LEGO?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Tak, Sklep Urwis posiada największy wybór klocków LEGO in regionie, w tym serie Technic, City, Ninjago, Star Wars i wiele innych." }
-      },
-      {
-        "@type": "Question",
-        "name": "Czy oferujecie balony z helem?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Oczywiście! Pompujemy balony helem na miejscu. Mamy szeroki wybór balonów cyfr oraz postaci z bajek." }
-      },
-      {
-        "@type": "Question",
-        "name": "Jakie są godziny otwarcia Sklepu Urwis?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Sklep Urwis jest otwarty od poniedziałku do piątku w godzinach 8:00-18:00 oraz w soboty 8:00-15:00." }
-      },
-      {
-        "@type": "Question",
-        "name": "Jak działa program lojalnościowy Złote Urwisy?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Za każde 10 zł wydane w Sklepie Urwis otrzymujesz 1 Złotego Urwisa. Punkty wymieniasz w Sali Zabaw Lecę w Kulki na wejściówki, kawę lub żetony. 1 punkt = 1 zł rabatu." }
-      },
-      {
-        "@type": "Question",
-        "name": "Jak korzystać z kuponów rabatowych na stronie?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Zaloguj się na sklep-urwis.pl, przejdź do zakładki Rabaty i zakręć Kołem Fortuny. Aktywuj kupon dopiero przy kasie — znika po 5 minutach od aktywacji." }
-      },
-      {
-        "@type": "Question",
-        "name": "Czym jest Sala Zabaw Lecę w Kulki?",
-        "acceptedAnswer": { "@type": "Answer", "text": "Lecę w Kulki to sala zabaw prowadzona przez właścicieli Sklepu Urwis, znajdująca się przy ul. Targowickiej 4 w Białobrzegach. Oferuje kulkowy basen, zjeżdżalnie i kawę dla rodziców." }
-      }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Strona Główna", "item": "https://www.sklep-urwis.pl" },
-      { "@type": "ListItem", "position": 2, "name": "Strefa Zabawy", "item": "https://www.sklep-urwis.pl/strefa-zabawy" },
-      { "@type": "ListItem", "position": 3, "name": "Oferta Zabawek", "item": "https://www.sklep-urwis.pl/oferta/zabawki" },
-      { "@type": "ListItem", "position": 4, "name": "Rabaty", "item": "https://www.sklep-urwis.pl/rabaty" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Sklep Urwis",
     "url": "https://www.sklep-urwis.pl",
@@ -235,32 +159,13 @@ const schemas = [
     "sameAs": [
       "https://facebook.com/sklepurwis.bialobrzegi",
       "https://instagram.com/sklepurwis.bialobrzegi",
-      "https://www.google.com/maps?cid=8126296602477932572",
-      "https://www.lego.com/pl-pl"
+      "https://www.google.com/maps?cid=8126296602477932572"
     ],
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+48604208183",
       "contactType": "customer service"
     }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Sklep Urwis Białobrzegi - Oficjalna Platforma",
-    "speakable": {
-      "@type": "SpeakableSpecification",
-      "cssSelector": [".speakable-title", ".speakable-summary"]
-    },
-    "description": "Najnowocześniejszy sklep z zabawkami w regionie Białobrzegów, oferujący interaktywne gry i doradztwo w zakresie rozwoju dziecka."
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "ImageObject",
-    "name": "Maskotka Urwis - Symbol Kreatywności",
-    "url": "https://www.sklep-urwis.pl/Urwis-Hero.webp",
-    "caption": "Urwis - oficjalna maskotka Sklepu Urwis w Białobrzegach, wspierająca rozwój mądrej zabawy.",
-    "representativeOfPage": "True"
   }
 ];
 

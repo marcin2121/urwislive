@@ -82,14 +82,14 @@ export default function OfertaGrid() {
           <div className="flex items-center justify-center lg:justify-start gap-2 text-[#BF2024] font-black uppercase tracking-[0.3em] text-xs mb-4">
             <Sparkles size={14} /> <span>Eksperci od uśmiechu</span>
           </div>
-          <motion.h2 
+          <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-5xl lg:text-7xl font-black text-zinc-900 mb-6 tracking-tighter uppercase leading-[0.9]"
           >
             WIĘCEJ NIŻ <br /> <span className="text-transparent bg-clip-text bg-linear-to-r from-[#BF2024] to-[#0055ff]">ZABAWKI</span>
-          </motion.h2>
+          </motion.h1>
           <p className="text-zinc-500 max-w-2xl text-xl font-bold uppercase tracking-tight italic leading-tight">
           Od klocków po wyprawki. W samym sercu Białobrzegów stworzyliśmy miejsce, gdzie jakość LEGO spotyka się z Twoim spokojem.
           </p>

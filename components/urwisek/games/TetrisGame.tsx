@@ -309,7 +309,7 @@ export default function TetrisGame() {
       {gameOver && score > 0 && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={300} />}
 
       <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 p-5 text-white text-center shadow-md z-10">
-        <h2 className="text-3xl font-black italic tracking-wider">TETRIS</h2>
+        <h2 className="text-3xl font-black italic tracking-wider">SPADAJĄCE KLOCKI</h2>
       </div>
 
       <div className="w-full flex items-center justify-between px-4 py-3 bg-white border-b border-zinc-100">

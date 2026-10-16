@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
     return [
       // Stary adres gry sprzed przeniesienia - nadal widoczny w Google
       { source: '/strefa-zabawy/lece-w-kulki', destination: '/kulki', permanent: true },
+      // Nazwa zastrzeżona (The Tetris Company) - gra przemianowana
+      { source: '/strefa-zabawy/tetris', destination: '/strefa-zabawy/spadajace-klocki', permanent: true },
     ];
   },
 
