@@ -94,7 +94,7 @@ export default function CookieModal() {
                 <button
                   onClick={() => { trackCookieEvent('odrzucenie'); saveConsent('false'); }}
                   aria-label="Odrzuć wszystkie pliki cookies"
-                  className="flex-1 md:flex-none px-3 md:px-6 py-3 md:py-4 bg-zinc-100 text-zinc-400 rounded-xl md:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5"
+                  className="flex-1 md:flex-none px-3 md:px-6 py-3 md:py-4 bg-zinc-100 text-zinc-600 rounded-xl md:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5"
                 >
                   <X size={12} strokeWidth={3} className="shrink-0 md:size-3.5" /> Odrzuć
                 </button>
@@ -177,7 +177,7 @@ export default function CookieModal() {
                       <button
                         onClick={() => { trackCookieEvent('odrzucenie'); saveConsent('false'); }}
                         aria-label="Odrzuć opcjonalne pliki cookies"
-                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100/80 text-zinc-400 rounded-[1rem] sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
+                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100/80 text-zinc-600 rounded-[1rem] sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-red-500 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
                       >
                         <X size={14} strokeWidth={3} className="shrink-0" aria-hidden="true" /> Odrzuć zbędne
                       </button>
@@ -186,7 +186,7 @@ export default function CookieModal() {
                         href="/polityka-prywatnosci"
                         onClick={() => trackCookieEvent('polityka_prywatnosci_klikniecie')}
                         aria-label="Dowiedz się więcej o naszej polityce prywatności i plikach cookies"
-                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100/80 text-zinc-400 rounded-[1rem] sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
+                        className="flex-1 py-3 sm:py-4 px-2 bg-zinc-100/80 text-zinc-600 rounded-[1rem] sm:rounded-[1.2rem] font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-zinc-200 hover:text-blue-600 transition-all flex items-center justify-center gap-1.5 md:gap-2 pointer-events-auto"
                       >
                         <Info size={14} strokeWidth={3} className="shrink-0" aria-hidden="true" /> Co to za ciastka?
                       </Link>

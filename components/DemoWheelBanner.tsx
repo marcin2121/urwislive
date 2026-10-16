@@ -137,7 +137,7 @@ export default function DemoWheelBanner() {
             
             {/* LEWA STRONA: Tekst (zależny od tego czy jest zalogowany) */}
             <div className="flex-1 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-600 px-4 py-1.5 rounded-full mb-6 shadow-sm">
+              <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-1.5 rounded-full mb-6 shadow-sm">
                 <Gift size={14} />
                 <span className="text-[10px] font-black uppercase tracking-widest">
                   {isLoggedIn ? 'Klub Urwisa' : 'Wersja Demonstracyjna'}
@@ -159,8 +159,8 @@ export default function DemoWheelBanner() {
                 <button 
                   onClick={handleAction}
                   disabled={isSpinning}
-                  className={`w-full sm:w-auto px-8 py-4 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 cursor-pointer flex items-center justify-center gap-2
-                    ${isLoggedIn ? 'bg-[#0055ff] hover:bg-blue-600' : 'bg-amber-500 hover:bg-amber-600'}`}
+                  className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 cursor-pointer flex items-center justify-center gap-2
+                    ${isLoggedIn ? 'bg-[#0055ff] hover:bg-blue-600 text-white' : 'bg-amber-500 hover:bg-amber-400 text-zinc-900'}`}
                 >
                   {isSpinning ? 'Losowanie...' : isLoggedIn ? 'Przejdź do losowania' : 'Zakręć na próbę!'}
                   {isLoggedIn && <ArrowRight size={18} />}

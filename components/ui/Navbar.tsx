@@ -214,8 +214,8 @@ export default function Navbar() {
                 <span className={`relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 ${shopStatus.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
               </div>
               <div className="flex flex-col items-start leading-none text-left">
-                <span className={`text-[10px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-600' : 'text-red-500'}`}>{shopStatus.label}</span>
-                <span className="text-[8px] md:text-[11px] font-bold text-zinc-400 tracking-tighter mt-[1px] leading-none">{shopStatus.subLabel}</span>
+                <span className={`text-[10px] md:text-[12px] font-black uppercase tracking-tighter ${shopStatus.isOpen ? 'text-green-700' : 'text-red-600'}`}>{shopStatus.label}</span>
+                <span className="text-[8px] md:text-[11px] font-bold text-zinc-500 tracking-tighter mt-[1px] leading-none">{shopStatus.subLabel}</span>
               </div>
               <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isHoursDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -229,7 +229,7 @@ export default function Navbar() {
                     {FULL_HOURS_LIST.map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center text-xs pb-1 border-b border-zinc-100/50 last:border-0 last:pb-0">
                         <span className="font-bold text-zinc-500">{item.day}</span>
-                        <span className={`font-black ${item.isRed ? 'text-red-500' : 'text-zinc-900'}`}>{item.hours}</span>
+                        <span className={`font-black ${item.isRed ? 'text-red-600' : 'text-zinc-900'}`}>{item.hours}</span>
                       </div>
                     ))}
                   </div>
