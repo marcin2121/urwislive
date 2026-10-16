@@ -4,9 +4,11 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import "./PushButton";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/components/AuthProvider";
-import AuthModal from "./AuthModal";
+
+// Modal logowania (z klientem Supabase) ładowany dopiero przy pierwszym otwarciu
+const AuthModal = dynamic(() => import("./AuthModal"), { ssr: false });
 import {
   ShoppingBag,
   Coffee,
@@ -455,7 +457,7 @@ export default function Navbar() {
         </div>
       )}
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      {isAuthModalOpen && <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />}
     </header>
   );
 }

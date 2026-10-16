@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Gift, Sparkles } from "lucide-react";
+import { Gift, Sparkles, UserPlus, Smartphone, ArrowRight } from "lucide-react";
 import { createClient } from '@/lib/supabase/client';
 import { usePopupControl } from '@/components/PopupProvider';
 
@@ -14,7 +14,15 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return new Uint8Array([...rawData].map((char) => char.charCodeAt(0)));
 };
 
+// Krótki samouczek (dawny OnboardingTour) - pokazywany tylko w PWA, przed prośbą o powiadomienia
+const TIPS = [
+  { icon: UserPlus, title: 'Klub Urwisa', desc: 'Zaloguj się, aby odblokować kupony i promocje niedostępne dla gości sklepu!' },
+  { icon: Gift, title: 'Twoje zniżki', desc: 'W zakładce Rabaty zakręć kołem fortuny i odbierz swój kupon.' },
+  { icon: Smartphone, title: 'Tylko przy kasie!', desc: 'Kupon po aktywacji znika po 5 minutach. Włącz go dopiero przy kasie.' },
+];
+
 export default function WelcomeScreen() {
+  const [step, setStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -159,9 +167,38 @@ export default function WelcomeScreen() {
             <Sparkles size={120} />
           </div>
 
-          <div 
+          {step < TIPS.length ? (() => {
+            const Tip = TIPS[step];
+            return (
+              <div key={step} className="relative z-10 flex flex-col items-center text-center max-w-sm px-6 animate-zoom-in">
+                <div className="flex gap-2 justify-center mb-8">
+                  {[...TIPS, null].map((_, i) => (
+                    <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === step ? 'w-8 bg-white' : 'w-4 bg-white/30'}`} />
+                  ))}
+                </div>
+                <div className="w-28 h-28 rounded-full bg-white/15 flex items-center justify-center mb-6">
+                  <Tip.icon size={52} />
+                </div>
+                <h2 className="text-3xl font-black mb-3 tracking-tight uppercase italic">{Tip.title}</h2>
+                <p className="text-blue-50 mb-10 font-bold leading-relaxed">{Tip.desc}</p>
+                <button
+                  onClick={() => setStep(s => s + 1)}
+                  className="w-full bg-white text-urwis-blue font-black text-xl py-5 rounded-3xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex justify-center items-center gap-2 uppercase italic"
+                >
+                  Dalej <ArrowRight size={22} />
+                </button>
+                <button
+                  onClick={() => setStep(TIPS.length)}
+                  className="mt-3 text-blue-200 text-[10px] font-black uppercase tracking-[0.2em] p-2 hover:text-white transition-colors cursor-pointer"
+                >
+                  Pomiń wskazówki
+                </button>
+              </div>
+            );
+          })() : (
+          <div
             className="relative z-10 flex flex-col items-center text-center max-w-sm px-6 animate-zoom-in"
-            style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
+            style={{ animationFillMode: 'both' }}
           >
             <div className="w-80 h-80 relative mb-4 drop-shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
               <Image 
@@ -172,9 +209,9 @@ export default function WelcomeScreen() {
               />
             </div>
             
-            <h1 className="text-3xl font-black mb-3 tracking-tight uppercase italic">
+            <h2 className="text-3xl font-black mb-3 tracking-tight uppercase italic">
               Przyda Ci się pomocnik?
-            </h1>
+            </h2>
             
             <p className="text-blue-50 mb-8 font-bold uppercase text-[11px] tracking-widest leading-relaxed">
               Będę pilnować dla Ciebie promocji i <strong>nowych zestawów LEGO</strong>, 
@@ -201,6 +238,7 @@ export default function WelcomeScreen() {
               </button>
             </div>
           </div>
+          )}
         </div>
       )}
       <style dangerouslySetInnerHTML={{ __html: `

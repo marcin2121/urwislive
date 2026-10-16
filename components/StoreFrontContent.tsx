@@ -6,7 +6,6 @@ import { useGpuAcceleration } from "@/lib/useGpu";
 
 // 🟢 KRYTYCZNE — ładowane natychmiast (LCP)
 import Hero from "@/components/Hero";
-import UrwisIntro from "@/components/Intro";
 
 // ─── DYNAMICZNE IMPORTY ────────────────────────────────────────────────────────
 
@@ -89,7 +88,6 @@ export default function StoreFrontContent() {
   }, [hasGpu, setShowParticles]);
 
   return (
-    <UrwisIntro>
       <div className="min-h-screen bg-transparent text-zinc-900">
 
         {/* 🎨 TŁO: Particles — tylko desktop, tylko po 3s, tylko z GPU */}
@@ -136,6 +134,5 @@ export default function StoreFrontContent() {
           </div>
         </div>
       </div>
-    </UrwisIntro>
   );
 }

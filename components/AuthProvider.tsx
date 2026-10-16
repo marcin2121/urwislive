@@ -1,8 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import type { Session, User } from '@supabase/supabase-js'
+import type { Session, SupabaseClient, User } from '@supabase/supabase-js'
 
 type AuthContextType = {
   user: User | null;
@@ -21,12 +20,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null)
+
+  // Klient Supabase (~47 KB) ładowany asynchronicznie, poza krytyczną ścieżką każdej strony
   useEffect(() => {
-    if (!supabase) {
-      setIsLoading(false);
-      return;
-    }
+    let cancelled = false
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return
+      const client = createClient()
+      if (client) setSupabase(client)
+      else setIsLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!supabase) return;
 
     // 1. Pobierz aktualną sesję przy starcie
     const initAuth = async () => {

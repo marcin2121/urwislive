@@ -284,9 +284,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ✅ Top 1% Performance Hooks */}
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://region1.google-analytics.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://pwyhksjzxkqlywxlqxyr.supabase.co" crossOrigin="anonymous" />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://pwyhksjzxkqlywxlqxyr.supabase.co" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL} />
 
         {/* ✅ Schematy JSON-LD */}
         {schemas.map((schema, index) => (
@@ -298,17 +298,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ))}
       </head>
 
-      <body className="antialiased bg-white text-zinc-900 selection:bg-blue-500 selection:text-white h-dvh overflow-hidden" suppressHydrationWarning>
+      <body className="antialiased bg-white text-zinc-900 selection:bg-blue-500 selection:text-white" suppressHydrationWarning>
         <QueryProvider>
           <SerwistProvider swUrl="/serwist/sw.js">
             <AuthProvider>
               <PopupProvider>
     
-                <div className="relative z-20 flex flex-col h-dvh w-full overflow-hidden bg-transparent">
+                <div className="relative z-20 flex flex-col min-h-dvh w-full bg-transparent">
                 <Navbar />
   
-                {/* Dedykowany obszar przewijania (Mobile Shell) */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth [WebkitOverflowScrolling:touch] overscroll-y-contain pt-[72px] md:pt-32">
+                {/* Przewija się całe okno (nie wewnętrzny kontener): chowa pasek adresu na telefonie, działa przywracanie pozycji i window.scrollTo */}
+                <div className="flex-1 relative overflow-x-clip pt-[72px] md:pt-32">
                   <div className="relative min-h-full flex flex-col"> 
   
                     <main className="grow bg-transparent">

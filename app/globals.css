@@ -77,7 +77,8 @@ h1, h2, h3, h4, h5, h6 {
 
 html, body {
   max-width: 100dvw;
-  overflow-x: hidden;
+  /* clip zamiast hidden: nie tworzy kontenera przewijania, więc nie psuje position: sticky */
+  overflow-x: clip;
   width: 100%;
   overscroll-behavior: none; 
 }
@@ -136,9 +137,13 @@ body.game-mode footer {
   will-change: transform, opacity;
 }
 
-/* Smooth scroll zamiast natychmiastowego skoku */
+/* Smooth scroll zamiast natychmiastowego skoku.
+   Jawne białe tło i jasny motyw: body jest przezroczyste (wstążki w tle), więc bez tego
+   przy ciemnym motywie systemu przewijane okno pokazywało ciemne tło przeglądarki */
 html {
   scroll-behavior: smooth;
+  background-color: #ffffff;
+  color-scheme: light;
 }
 
 /* --- OPTYMALIZACJA PWA / NATIVE FEELING --- */

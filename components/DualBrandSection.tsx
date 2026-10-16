@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { ShoppingBag, Coffee, ChevronRight, Sparkles, PartyPopper } from "lucide-react"
 import Link from 'next/link'
 
@@ -9,9 +8,8 @@ export default function DualBrandSection() {
     <div className="w-full grid md:grid-cols-2 gap-6 h-full">
         
         {/* KARTA: SKLEP URWIS */}
-        <motion.div 
-          whileHover={{ y: -10 }}
-          className="group relative bg-white/40 backdrop-blur-2xl rounded-4xl p-12 border-2 border-white shadow-xl overflow-hidden"
+        <div
+          className="group relative transition-transform duration-300 hover:-translate-y-2.5 bg-white/40 backdrop-blur-2xl rounded-4xl p-12 border-2 border-white shadow-xl overflow-hidden"
         >
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#BF2024]/10 rounded-full blur-3xl group-hover:bg-[#BF2024]/20 transition-colors" />
           
@@ -32,12 +30,11 @@ export default function DualBrandSection() {
               Sprawdź ofertę <ChevronRight size={18} />
             </Link>
           </div>
-        </motion.div>
+        </div>
 
         {/* KARTA: LECĘ W KULKI */}
-        <motion.div 
-          whileHover={{ y: -10 }}
-          className="group relative bg-white/40 backdrop-blur-2xl rounded-4xl p-12 border-2 border-white shadow-xl overflow-hidden"
+        <div
+          className="group relative transition-transform duration-300 hover:-translate-y-2.5 bg-white/40 backdrop-blur-2xl rounded-4xl p-12 border-2 border-white shadow-xl overflow-hidden"
         >
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#0055ff]/10 rounded-full blur-3xl group-hover:bg-[#0055ff]/20 transition-colors" />
           
@@ -58,7 +55,7 @@ export default function DualBrandSection() {
               Odkryj radość <ChevronRight size={18} />
             </Link>
           </div>
-        </motion.div>
+        </div>
 
       </div>
   )
