@@ -108,13 +108,6 @@ const schemas = [
       { "@type": "City", "name": "Radom" },
       { "@type": "AdministrativeArea", "name": "Powiat białobrzeski" }
     ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "1276",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
     "brand": [
       { "@type": "Brand", "name": "LEGO", "sameAs": "https://www.wikidata.org/wiki/Q170416" },
       { "@type": "Brand", "name": "Oxford", "sameAs": "https://www.wikidata.org/wiki/Q1853877" },
