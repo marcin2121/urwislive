@@ -8,13 +8,6 @@ export const pushSubscriptionSchema = z.object({
   }),
 });
 
-export const sendPushSchema = z.object({
-  subscription: pushSubscriptionSchema,
-  title: z.string().min(1, "Title is required").max(100),
-  message: z.string().min(1, "Message is required").max(500),
-  topic: z.string().optional(),
-});
-
 export const sendAllPushSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   message: z.string().min(1, "Message is required").max(1000),
@@ -22,5 +15,4 @@ export const sendAllPushSchema = z.object({
   image: z.string().url().optional().or(z.literal("")).or(z.null()),
 });
 
-export type SendPushInput = z.infer<typeof sendPushSchema>;
 export type SendAllPushInput = z.infer<typeof sendAllPushSchema>;

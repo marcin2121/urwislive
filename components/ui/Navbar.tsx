@@ -69,7 +69,7 @@ export default function Navbar() {
     label: "...", 
     subLabel: "" 
   });
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const isAdmin = user?.app_metadata?.role === 'admin';
 
   const trackEvent = useCallback((name: string, params: object = {}) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {

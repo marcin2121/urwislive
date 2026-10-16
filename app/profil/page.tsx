@@ -135,8 +135,8 @@ export default function ProfilePage() {
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
         if (sub) {
-          const { data } = await supabase.from('push_subscriptions').select('topics').eq('endpoint', sub.endpoint).single();
-          if (data?.topics) setSelectedTopics(data.topics);
+          const { data: topics } = await supabase.rpc('push_get_topics', { p_endpoint: sub.endpoint });
+          if (topics) setSelectedTopics(topics);
         }
       } catch (e) { console.error(e); }
     } else {
@@ -171,9 +171,9 @@ export default function ProfilePage() {
         });
 
         if (supabase) {
-          await supabase.from('push_subscriptions').upsert({ 
-            endpoint: subscription.endpoint, subscription_data: JSON.parse(JSON.stringify(subscription)), topics: ['wszystkie']
-          }, { onConflict: 'endpoint' });
+          await supabase.rpc('push_subscribe', {
+            p_endpoint: subscription.endpoint, p_subscription: JSON.parse(JSON.stringify(subscription)), p_topics: ['wszystkie']
+          });
         }
 
         setPushState('SUBSCRIBED');
@@ -205,7 +205,7 @@ export default function ProfilePage() {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.getSubscription();
       if (sub && supabase) {
-        await supabase.from('push_subscriptions').update({ topics: newTopics }).eq('endpoint', sub.endpoint);
+        await supabase.rpc('push_set_topics', { p_endpoint: sub.endpoint, p_topics: newTopics });
       }
     } catch (_e) { toast.error('Nie udało się zaktualizować kategorii.'); }
     setUpdatingData(false);

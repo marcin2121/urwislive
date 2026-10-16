@@ -9,7 +9,7 @@ import { ArrowLeft,  } from "lucide-react"
 import CloseWindowButton from '@/components/CloseWindowButton'
 
 export const metadata = {
-  title: 'Wirtualny Urwis | Sklep Urwis',
+  title: 'Wirtualny Urwis',
   description: 'Zaloguj się i opiekuj się swoim wirtualnym zwierzakiem w Sklepie Urwis!',
 };
 

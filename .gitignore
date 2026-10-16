@@ -65,3 +65,6 @@ node_modules/
 
 # AI Documentation
 llms-full.txt
+
+# Analytics / GSC Data Exports
+*.csv

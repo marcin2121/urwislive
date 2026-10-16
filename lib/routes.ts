@@ -18,12 +18,8 @@ export const ROUTES = {
   API: {
     CHAT: '/api/chat',
     PUSH: {
-      SUBSCRIBE: '/api/push',
       TRACK: '/api/push/track',
       SCHEDULER: '/api/cron/push-scheduler',
-    },
-    URWIS: {
-      SYNC: '/api/urwis/sync',
     }
   }
 } as const;

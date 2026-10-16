@@ -57,12 +57,8 @@ export default function PushButton() {
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
         if (sub && supabase) {
-          const { data } = await supabase
-            .from('push_subscriptions')
-            .select('topics')
-            .eq('endpoint', sub.endpoint)
-            .single();
-          if (data?.topics) setSelectedTopics(data.topics);
+          const { data: topics } = await supabase.rpc('push_get_topics', { p_endpoint: sub.endpoint });
+          if (topics) setSelectedTopics(topics);
         }
       } catch (e) {
         console.error("Błąd pobierania preferencji:", e);
@@ -136,10 +132,7 @@ export default function PushButton() {
       const registration = await navigator.serviceWorker.ready;
       const sub = await registration.pushManager.getSubscription();
       if (sub && supabase) {
-        const { error } = await supabase
-          .from('push_subscriptions')
-          .update({ topics: finalTopics })
-          .eq('endpoint', sub.endpoint);
+        const { error } = await supabase.rpc('push_set_topics', { p_endpoint: sub.endpoint, p_topics: finalTopics });
         
         if (error) throw error;
         trackPushEvent('updated_topics_success', { final_topics: finalTopics });
@@ -178,13 +171,11 @@ export default function PushButton() {
             });
 
             if (supabase) {
-              await supabase
-                .from('push_subscriptions')
-                .upsert({ 
-                  endpoint: subscription.endpoint,
-                  subscription_data: JSON.parse(JSON.stringify(subscription)),
-                  topics: ['wszystkie']
-                }, { onConflict: 'endpoint' });
+              await supabase.rpc('push_subscribe', {
+                p_endpoint: subscription.endpoint,
+                p_subscription: JSON.parse(JSON.stringify(subscription)),
+                p_topics: ['wszystkie']
+              });
             }
 
             setButtonState('SUBSCRIBED');

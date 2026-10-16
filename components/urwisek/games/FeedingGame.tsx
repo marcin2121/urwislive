@@ -9,25 +9,6 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
   const controls = useAnimation()
   const hasCompleted = useRef(false)
 
-  // 🚀 FUNKCJA SYNCHRONIZACJI (BACKGROUND SYNC READY)
-  const handleSyncPoints = async (xpGain: number) => {
-    try {
-      const response = await fetch("/api/urwis/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "experience", amount: xpGain }),
-      });
-  
-      if (!response.ok) {
-        // Serwist przechwyci to nieudane żądanie i doda do kolejki IndexedDB
-        console.log("Żądanie nieudane - Serwist dodał je do kolejki synchronizacji.");
-      }
-    } catch (_err) {
-      // Fetch rzuca wyjątek przy całkowitym braku sieci
-      console.log("Brak sieci. Punkty zostaną wysłane automatycznie w tle po odzyskaniu połączenia.");
-    }
-  };
-
   const handleDragEnd = async (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (hasCompleted.current || isFlying) return;
 
@@ -78,9 +59,6 @@ export default function FeedingGame({ onComplete }: { onComplete: () => void }) 
       const next = foodCount + 1;
       setFoodCount(next);
 
-      // 🚀 WYSYŁAMY PUNKTY XP (10 pkt za każde jabłko)
-      handleSyncPoints(10);
-      
       if (next >= 3) {
         hasCompleted.current = true;
         setTimeout(() => onComplete(), 600);

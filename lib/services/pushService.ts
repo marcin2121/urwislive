@@ -2,42 +2,13 @@ import webpush from 'web-push';
 import { createClient } from '@/lib/supabase/server';
 import { initWebPush } from '@/lib/push-server';
 import { ROUTES } from '@/lib/routes';
-import { SendPushInput, SendAllPushInput } from '@/lib/validations/push';
+import { SendAllPushInput } from '@/lib/validations/push';
 
 /**
  * Service for managing Web Push notifications.
  * Handles individual sends, broadcasts, and subscription cleanup.
  */
 export class PushService {
-  /**
-   * Send a notification to a specific subscription.
-   * 
-   * @param input Validated subscription and message data
-   */
-  static async sendNotification(input: SendPushInput): Promise<void> {
-    const isPushReady = initWebPush();
-    if (!isPushReady) {
-      throw new Error('Push service is not configured (missing VAPID keys).');
-    }
-
-    const payload = JSON.stringify({
-      title: input.title,
-      body: input.message,
-      icon: '/android-chrome-192x192.png',
-      badge: '/favicon-16x16.png',
-      data: {
-        url: ROUTES.HOME
-      }
-    });
-
-    try {
-      await webpush.sendNotification(input.subscription, payload);
-    } catch (error) {
-      console.error('[PushService] Error sending to subscription:', error);
-      throw new Error('Failed to send push notification.');
-    }
-  }
-
   /**
    * Broadcast a notification to multiple subscribers based on topics.
    * Cleans up expired/invalid subscriptions automatically.

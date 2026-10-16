@@ -1,7 +1,7 @@
 import BubbleShooter from '@/components/urwisek/games/BubbleShooter'
 
 export const metadata = {
-  title: 'Lecę w Kulki | Sklep Urwis',
+  title: 'Lecę w Kulki',
   description: 'Graj w kultową grę Bubble Shooter i bij rekordy w strefie Urwiska!',
 }
 

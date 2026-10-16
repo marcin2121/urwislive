@@ -7,7 +7,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   // 2. Weryfikacja nagłówka (bezpieczeństwo - zapobiega uruchamianiu przez osoby postronne)
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Brak CRON_SECRET nie może przepuszczać nagłówka "Bearer undefined"
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
@@ -38,28 +39,34 @@ export async function GET(request: Request) {
     if (error || !hungryPets) throw error;
 
     let notificationsSent = 0;
+    let failed = 0;
 
-    // 2. Przelicz spadek statystyk i zaktualizuj bazę
-    for (const pet of hungryPets) {
+    // 2. Przelicz spadek statystyk i zaktualizuj bazę równolegle (rozwiązanie N+1)
+    await Promise.all(hungryPets.map(async (pet) => {
       const newHunger = Math.max(0, pet.hunger_level - 20);
-      
-      await supabase
+
+      const { error: updateError } = await supabase
         .from('urwis_pet')
         .update({ hunger_level: newHunger })
         .eq('user_id', pet.user_id);
 
+      if (updateError) {
+        failed++;
+        console.error('[CRON urwis-decay] Błąd aktualizacji:', pet.user_id, updateError.message);
+        return;
+      }
+
       // Jeśli głód spadł poniżej 30%, zliczamy powiadomienie
       if (newHunger < 30) {
-        // Tu możesz dodać logikę wysyłania Push:
-        // await sendPushNotification(pet.user_id, { ... });
         notificationsSent++;
       }
-    }
+    }));
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: failed === 0,
       processed: hungryPets.length,
-      notificationsSent 
+      failed,
+      notificationsSent
     });
 
   } catch (error) {

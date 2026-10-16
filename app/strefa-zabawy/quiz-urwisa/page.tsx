@@ -2,7 +2,7 @@ import React from 'react';
 import UrwisQuiz from '@/components/urwisek/games/UrwisQuiz';
 
 export const metadata = {
-  title: 'Quiz Urwisa | Sklep Urwis',
+  title: 'Quiz Urwisa',
   description: 'Rozwiąż quiz i dowiedz się, jakim Urwisem jesteś!',
 };
 

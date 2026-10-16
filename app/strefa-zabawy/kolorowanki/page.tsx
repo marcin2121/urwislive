@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: 'Darmowe Kolorowanki Online dla Dzieci | Sklep Urwis',
-  description: 'Odkryj interaktywne kolorowanki dla dzieci. Maluj online, baw się i pobieraj darmowe obrazki do druku. Idealna kreatywna zabawa edukacyjna w Akademii Urwisa!',
+  title: 'Darmowe Kolorowanki Online dla Dzieci',
+  description: 'Odkryj interaktywne kolorowanki dla dzieci. Maluj online, baw się i pobieraj darmowe obrazki do druku. Kreatywna zabawa ze Sklepem Urwis z Białobrzegów!',
 };
 
 export const viewport = {

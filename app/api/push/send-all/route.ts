@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server'; 
+import { createClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/supabase/require-admin';
 import { sendAllPushSchema } from '@/lib/validations/push';
 import { PushService } from '@/lib/services/pushService';
-import { } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,9 +19,9 @@ export async function POST(req: Request) {
     }
     
     // 1. Authorization: Only admin can broadcast
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.email !== 'admin@sklep-urwis.pl') {
-      console.warn('[API/Push/SendAll] Unauthorized attempt by:', user?.email || 'unknown');
+    const user = await requireAdmin();
+    if (!user) {
+      console.warn('[API/Push/SendAll] Unauthorized attempt');
       return NextResponse.json({ error: 'Brak dostępu' }, { status: 403 });
     }
 

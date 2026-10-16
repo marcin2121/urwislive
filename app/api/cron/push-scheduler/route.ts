@@ -2,19 +2,21 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { initWebPush } from '@/lib/push-server';
 import webpush from 'web-push';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ROUTES } from '@/lib/routes';
 
 export async function GET(req: Request) {
   // Zabezpieczenie przed wywołaniem przez osoby postronne
   // Vercel dodaje ten nagłówek automatycznie przy CRON
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Brak CRON_SECRET nie może przepuszczać nagłówka "Bearer undefined"
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return new Response('Unauthorized', { status: 401 });
   }
 
   try {
-    const supabase = await createClient();
+    // Cron nie ma sesji użytkownika - service role (RLS chroni push_history i push_subscriptions)
+    const supabase = createAdminClient();
     if (!supabase) {
       return NextResponse.json({ success: true, message: 'Supabase configuration missing, skipping CRON' });
     }

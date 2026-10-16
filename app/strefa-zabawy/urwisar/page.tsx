@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import UrwisARClientWrapper from '@/components/UrwisARClientWrapper';
 
 export const metadata = {
-  title: 'Rozszerzona Rzeczywistość - Urwis AR | Sklep Urwis',
+  title: 'Rozszerzona Rzeczywistość - Urwis AR',
   description: 'Zeskanuj znaczniki w naszym sklepie i przenieś się do rozszerzonej rzeczywistości z UrwisAR!',
 };
 

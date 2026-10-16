@@ -7,6 +7,18 @@ import { SHOP_ITEMS } from '@/lib/urwis/items'
 import { checkAchievements } from '@/lib/urwis/achievements'
 import { UrwisService } from '@/lib/services/urwisService';
 import { urwisInteractSchema, UrwisAction } from '@/lib/validations/urwis';
+import { createAdminClient } from '@/lib/supabase/admin'
+import { DAILY_QUESTS } from '@/lib/urwis/quests'
+
+const ARCADE_REWARD_COOLDOWN_MS = 60 * 1000
+
+// Zapisy do urwis_pet tylko przez service role (po weryfikacji użytkownika) -
+// RLS nie pozwala klientom zmieniać monet, poziomu ani postępu misji
+function petWriter() {
+  const db = createAdminClient()
+  if (!db) throw new Error('Błąd konfiguracji bazy danych.')
+  return db
+}
 
 export async function interactWithUrwis(actionType: UrwisAction) {
   // 1. Validation
@@ -23,7 +35,7 @@ export async function interactWithUrwis(actionType: UrwisAction) {
 
   try {
     const pet = await UrwisService.getPet(supabase, user.id);
-    const result = await UrwisService.processInteraction(supabase, user.id, pet, actionType);
+    const result = await UrwisService.processInteraction(petWriter(), user.id, pet, actionType);
 
     if (result.success) {
       revalidatePath('/strefa-zabawy/urwisek');
@@ -53,7 +65,7 @@ export async function claimDailyLogin() {
     return { success: false, message: 'Bonus już odebrany.' }
   }
 
-  const { error } = await supabase.from('urwis_pet').update({
+  const { error } = await petWriter().from('urwis_pet').update({
     urwis_coins: (pet.urwis_coins || 0) + 50,
     last_login_at: now.toISOString()
   }).eq('user_id', user.id)
@@ -79,7 +91,7 @@ if (!playerName || playerName.trim().length < 3 || playerName.length > 30) {
   }
   if (!['boy', 'girl'].includes(gender)) return { error: 'Wybierz płeć swojego bohatera.' }
 
-  const { error } = await supabase.from('urwis_pet').insert({
+  const { error } = await petWriter().from('urwis_pet').insert({
     user_id: user.id,
     player_name: playerName.trim(),
     name: petName.trim(),
@@ -328,7 +340,7 @@ export async function buyUrwisItem(itemId: string) {
   const qProgress = pet.quest_progress || {};
   updates.quest_progress = { ...qProgress, 'q_shop_2': (qProgress['q_shop_2'] || 0) + 1 };
 
-  const { error } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id)
+  const { error } = await petWriter().from('urwis_pet').update(updates).eq('user_id', user.id)
   if (error) return { error: 'Błąd podczas płatności.' }
 
   revalidatePath('/strefa-zabawy/urwisek')
@@ -358,7 +370,7 @@ export async function toggleUrwisItem(itemId: string, category: string) {
     currentEq[category] = itemId
   }
 
-  const { error } = await supabase.from('urwis_pet').update({ equipped_items: currentEq }).eq('user_id', user.id)
+  const { error } = await petWriter().from('urwis_pet').update({ equipped_items: currentEq }).eq('user_id', user.id)
   if (error) return { error: 'Nie udało się przebrać Urwiska.' }
 
   revalidatePath('/strefa-zabawy/urwisek')
@@ -372,10 +384,15 @@ export async function finishArcadeGame(gameId: string) {
   if (!user) return { error: 'Musisz być zalogowany!' }
 
   const { data: pet } = await supabase.from('urwis_pet')
-    .select('urwis_coins, points_earned, level, achievements, achievement_points, quest_progress')
+    .select('urwis_coins, points_earned, level, achievements, achievement_points, quest_progress, last_arcade_reward_at')
     .eq('user_id', user.id).single()
 
   if (!pet) return { error: 'Nie znaleziono maskotki.' }
+
+  const lastReward = pet.last_arcade_reward_at ? new Date(pet.last_arcade_reward_at).getTime() : 0
+  if (Date.now() - lastReward < ARCADE_REWARD_COOLDOWN_MS) {
+    return { error: 'Za szybko! Nagroda za kolejną grę będzie za chwilę.' }
+  }
 
   let coinsEarned = 0
   let expEarned = 0
@@ -411,7 +428,8 @@ export async function finishArcadeGame(gameId: string) {
   const updates: any = {
     urwis_coins: Math.floor((pet.urwis_coins || 0) + coinsEarned),
     points_earned: Math.floor(newTotalExp),
-    level: Math.floor(newLvl)
+    level: Math.floor(newLvl),
+    last_arcade_reward_at: new Date().toISOString()
   }
 
   // --- ACHIEVEMENT CHECK ---
@@ -430,21 +448,26 @@ export async function finishArcadeGame(gameId: string) {
   const qProgress = pet.quest_progress || {};
   updates.quest_progress = { ...qProgress, 'q_arcade_2': (qProgress['q_arcade_2'] || 0) + 1 };
 
-  const { error } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id)
+  const { error } = await petWriter().from('urwis_pet').update(updates).eq('user_id', user.id)
   if (error) return { error: 'Błąd podczas zapisu wygranej z Arcade.' }
 
   revalidatePath('/strefa-zabawy/urwisek')
   return { success: true, reward: { coins: coinsEarned, exp: expEarned }, leveledUp, newLvl: updates.level, newExp: updates.points_earned, newAchievements: newUnlocks, questProgress: updates.quest_progress }
 }
 
-export async function claimQuestReward(questId: string, rewardCoins: number) {
+export async function claimQuestReward(questId: string) {
   const supabase = await createClient()
   if (!supabase) return { error: 'Błąd konfiguracji.' }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Musisz być zalogowany!' }
 
+  // Nagroda i cel pochodzą wyłącznie z definicji po stronie serwera
+  const quest = DAILY_QUESTS.find(q => q.id === questId)
+  if (!quest) return { error: 'Nieznana misja!' }
+  const rewardCoins = quest.reward
+
   const { data: pet } = await supabase.from('urwis_pet')
-    .select('urwis_coins, completed_quests, achievements, achievement_points, level')
+    .select('urwis_coins, completed_quests, achievements, achievement_points, level, quest_progress')
     .eq('user_id', user.id).single()
 
   if (!pet) return { error: 'Nie znaleziono maskotki.' }
@@ -453,6 +476,10 @@ export async function claimQuestReward(questId: string, rewardCoins: number) {
   const completedArray = pet.completed_quests || []
   if (completedArray.includes(questId)) {
      return { error: 'Nagroda została już odebrana!' }
+  }
+
+  if (((pet.quest_progress || {})[questId] || 0) < quest.target) {
+     return { error: 'Misja nie została jeszcze ukończona!' }
   }
 
   const updates: any = {
@@ -472,7 +499,7 @@ export async function claimQuestReward(questId: string, rewardCoins: number) {
      updates.achievement_points = (pet.achievement_points || 0) + pointsGained;
   }
 
-  const { error } = await supabase.from('urwis_pet').update(updates).eq('user_id', user.id)
+  const { error } = await petWriter().from('urwis_pet').update(updates).eq('user_id', user.id)
   if (error) return { error: 'Błąd odbierania nagrody.' }
 
   revalidatePath('/strefa-zabawy/urwisek')

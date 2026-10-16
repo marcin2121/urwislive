@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function spinWheel() {
@@ -14,21 +15,7 @@ export async function spinWheel() {
       return { error: 'Zaloguj się, aby zakręcić kołem.' }
     }
 
-    // 2. NIEZAWODNE SPRAWDZANIE: Czy użytkownik ma już wygenerowany dzisiaj "Prywatny Kupon"?
-    // Data dzisiejsza od północy:
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-
-    const { data: recentCoupons } = await supabase
-      .from('kupony')
-      .select('id')
-      .eq('user_id', user.id) // Tylko kupony tego klienta
-      .gte('created_at', todayStart.toISOString()) // Stworzone dzisiaj
-      .limit(1);
-
-    if (recentCoupons && recentCoupons.length > 0) {
-      return { error: 'Już dziś wykorzystałeś swoją szansę! Wróć jutro.' }
-    }
+    // 2. Limit "jedna wygrana na dobę" pilnuje baza (claim_wheel_coupon, czas polski, bez wyścigu)
 
     // 3. Pobieramy wszystkie aktywne nagrody z Koła z bazy danych
     const { data: prizes } = await supabase
@@ -75,24 +62,26 @@ export async function spinWheel() {
     const finalCode = `${winningPrize.code_prefix}-${randomSuffix}`
 
     // 6. Zapisujemy wylosowany kupon dla użytkownika
-    const { error: insertError } = await supabase
-      .from('kupony')
-      .insert({
-        user_id: user.id,
-        title: winningPrize.title,
-        code: finalCode,
-        description: winningPrize.description || 'Wygrana w codziennym losowaniu!',
-        gradient: winningPrize.gradient,
-        is_reusable: false, // Po zrealizowaniu przy kasie, zniknie
-        usage_limit: 1,
-        current_usage: 0,
-        expires_at: null, // Nie wygasa samoczynnie o północy, czeka aż go użyjesz!
-        is_active: true
-      })
+    // RLS nie pozwala klientom dodawać kuponów - zapis przez service role po weryfikacji powyżej
+    const supabaseAdmin = createAdminClient()
+    if (!supabaseAdmin) return { error: 'Usługa tymczasowo niedostępna.' }
+
+    // Kupon jednorazowy, bez daty wygaśnięcia - czeka aż go użyjesz przy kasie
+    const { data: granted, error: insertError } = await supabaseAdmin.rpc('claim_wheel_coupon', {
+      p_user_id: user.id,
+      p_title: winningPrize.title,
+      p_code: finalCode,
+      p_description: winningPrize.description || 'Wygrana w codziennym losowaniu!',
+      p_gradient: winningPrize.gradient,
+    })
 
     if (insertError) {
       console.error("Błąd zapisu kuponu:", insertError)
       return { error: 'Nie udało się przypisać nagrody. Spróbuj ponownie.' }
+    }
+
+    if (!granted) {
+      return { error: 'Już dziś wykorzystałeś swoją szansę! Wróć jutro.' }
     }
 
     // Odświeżamy widok

@@ -1,7 +1,7 @@
 import KlockiGame from '@/components/urwisek/games/KlockiGame'
 
 export const metadata = {
-  title: 'Klocki Urwisa | Sklep Urwis',
+  title: 'Klocki Urwisa',
   description: 'Graj w wciągającą grę logiczną z klockami na planszy 9x9!',
 }
 

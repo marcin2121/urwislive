@@ -4,6 +4,7 @@ import React, { } from 'react'
 import { motion } from 'framer-motion'
 import { ScrollText, X, CheckCircle, Gift, Coins } from "lucide-react"
 import { cn } from '@/lib/utils'
+import { DAILY_QUESTS } from '@/lib/urwis/quests'
 
 interface QuestsPanelProps {
   completedQuests: string[]
@@ -11,15 +12,6 @@ interface QuestsPanelProps {
   onClose: () => void
   onClaim: (questId: string, reward: number) => void
 }
-
-// Baza przykładowych zadań dziennych
-const DAILY_QUESTS = [
-  { id: 'q_feed_3', title: 'Wielki Głód', desc: 'Nakarm Urwiska 3 razy', reward: 100, target: 3 },
-  { id: 'q_play', title: 'Czas na Zabawę', desc: 'Pobaw się ze zwierzakiem', reward: 50, target: 1 },
-  { id: 'q_shop_2', title: 'Mały Kupiec', desc: 'Kup 2 przedmioty w Sklepie', reward: 150, target: 2 },
-  { id: 'q_wash_3', title: 'Czysty Urwis', desc: 'Umyj Urwiska 3 razy', reward: 100, target: 3 },
-  { id: 'q_arcade_2', title: 'Mistrz Arcade', desc: 'Zagraj 2 razy w minigrę', reward: 120, target: 2 },
-];
 
 export default function QuestsPanel({ completedQuests, questProgress = {}, onClose, onClaim }: QuestsPanelProps) {
 

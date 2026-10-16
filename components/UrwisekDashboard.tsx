@@ -239,7 +239,7 @@ export default function UrwisekDashboard({ initialState }: { initialState: Urwis
 
   // ✅ HANDLER ODBIERANIA NAGRÓD Z MISJI
   const handleClaimQuest = useCallback(async (questId: string, customReward: number) => {
-    const res = await claimQuestReward(questId, customReward)
+    const res = await claimQuestReward(questId)
     
     if (res.error) {
        alert(res.error)

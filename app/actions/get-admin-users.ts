@@ -1,9 +1,15 @@
 'use server'
 
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '@/lib/supabase/require-admin';
 
 export async function getAdminUsersDetails() {
-  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Server action jest publicznym endpointem - bez tej kontroli każdy mógłby pobrać listę klientów
+  if (!(await requireAdmin())) {
+    return { success: false, extraData: {}, error: 'Brak dostępu.' };
+  }
+
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!adminKey || !url) {
     if (process.env.NODE_ENV !== 'production' || !process.env.CI) {
@@ -43,7 +49,11 @@ export async function getAdminUsersDetails() {
 
 // 🚀 OMIJA Zabezpieczenia RLS do sczytania cudzych kuponów z bazy 
 export async function getAdminUserCoupons(userId: string) {
-  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!(await requireAdmin())) {
+    return { success: false, coupons: [], error: 'Brak dostępu.' };
+  }
+
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!adminKey || !url) {
     return { success: false, coupons: [], error: 'Brak kluczy do bazy.' };

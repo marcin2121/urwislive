@@ -150,9 +150,8 @@ export default function RabatyPage() {
     setShowActiveOverlay(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    const coupon = dbCoupons.find(c => c.id === id);
-    if (coupon && supabase) {
-      await supabase.from('kupony').update({ current_usage: (coupon.current_usage || 0) + 1 }).eq('id', id);
+    if (supabase) {
+      await supabase.rpc('redeem_coupon', { p_coupon_id: id });
     }
   };
 

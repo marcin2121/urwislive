@@ -103,13 +103,11 @@ export default function WelcomeScreen() {
         });
 
         if (supabase) {
-          await supabase
-            .from('push_subscriptions')
-            .upsert({ 
-              endpoint: subscription.endpoint,
-              subscription_data: JSON.parse(JSON.stringify(subscription)),
-              topics: ['wszystkie']
-            }, { onConflict: 'endpoint' });
+          await supabase.rpc('push_subscribe', {
+            p_endpoint: subscription.endpoint,
+            p_subscription: JSON.parse(JSON.stringify(subscription)),
+            p_topics: ['wszystkie']
+          });
         }
 
         window.dispatchEvent(new Event('push-permission-changed'));
